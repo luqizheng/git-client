@@ -17,12 +17,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRightPanelStore } from '../../stores/rightPanel'
+import { useBreakpoints } from '../../composables/useBreakpoint'
 import CommitDetails from '../commit/CommitDetails.vue'
 import StagingPanel from '../staging/StagingPanel.vue'
 
 const rightPanel = useRightPanelStore()
+const { isSmall } = useBreakpoints()
+
+watch(isSmall, (small) => {
+  if (small) rightPanel.hidePanel()
+})
 
 const modeTitle = computed(() => {
   switch (rightPanel.mode) {
