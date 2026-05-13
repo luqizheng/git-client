@@ -13,4 +13,7 @@ export default defineConfig({
     strictPort: true,
   },
   envPrefix: ['VITE_', 'TAURI_'],
+  optimizeDeps: {
+    exclude: ['@tauri-apps/api/core', '@tauri-apps/api/event'],
+  },
 })

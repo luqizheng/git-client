@@ -1,6 +1,10 @@
-import { listen } from '@tauri-apps/api/event'
-
 export async function onEvent(event: string, handler: (payload: unknown) => void) {
+  const isTauri = typeof window !== 'undefined' && !!(window as any).__TAURI_INTERNALS__
+  if (!isTauri) {
+    console.warn(`Event ${event} skipped in browser mode`)
+    return () => {}
+  }
+  const { listen } = await import('@tauri-apps/api/event')
   return listen(event, (e) => handler(e.payload))
 }
 

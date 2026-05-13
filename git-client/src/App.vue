@@ -1,15 +1,20 @@
 <template>
-  <AppLayout>
-    <div class="flex-1 flex overflow-hidden">
-      <GraphView />
-      <DiffView />
-      <CommitPanel />
-    </div>
-  </AppLayout>
+  <n-config-provider :theme="theme">
+    <n-message-provider>
+      <AppLayout>
+        <div class="flex-1 flex overflow-hidden">
+          <GraphView />
+          <DiffView />
+          <CommitPanel />
+        </div>
+      </AppLayout>
+    </n-message-provider>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { darkTheme } from 'naive-ui'
 import AppLayout from './components/layout/AppLayout.vue'
 import GraphView from './components/graph/GraphView.vue'
 import DiffView from './components/diff/DiffView.vue'
@@ -26,6 +31,8 @@ const branches = useBranchesStore()
 const remote = useRemoteStore()
 const commits = useCommitsStore()
 const appStore = useAppStore()
+
+const theme = computed(() => appStore.theme === 'dark' ? darkTheme : undefined)
 
 useKeyboard([
   { key: 'l', ctrl: true, handler: () => {
@@ -46,7 +53,11 @@ useKeyboard([
   }},
 ])
 
-onMounted(() => {
-  appStore.loadSettings()
+onMounted(async () => {
+  try {
+    await appStore.loadSettings()
+  } catch (e) {
+    console.warn('loadSettings error:', e)
+  }
 })
 </script>

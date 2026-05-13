@@ -13,13 +13,14 @@
 | 07-提交图Canvas | ✅ | graphLayout/CommitCanvas |
 | 08-Diff+Commit | ✅ | MonacoDiff/FileTree/StageArea |
 | 09-分支等功能 | ✅ | BranchTree/RemotePanel/ConflictResolver |
-| 10-主题/i18n | ⏳ 待开始 | 主题/国际化 |
+| 10-主题/i18n | ✅ | CSS主题/国际化/快捷键/配置持久化 |
 | 11-测试工程化 | ⏳ 待开始 | CI/日志 |
 
 ## Git提交记录
 
 ```
-4dfe64c feat: add BranchTree, RemotePanel, ConflictResolver, SSH config
+91f6a65 feat: add theme system, i18n, keyboard shortcuts, settings persistence
+4dfe64c feat: add BranchTree, RemotePanel, ConflictResolver
 37cc3eb feat: add Diff/Commit components
 ac2e5e0 feat: add commit graph rendering
 447e666 feat: add frontend foundation
