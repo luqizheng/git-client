@@ -36,13 +36,14 @@ const repo = useRepoStore()
 const msgApi = useMessage()
 const showDialog = ref(false)
 
-const localBranches = computed(() => branchesStore.branches.filter(b => !b.is_remote))
-const remoteBranches = computed(() => branchesStore.branches.filter(b => b.is_remote))
+const allBranches = computed(() => repo.activeRepo?.branches ?? [])
+const localBranches = computed(() => allBranches.value.filter(b => !b.is_remote))
+const remoteBranches = computed(() => allBranches.value.filter(b => b.is_remote))
 
 async function onSwitch(name: string) {
-  if (!repo.repoPath) return
+  if (!repo.activeRepoPath) return
   try {
-    await branchesStore.switchBranch(repo.repoPath, name)
+    await branchesStore.switchBranch(repo.activeRepoPath, name)
     msgApi.success(`Switched to ${name}`)
   } catch (e) {
     msgApi.error(String(e))

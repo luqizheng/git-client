@@ -56,17 +56,17 @@ function applyTemplate(val: string) {
 }
 
 async function doCommit() {
-  if (!repo.repoPath || !message.value.trim()) return
+  if (!repo.activeRepoPath || !message.value.trim()) return
   try {
     await invoke<Commit>('commit', {
-      repoPath: repo.repoPath,
+      repoPath: repo.activeRepoPath,
       message: message.value,
       amend: amend.value,
     })
     message.value = ''
     amend.value = false
     msgApi.success('Committed')
-    await commits.fetchLogs(repo.repoPath)
+    await commits.fetchLogs(repo.activeRepoPath)
   } catch (e) {
     msgApi.error(String(e))
   }

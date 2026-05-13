@@ -1,40 +1,46 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import type { Commit } from '../types/git'
 import { invoke } from '../utils/ipc'
+import { useRepoStore } from './repo'
 
 export const useCommitsStore = defineStore('commits', () => {
-  const commits = ref<Commit[]>([])
-  const selectedCommit = ref<Commit | null>(null)
-  const loading = ref(false)
-  const hasMore = ref(true)
-
   async function fetchLogs(repoPath: string, limit = 50, after?: string) {
-    loading.value = true
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (!openRepo) return
+    openRepo.loading = true
     try {
       const result = await invoke<Commit[]>('get_log', { repoPath, limit, after })
       if (after) {
-        commits.value.push(...result)
+        openRepo.commits.push(...result)
       } else {
-        commits.value = result
+        openRepo.commits = result
       }
-      hasMore.value = result.length >= limit
+      openRepo.hasMore = result.length >= limit
     } catch (e) {
       console.error('fetchLogs error:', e)
     } finally {
-      loading.value = false
+      openRepo.loading = false
     }
   }
 
-  function selectCommit(commit: Commit | null) {
-    selectedCommit.value = commit
+  function selectCommit(repoPath: string, commit: Commit | null) {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (openRepo) {
+      openRepo.selectedCommit = commit
+    }
   }
 
-  function clearCommits() {
-    commits.value = []
-    selectedCommit.value = null
-    hasMore.value = true
+  function clearCommits(repoPath: string) {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (openRepo) {
+      openRepo.commits = []
+      openRepo.selectedCommit = null
+      openRepo.hasMore = true
+    }
   }
 
-  return { commits, selectedCommit, loading, hasMore, fetchLogs, selectCommit, clearCommits }
+  return { fetchLogs, selectCommit, clearCommits }
 })

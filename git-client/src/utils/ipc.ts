@@ -14,18 +14,8 @@ const mockData: Record<string, unknown> = {
   load_settings: { theme: 'dark', sidebarWidth: 250, sidebarCollapsed: false, language: 'en' },
 }
 
-let isTauriAvailable: boolean | null = null
-
 function checkTauri(): boolean {
-  if (isTauriAvailable !== null) return isTauriAvailable
-  try {
-    const { invoke: _ } = require('@tauri-apps/api/core')
-    isTauriAvailable = true
-    return true
-  } catch {
-    isTauriAvailable = false
-    return false
-  }
+  return !!window.__TAURI_INTERNALS__
 }
 
 export async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {

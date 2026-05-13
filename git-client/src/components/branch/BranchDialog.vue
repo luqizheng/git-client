@@ -27,9 +27,9 @@ const repo = useRepoStore()
 const msgApi = useMessage()
 
 async function doCreate() {
-  if (!repo.repoPath || !name.value.trim()) return
+  if (!repo.activeRepoPath || !name.value.trim()) return
   try {
-    await branchesStore.createBranch(repo.repoPath, name.value, checkout.value)
+    await branchesStore.createBranch(repo.activeRepoPath, name.value, checkout.value)
     show.value = false
     name.value = ''
     msgApi.success(`Branch ${name.value} created`)

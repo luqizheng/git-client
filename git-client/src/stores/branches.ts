@@ -1,23 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import type { Branch } from '../types/git'
 import { invoke } from '../utils/ipc'
+import { useRepoStore } from './repo'
 
 export const useBranchesStore = defineStore('branches', () => {
-  const branches = ref<Branch[]>([])
-  const currentBranch = ref<string>('')
-  const loading = ref(false)
-
   async function fetchBranches(repoPath: string) {
-    loading.value = true
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (!openRepo) return
     try {
-      branches.value = await invoke<Branch[]>('list_branches', { repoPath })
-      const head = branches.value.find(b => b.is_head)
-      currentBranch.value = head?.name ?? ''
+      openRepo.branches = await invoke<Branch[]>('list_branches', { repoPath })
     } catch (e) {
       console.error('fetchBranches error:', e)
-    } finally {
-      loading.value = false
     }
   }
 
@@ -36,5 +30,13 @@ export const useBranchesStore = defineStore('branches', () => {
     await fetchBranches(repoPath)
   }
 
-  return { branches, currentBranch, loading, fetchBranches, createBranch, switchBranch, deleteBranch }
+  function currentBranch(repoPath: string): string {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (!openRepo) return ''
+    const head = openRepo.branches.find(b => b.is_head)
+    return head?.name ?? ''
+  }
+
+  return { fetchBranches, createBranch, switchBranch, deleteBranch, currentBranch }
 })

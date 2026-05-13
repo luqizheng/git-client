@@ -1,19 +1,19 @@
 <template>
-  <div class="flex-1 flex flex-col overflow-hidden" v-if="repo.currentRepo">
+  <div class="flex-1 flex flex-col overflow-hidden" v-if="repo.activeRepo">
     <div
       ref="scrollContainer"
       class="flex-1 overflow-y-auto"
       @scroll="onScroll"
     >
       <CommitCanvas
-        :commits="commits.commits"
+        :commits="repo.activeRepo.commits"
         :scroll-top="scrollTop"
         :viewport-height="viewportHeight"
-        :selected-id="commits.selectedCommit?.id ?? null"
-        @select="commits.selectCommit"
+        :selected-id="repo.activeRepo.selectedCommit?.id ?? null"
+        @select="(c: Commit) => commits.selectCommit(repo.activeRepoPath!, c)"
       />
-      <div v-if="commits.loading" class="text-center text-gray-500 py-4">Loading...</div>
-      <div v-if="commits.hasMore && !commits.loading" ref="loadMoreRef" class="h-1" />
+      <div v-if="repo.activeRepo.loading" class="text-center text-gray-500 py-4">Loading...</div>
+      <div v-if="repo.activeRepo.hasMore && !repo.activeRepo.loading" ref="loadMoreRef" class="h-1" />
     </div>
   </div>
   <div v-else class="flex-1 flex items-center justify-center text-gray-500">
@@ -28,6 +28,7 @@ import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
 import { useWorkdirWatcher } from '../../composables/useWorkdirWatcher'
 import { invoke } from '../../utils/ipc'
+import type { Commit } from '../../types/git'
 
 const repo = useRepoStore()
 const commits = useCommitsStore()
@@ -47,16 +48,16 @@ function onScroll() {
 let observer: IntersectionObserver | null = null
 
 onMounted(async () => {
-  if (repo.repoPath) {
-    await commits.fetchLogs(repo.repoPath)
-    invoke('start_watch', { repoPath: repo.repoPath })
+  if (repo.activeRepoPath) {
+    await commits.fetchLogs(repo.activeRepoPath)
+    invoke('start_watch', { repoPath: repo.activeRepoPath })
   }
 
   observer = new IntersectionObserver((entries) => {
-    if (entries[0]?.isIntersecting && commits.hasMore && !commits.loading) {
-      const lastCommit = commits.commits[commits.commits.length - 1]
-      if (lastCommit && repo.repoPath) {
-        commits.fetchLogs(repo.repoPath, 50, lastCommit.id)
+    if (entries[0]?.isIntersecting && repo.activeRepo?.hasMore && !repo.activeRepo?.loading) {
+      const lastCommit = repo.activeRepo.commits[repo.activeRepo.commits.length - 1]
+      if (lastCommit && repo.activeRepoPath) {
+        commits.fetchLogs(repo.activeRepoPath, 50, lastCommit.id)
       }
     }
   })

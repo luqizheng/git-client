@@ -18,14 +18,14 @@
       <div class="text-gray-600 mt-0.5">{{ progress.phase }}</div>
     </div>
 
-    <div v-for="remote in remoteStore.remotes" :key="remote.name"
+    <div v-for="remote in remotes" :key="remote.name"
       class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
     >
       <span class="text-purple-400 mr-1">◈</span>
       <span class="text-gray-300">{{ remote.name }}</span>
       <span class="ml-1 text-gray-600 truncate">{{ remote.url }}</span>
     </div>
-    <div v-if="remoteStore.remotes.length === 0" class="text-gray-600 px-2 py-0.5">No remotes</div>
+    <div v-if="remotes.length === 0" class="text-gray-600 px-2 py-0.5">No remotes</div>
     <n-button size="tiny" quaternary class="mt-1" @click="showAdd = true">+ Add Remote</n-button>
 
     <n-modal v-model:show="showAdd" preset="dialog" title="Add Remote">
@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { NButton, NModal, NForm, NFormItem, NInput, NProgress, useMessage } from 'naive-ui'
 import { useRemoteStore } from '../../stores/remote'
 import { useRepoStore } from '../../stores/repo'
@@ -60,10 +60,12 @@ const showAdd = ref(false)
 const remoteName = ref('')
 const remoteUrl = ref('')
 
+const remotes = computed(() => repo.activeRepoPath ? remoteStore.getRemotes(repo.activeRepoPath) : [])
+
 async function doAdd() {
-  if (!repo.repoPath || !remoteName.value || !remoteUrl.value) return
+  if (!repo.activeRepoPath || !remoteName.value || !remoteUrl.value) return
   try {
-    await remoteStore.addRemote(repo.repoPath, remoteName.value, remoteUrl.value)
+    await remoteStore.addRemote(repo.activeRepoPath, remoteName.value, remoteUrl.value)
     showAdd.value = false
     remoteName.value = ''
     remoteUrl.value = ''
@@ -73,6 +75,6 @@ async function doAdd() {
 }
 
 onMounted(() => {
-  if (repo.repoPath) remoteStore.fetchRemotes(repo.repoPath)
+  if (repo.activeRepoPath) remoteStore.fetchRemotes(repo.activeRepoPath)
 })
 </script>

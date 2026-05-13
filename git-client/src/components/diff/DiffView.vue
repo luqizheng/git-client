@@ -1,9 +1,9 @@
 <template>
-  <div v-if="diffStore.diffs.length > 0" class="flex h-full border-l border-gray-700">
+  <div v-if="diffs.length > 0" class="flex h-full border-l border-gray-700">
     <FileTree
-      :files="diffStore.diffs"
-      :selected="diffStore.selectedFile"
-      @select="diffStore.selectFile"
+      :files="diffs"
+      :selected="selectedFile"
+      @select="(p: string | null) => diffStore.selectFile(repo.activeRepoPath!, p)"
       class="w-48 border-r border-gray-700"
     />
     <div class="flex-1 flex flex-col">
@@ -29,15 +29,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { NButton } from 'naive-ui'
 import FileTree from './FileTree.vue'
 import MonacoDiff from './MonacoDiff.vue'
 import { useDiffStore } from '../../stores/diff'
+import { useRepoStore } from '../../stores/repo'
 
 const diffStore = useDiffStore()
+const repo = useRepoStore()
 const sideBySide = ref(true)
 const monacoRef = ref<InstanceType<typeof MonacoDiff> | null>(null)
 const originalContent = ref('')
 const modifiedContent = ref('')
+
+const diffs = computed(() => repo.activeRepoPath ? diffStore.getDiffs(repo.activeRepoPath) : [])
+const selectedFile = computed(() => repo.activeRepoPath ? diffStore.getSelectedFile(repo.activeRepoPath) : null)
 </script>

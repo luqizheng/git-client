@@ -15,7 +15,6 @@ export const useAppStore = defineStore('app', () => {
   const locale = ref<'zh' | 'en'>('zh')
   const sidebarWidth = ref(240)
   const sidebarCollapsed = ref(false)
-  const recentRepos = ref<string[]>([])
 
   function setTheme(t: 'dark' | 'light') {
     theme.value = t
@@ -40,7 +39,6 @@ export const useAppStore = defineStore('app', () => {
       locale.value = settings.locale as 'zh' | 'en'
       sidebarWidth.value = settings.sidebar_width
       sidebarCollapsed.value = settings.sidebar_collapsed
-      recentRepos.value = settings.recent_repos
       document.documentElement.setAttribute('data-theme', theme.value)
     } catch (e) {
       console.error('loadSettings error:', e)
@@ -49,11 +47,13 @@ export const useAppStore = defineStore('app', () => {
 
   async function saveSettings() {
     try {
+      const { useRepoStore } = await import('./repo')
+      const repo = useRepoStore()
       await invoke('save_settings', {
         settings: {
           theme: theme.value,
           locale: locale.value,
-          recent_repos: recentRepos.value,
+          recent_repos: repo.recentRepos,
           sidebar_width: sidebarWidth.value,
           sidebar_collapsed: sidebarCollapsed.value,
         },
@@ -63,5 +63,5 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  return { theme, locale, sidebarWidth, sidebarCollapsed, recentRepos, setTheme, setLocale, toggleSidebar, loadSettings, saveSettings }
+  return { theme, locale, sidebarWidth, sidebarCollapsed, setTheme, setLocale, toggleSidebar, loadSettings, saveSettings }
 })

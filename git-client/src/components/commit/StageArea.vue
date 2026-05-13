@@ -1,9 +1,9 @@
 <template>
   <div class="text-xs">
     <div class="p-2 border-b border-gray-700">
-      <div class="text-gray-400 mb-1">Staged Changes ({{ staging.stagedFiles.length }})</div>
+      <div class="text-gray-400 mb-1">Staged Changes ({{ stagedFiles.length }})</div>
       <div
-        v-for="file in staging.stagedFiles"
+        v-for="file in stagedFiles"
         :key="'staged-' + file.path"
         class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
       >
@@ -13,9 +13,9 @@
       </div>
     </div>
     <div class="p-2">
-      <div class="text-gray-400 mb-1">Changes ({{ staging.unstagedFiles.length }})</div>
+      <div class="text-gray-400 mb-1">Changes ({{ unstagedFiles.length }})</div>
       <div
-        v-for="file in staging.unstagedFiles"
+        v-for="file in unstagedFiles"
         :key="'unstaged-' + file.path"
         class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
       >
@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { NButton } from 'naive-ui'
 import { useStagingStore } from '../../stores/staging'
 import { useRepoStore } from '../../stores/repo'
@@ -35,6 +36,13 @@ import type { DiffStatus } from '../../types/git'
 
 const staging = useStagingStore()
 const repo = useRepoStore()
+
+const fileState = computed(() => {
+  if (!repo.activeRepoPath) return { staged: [], unstaged: [] }
+  return staging.getFileState(repo.activeRepoPath)
+})
+const stagedFiles = computed(() => fileState.value.staged)
+const unstagedFiles = computed(() => fileState.value.unstaged)
 
 function statusIcon(status: DiffStatus): string {
   switch (status) {
@@ -47,14 +55,14 @@ function statusIcon(status: DiffStatus): string {
 }
 
 async function stage(path: string) {
-  if (!repo.repoPath) return
-  await staging.stageFiles(repo.repoPath, [path])
-  await staging.refresh(repo.repoPath)
+  if (!repo.activeRepoPath) return
+  await staging.stageFiles(repo.activeRepoPath, [path])
+  await staging.refresh(repo.activeRepoPath)
 }
 
 async function unstage(path: string) {
-  if (!repo.repoPath) return
-  await staging.unstageFiles(repo.repoPath, [path])
-  await staging.refresh(repo.repoPath)
+  if (!repo.activeRepoPath) return
+  await staging.unstageFiles(repo.activeRepoPath, [path])
+  await staging.refresh(repo.activeRepoPath)
 }
 </script>

@@ -3,20 +3,29 @@ import { ref } from 'vue'
 import type { FileDiff } from '../types/git'
 import { invoke } from '../utils/ipc'
 
+interface FileState {
+  staged: FileDiff[]
+  unstaged: FileDiff[]
+}
+
 export const useStagingStore = defineStore('staging', () => {
-  const stagedFiles = ref<FileDiff[]>([])
-  const unstagedFiles = ref<FileDiff[]>([])
-  const loading = ref(false)
+  const fileStates = ref<Map<string, FileState>>(new Map())
+  const loadingStates = ref<Map<string, boolean>>(new Map())
+
+  function getFileState(repoPath: string): FileState {
+    return fileStates.value.get(repoPath) ?? { staged: [], unstaged: [] }
+  }
 
   async function refresh(repoPath: string) {
-    loading.value = true
+    loadingStates.value.set(repoPath, true)
     try {
-      stagedFiles.value = await invoke<FileDiff[]>('get_staged_diff', { repoPath })
-      unstagedFiles.value = await invoke<FileDiff[]>('get_working_diff', { repoPath })
+      const staged = await invoke<FileDiff[]>('get_staged_diff', { repoPath })
+      const unstaged = await invoke<FileDiff[]>('get_working_diff', { repoPath })
+      fileStates.value.set(repoPath, { staged, unstaged })
     } catch (e) {
       console.error('staging refresh error:', e)
     } finally {
-      loading.value = false
+      loadingStates.value.set(repoPath, false)
     }
   }
 
@@ -28,5 +37,10 @@ export const useStagingStore = defineStore('staging', () => {
     await invoke('unstage_files', { repoPath, paths })
   }
 
-  return { stagedFiles, unstagedFiles, loading, refresh, stageFiles, unstageFiles }
+  function clearState(repoPath: string) {
+    fileStates.value.delete(repoPath)
+    loadingStates.value.delete(repoPath)
+  }
+
+  return { fileStates, loadingStates, getFileState, refresh, stageFiles, unstageFiles, clearState }
 })

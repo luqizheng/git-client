@@ -1,46 +1,35 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCommitsStore } from '../commits'
+import { useRepoStore } from '../repo'
+import type { OpenRepo } from '../../types/git'
 
 describe('commits store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
-  it('initial state is empty', () => {
+  it('clearCommits resets repo state', () => {
+    const repoStore = useRepoStore()
     const store = useCommitsStore()
-    expect(store.commits).toEqual([])
-    expect(store.selectedCommit).toBeNull()
-    expect(store.loading).toBe(false)
-    expect(store.hasMore).toBe(true)
+    const testPath = '/test/repo'
+    repoStore.openRepos.set(testPath, {
+      state: { path: testPath, head_branch: 'main', head_commit_id: 'abc', is_bare: false, is_empty: false },
+      commits: [{ id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, parent_ids: [], refs: [] }],
+      branches: [],
+      selectedCommit: { id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, parent_ids: [], refs: [] },
+      hasMore: false,
+      loading: false,
+    } as OpenRepo)
+    store.clearCommits(testPath)
+    const openRepo = repoStore.openRepos.get(testPath)
+    expect(openRepo?.commits).toEqual([])
+    expect(openRepo?.selectedCommit).toBeNull()
+    expect(openRepo?.hasMore).toBe(true)
   })
 
-  it('selectCommit updates selectedCommit', () => {
+  it('clearCommits does nothing if repo not found', () => {
     const store = useCommitsStore()
-    const commit = {
-      id: 'abc123',
-      message: 'test',
-      author: 'user',
-      author_email: 'u@e.com',
-      time: 0,
-      parent_ids: [],
-    }
-    store.selectCommit(commit)
-    expect(store.selectedCommit).toEqual(commit)
-  })
-
-  it('clearCommits resets state', () => {
-    const store = useCommitsStore()
-    store.selectCommit({
-      id: 'abc',
-      message: 't',
-      author: 'a',
-      author_email: 'e',
-      time: 0,
-      parent_ids: [],
-    })
-    store.clearCommits()
-    expect(store.commits).toEqual([])
-    expect(store.selectedCommit).toBeNull()
+    expect(() => store.clearCommits('/nonexistent')).not.toThrow()
   })
 })

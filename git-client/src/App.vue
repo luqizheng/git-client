@@ -36,19 +36,21 @@ const theme = computed(() => appStore.theme === 'dark' ? darkTheme : undefined)
 
 useKeyboard([
   { key: 'l', ctrl: true, handler: () => {
-    if (repo.repoPath && branches.currentBranch) {
-      remote.pullRemote(repo.repoPath, 'origin', branches.currentBranch)
+    if (repo.activeRepoPath) {
+      const branch = branches.currentBranch(repo.activeRepoPath)
+      if (branch) remote.pullRemote(repo.activeRepoPath, 'origin', branch)
     }
   }},
   { key: 'p', ctrl: true, shift: true, handler: () => {
-    if (repo.repoPath && branches.currentBranch) {
-      remote.pushRemote(repo.repoPath, 'origin', branches.currentBranch)
+    if (repo.activeRepoPath) {
+      const branch = branches.currentBranch(repo.activeRepoPath)
+      if (branch) remote.pushRemote(repo.activeRepoPath, 'origin', branch)
     }
   }},
   { key: 'F5', handler: () => {
-    if (repo.repoPath) {
-      commits.fetchLogs(repo.repoPath)
-      branches.fetchBranches(repo.repoPath)
+    if (repo.activeRepoPath) {
+      commits.fetchLogs(repo.activeRepoPath)
+      branches.fetchBranches(repo.activeRepoPath)
     }
   }},
 ])

@@ -4,18 +4,31 @@ import type { RemoteInfo, FetchResult, PullResult, PushResult } from '../types/g
 import { invoke } from '../utils/ipc'
 
 export const useRemoteStore = defineStore('remote', () => {
-  const remotes = ref<RemoteInfo[]>([])
-  const loading = ref(false)
-  const syncing = ref(false)
+  const remoteStates = ref<Map<string, RemoteInfo[]>>(new Map())
+  const loadingStates = ref<Map<string, boolean>>(new Map())
+  const syncingStates = ref<Map<string, boolean>>(new Map())
+
+  function getRemotes(repoPath: string): RemoteInfo[] {
+    return remoteStates.value.get(repoPath) ?? []
+  }
+
+  function isLoading(repoPath: string): boolean {
+    return loadingStates.value.get(repoPath) ?? false
+  }
+
+  function isSyncing(repoPath: string): boolean {
+    return syncingStates.value.get(repoPath) ?? false
+  }
 
   async function fetchRemotes(repoPath: string) {
-    loading.value = true
+    loadingStates.value.set(repoPath, true)
     try {
-      remotes.value = await invoke<RemoteInfo[]>('list_remotes', { repoPath })
+      const remotes = await invoke<RemoteInfo[]>('list_remotes', { repoPath })
+      remoteStates.value.set(repoPath, remotes)
     } catch (e) {
       console.error('fetchRemotes error:', e)
     } finally {
-      loading.value = false
+      loadingStates.value.set(repoPath, false)
     }
   }
 
@@ -25,31 +38,41 @@ export const useRemoteStore = defineStore('remote', () => {
   }
 
   async function fetchRemote(repoPath: string, remote: string) {
-    syncing.value = true
+    syncingStates.value.set(repoPath, true)
     try {
       return await invoke<FetchResult>('fetch', { repoPath, remote })
     } finally {
-      syncing.value = false
+      syncingStates.value.set(repoPath, false)
     }
   }
 
   async function pullRemote(repoPath: string, remote: string, branch: string) {
-    syncing.value = true
+    syncingStates.value.set(repoPath, true)
     try {
       return await invoke<PullResult>('pull', { repoPath, remote, branch })
     } finally {
-      syncing.value = false
+      syncingStates.value.set(repoPath, false)
     }
   }
 
   async function pushRemote(repoPath: string, remote: string, branch: string) {
-    syncing.value = true
+    syncingStates.value.set(repoPath, true)
     try {
       return await invoke<PushResult>('push', { repoPath, remote, branch })
     } finally {
-      syncing.value = false
+      syncingStates.value.set(repoPath, false)
     }
   }
 
-  return { remotes, loading, syncing, fetchRemotes, addRemote, fetchRemote, pullRemote, pushRemote }
+  function clearState(repoPath: string) {
+    remoteStates.value.delete(repoPath)
+    loadingStates.value.delete(repoPath)
+    syncingStates.value.delete(repoPath)
+  }
+
+  return {
+    remoteStates, loadingStates, syncingStates,
+    getRemotes, isLoading, isSyncing,
+    fetchRemotes, addRemote, fetchRemote, pullRemote, pushRemote, clearState,
+  }
 })

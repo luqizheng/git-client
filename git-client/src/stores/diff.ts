@@ -4,46 +4,67 @@ import type { FileDiff } from '../types/git'
 import { invoke } from '../utils/ipc'
 
 export const useDiffStore = defineStore('diff', () => {
-  const diffs = ref<FileDiff[]>([])
-  const selectedFile = ref<string | null>(null)
-  const loading = ref(false)
+  const diffStates = ref<Map<string, FileDiff[]>>(new Map())
+  const selectedFiles = ref<Map<string, string | null>>(new Map())
+  const loadingStates = ref<Map<string, boolean>>(new Map())
+
+  function getDiffs(repoPath: string): FileDiff[] {
+    return diffStates.value.get(repoPath) ?? []
+  }
+
+  function getSelectedFile(repoPath: string): string | null {
+    return selectedFiles.value.get(repoPath) ?? null
+  }
+
+  function selectFile(repoPath: string, filePath: string | null) {
+    selectedFiles.value.set(repoPath, filePath)
+  }
 
   async function fetchCommitDiff(repoPath: string, commitId: string) {
-    loading.value = true
+    loadingStates.value.set(repoPath, true)
     try {
-      diffs.value = await invoke<FileDiff[]>('get_diff', { repoPath, commitId })
+      const diffs = await invoke<FileDiff[]>('get_diff', { repoPath, commitId })
+      diffStates.value.set(repoPath, diffs)
     } catch (e) {
       console.error('fetchCommitDiff error:', e)
     } finally {
-      loading.value = false
+      loadingStates.value.set(repoPath, false)
     }
   }
 
   async function fetchWorkingDiff(repoPath: string) {
-    loading.value = true
+    loadingStates.value.set(repoPath, true)
     try {
-      diffs.value = await invoke<FileDiff[]>('get_working_diff', { repoPath })
+      const diffs = await invoke<FileDiff[]>('get_working_diff', { repoPath })
+      diffStates.value.set(repoPath, diffs)
     } catch (e) {
       console.error('fetchWorkingDiff error:', e)
     } finally {
-      loading.value = false
+      loadingStates.value.set(repoPath, false)
     }
   }
 
   async function fetchStagedDiff(repoPath: string) {
-    loading.value = true
+    loadingStates.value.set(repoPath, true)
     try {
-      diffs.value = await invoke<FileDiff[]>('get_staged_diff', { repoPath })
+      const diffs = await invoke<FileDiff[]>('get_staged_diff', { repoPath })
+      diffStates.value.set(repoPath, diffs)
     } catch (e) {
       console.error('fetchStagedDiff error:', e)
     } finally {
-      loading.value = false
+      loadingStates.value.set(repoPath, false)
     }
   }
 
-  function selectFile(path: string | null) {
-    selectedFile.value = path
+  function clearState(repoPath: string) {
+    diffStates.value.delete(repoPath)
+    selectedFiles.value.delete(repoPath)
+    loadingStates.value.delete(repoPath)
   }
 
-  return { diffs, selectedFile, loading, fetchCommitDiff, fetchWorkingDiff, fetchStagedDiff, selectFile }
+  return {
+    diffStates, selectedFiles, loadingStates,
+    getDiffs, getSelectedFile, selectFile,
+    fetchCommitDiff, fetchWorkingDiff, fetchStagedDiff, clearState,
+  }
 })

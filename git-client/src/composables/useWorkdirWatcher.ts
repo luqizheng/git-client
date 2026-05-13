@@ -20,34 +20,34 @@ export function useWorkdirWatcher() {
   }
 
   useGitEvent('workdir-changed', () => {
-    if (!repo.repoPath) return
+    if (!repo.activeRepoPath) return
     debounce(() => {
-      staging.refresh(repo.repoPath)
-      diff.fetchWorkingDiff(repo.repoPath)
+      staging.refresh(repo.activeRepoPath!)
+      diff.fetchWorkingDiff(repo.activeRepoPath!)
     }, 300)
   })
 
   useGitEvent('index-changed', () => {
-    if (!repo.repoPath) return
+    if (!repo.activeRepoPath) return
     debounce(() => {
-      staging.refresh(repo.repoPath)
-      diff.fetchStagedDiff(repo.repoPath)
+      staging.refresh(repo.activeRepoPath!)
+      diff.fetchStagedDiff(repo.activeRepoPath!)
     }, 300)
   })
 
   useGitEvent('ref-updated', () => {
-    if (!repo.repoPath) return
+    if (!repo.activeRepoPath) return
     debounce(() => {
-      branches.fetchBranches(repo.repoPath)
-      commits.fetchLogs(repo.repoPath)
+      branches.fetchBranches(repo.activeRepoPath!)
+      commits.fetchLogs(repo.activeRepoPath!)
     }, 300)
   })
 
   useGitEvent('head-changed', () => {
-    if (!repo.repoPath) return
+    if (!repo.activeRepoPath) return
     debounce(() => {
-      branches.fetchBranches(repo.repoPath)
-      commits.fetchLogs(repo.repoPath)
+      branches.fetchBranches(repo.activeRepoPath!)
+      commits.fetchLogs(repo.activeRepoPath!)
     }, 300)
   })
 }
