@@ -24,6 +24,14 @@
         class="scroll-content"
         :style="{ height: totalHeight + 'px', position: 'relative', '--col-branch-width': getColumnWidth('branch') + 'px' }"
       >
+        <GraphOverlay
+          :commits="displayCommits"
+          :selected-id="selectedCommitId"
+          :graph-width="getColumnWidth('graph')"
+          :scroll-top="scrollTop"
+          :viewport-height="containerHeight"
+          @select="selectCommit"
+        />
         <template v-for="item in visibleItems" :key="item.type === 'commit' ? item.commit.id : item.group.key">
           <TimeGroupHeader
             v-if="item.type === 'group'"
@@ -74,6 +82,7 @@ import { useTimeGrouping } from './composables/useTimeGrouping'
 import ColumnHeader from './components/ColumnHeader.vue'
 import TimeGroupHeader from './components/TimeGroupHeader.vue'
 import CommitRow from './components/CommitRow.vue'
+import GraphOverlay from './components/GraphOverlay.vue'
 
 const repo = useRepoStore()
 const commits = useCommitsStore()
@@ -89,6 +98,8 @@ const { groups } = useTimeGrouping(displayCommits)
 const virtualItems = computed(() => createVirtualItems(displayCommits.value, groups.value))
 
 const {
+  scrollTop,
+  containerHeight,
   totalHeight,
   visibleItems,
   handleScroll,

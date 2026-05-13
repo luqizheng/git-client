@@ -19,6 +19,7 @@ export interface GraphLayout {
   nodes: LaneNode[]
   lines: LaneLine[]
   maxLane: number
+  commitLaneMap: Map<string, { lane: number; isMerge: boolean }>
 }
 
 const COLORS = [
@@ -27,7 +28,7 @@ const COLORS = [
   '#90a4ae', '#ffb74d', '#e57373', '#64b5f6',
 ]
 
-function getLaneColor(lane: number): string {
+export function getLaneColor(lane: number): string {
   return COLORS[lane % COLORS.length]
 }
 
@@ -88,5 +89,10 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
     }
   }
 
-  return { nodes, lines, maxLane: nextLane }
+  const commitLaneMapResult = new Map<string, { lane: number; isMerge: boolean }>()
+  for (const node of nodes) {
+    commitLaneMapResult.set(node.commit.id, { lane: node.lane, isMerge: node.isMerge })
+  }
+
+  return { nodes, lines, maxLane: nextLane, commitLaneMap: commitLaneMapResult }
 }
