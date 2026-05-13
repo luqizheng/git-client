@@ -9,34 +9,33 @@ export interface Commit {
 
 export interface Branch {
   name: string
-  is_current: boolean
   is_remote: boolean
-  target: string | null
+  is_head: boolean
+  target_commit_id: string
+  upstream: string | null
 }
 
-export interface Remote {
-  name: string
-  url: string
+export interface FileDiff {
+  path: string
+  old_path: string | null
+  status: DiffStatus
+  hunks: Hunk[]
 }
 
-export interface DiffHunk {
-  header: string
+export type DiffStatus = 'Added' | 'Modified' | 'Deleted' | 'Renamed' | 'Copied'
+
+export interface Hunk {
+  old_start: number
+  old_lines: number
+  new_start: number
+  new_lines: number
   lines: DiffLine[]
 }
 
-export interface DiffLine {
-  type: 'context' | 'add' | 'delete'
-  content: string
-  old_ln: number | null
-  new_ln: number | null
-}
-
-export interface DiffFile {
-  path: string
-  old_path: string | null
-  is_binary: boolean
-  hunks: DiffHunk[]
-}
+export type DiffLine =
+  | { Context: string }
+  | { Addition: string }
+  | { Deletion: string }
 
 export interface RepoState {
   path: string
@@ -46,8 +45,54 @@ export interface RepoState {
   is_empty: boolean
 }
 
-export interface StatusItem {
+export interface RemoteInfo {
+  name: string
+  url: string
+  push_url: string | null
+}
+
+export interface StashEntry {
+  index: number
+  message: string
+  commit_id: string
+}
+
+export interface ConflictFile {
   path: string
-  status: 'modified' | 'added' | 'deleted' | 'renamed' | 'copied' | 'untracked' | 'ignored' | 'conflicted'
-  staged: boolean
+  ours_modified: boolean
+  theirs_modified: boolean
+}
+
+export interface Credential {
+  username: string
+  password: string | null
+  ssh_key_path: string | null
+}
+
+export interface FetchResult {
+  remote: string
+  updated: boolean
+}
+
+export interface PullResult {
+  remote: string
+  branch: string
+  had_conflicts: boolean
+}
+
+export interface PushResult {
+  remote: string
+  branch: string
+}
+
+export interface MergeResult {
+  branch: string
+  had_conflicts: boolean
+  conflicts: ConflictFile[]
+}
+
+export interface CherryPickResult {
+  commit_id: string
+  had_conflicts: boolean
+  conflicts: ConflictFile[]
 }
