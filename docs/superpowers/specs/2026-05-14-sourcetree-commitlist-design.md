@@ -82,7 +82,10 @@ interface Emits {
   <div class="source-tree-commit-list">
     <!-- 工具栏 -->
     <div class="toolbar">
-      <button @click="showAllBranches">👁️ Show All</button>
+      <button @click="showAllBranches">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        Show All
+      </button>
     </div>
 
     <!-- 列头 -->
@@ -119,14 +122,16 @@ interface Emits {
       </div>
     </div>
 
-    <!-- 右键菜单 -->
-    <CommitContextMenu
-      v-if="contextMenu.visible"
+    <!-- 右键菜单 (NDropdown) -->
+    <NDropdown
+      trigger="manual"
       :x="contextMenu.x"
       :y="contextMenu.y"
-      :commit="contextMenu.commit"
-      @close="closeContextMenu"
-      @action="handleMenuAction"
+      :options="contextMenu.options"
+      :show="contextMenu.visible"
+      placement="bottom-start"
+      @select="handleMenuAction"
+      @clickoutside="closeContextMenu"
     />
   </div>
 </template>
@@ -292,17 +297,23 @@ function getTimeGroup(timestamp: number): { key: string; label: string } {
       v-for="ref in branchRefs"
       :key="ref.name"
       class="branch-tag"
-      :class="[ref.type, { 'is-head': ref.isHead }]"
+      :class="[ref.ref_type, { 'is-head': ref.is_head }]"
       draggable="true"
       @dragstart="handleDragStart($event, ref)"
     >
-      <span class="tag-icon" v-if="ref.isHead">📌</span>
+      <span class="tag-icon" v-if="ref.is_head">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4"/></svg>
+      </span>
       <span class="tag-name">{{ truncate(ref.name, 15) }}</span>
       
       <!-- Hover 操作按钮 -->
       <div class="tag-actions">
-        <button @click.stop="$emit('solo', ref.name)" title="Solo">👁️</button>
-        <button @click.stop="$emit('hide', ref.name)" title="Hide">👁️‍🗨️</button>
+        <button @click.stop="$emit('solo', ref.name)" title="Solo">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </button>
+        <button @click.stop="$emit('hide', ref.name)" title="Hide">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M3 3l18 18"/></svg>
+        </button>
       </div>
     </div>
   </div>
@@ -387,6 +398,9 @@ function getTimeGroup(timestamp: number): { key: string; label: string } {
 - SVG 层设置 `pointer-events: none`，节点设置 `pointer-events: auto`（可点击）
 
 **GraphOverlay.vue 核心结构：**
+
+**⚠️ SVG 必须放在 totalHeight 内部（而非 scroll container 直接子级），否则 position:absolute 不会随内容滚动。totalHeight div 需要 `position: relative`。**
+
 ```vue
 <template>
   <svg
@@ -425,10 +439,23 @@ function getTimeGroup(timestamp: number): { key: string; label: string } {
 .graph-overlay {
   position: absolute;
   top: 0;
-  left: 140px; /* branch 列宽度 */
+  left: 0;
   pointer-events: none;
   z-index: 1;
 }
+</style>
+```
+
+**⚠️ GraphOverlay 的 left offset 由父组件通过 CSS 变量 `--col-branch-width` 动态传入，而非硬编码 140px：**
+```html
+<div class="scroll-content" :style="{ height: totalHeight + 'px', '--col-branch-width': columns.branch.width + 'px' }">
+  <GraphOverlay ... />
+  <CommitRow v-for="..." ... />
+</div>
+
+<style>
+.scroll-content { position: relative; }
+.graph-overlay { left: var(--col-branch-width); }
 </style>
 ```
 
@@ -523,6 +550,22 @@ type VirtualItem =
   | { type: 'commit'; commit: Commit; height: 40 }
   | { type: 'group'; group: TimeGroup; height: 28 }
 
+const COMMIT_ROW_HEIGHT = 40
+const GROUP_HEADER_HEIGHT = 28
+
+function createVirtualItems(commits: Commit[], groups: TimeGroup[]): VirtualItem[] {
+  const items: VirtualItem[] = []
+  let groupIdx = 0
+  for (const commit of commits) {
+    if (groupIdx < groups.length && groups[groupIdx].firstCommitId === commit.id) {
+      items.push({ type: 'group', group: groups[groupIdx], height: GROUP_HEADER_HEIGHT })
+      groupIdx++
+    }
+    items.push({ type: 'commit', commit, height: COMMIT_ROW_HEIGHT })
+  }
+  return items
+}
+
 export function useVirtualScroll(
   containerRef: Ref<HTMLElement | null>,
   items: Ref<VirtualItem[]>,
@@ -589,32 +632,39 @@ export function useVirtualScroll(
 ### 4.3 useDragDrop.ts
 
 ```typescript
+interface DragSource {
+  branchName: string
+  branchType: 'local' | 'remote'
+}
+
+interface DragDropResult {
+  source: DragSource
+  targetCommit: Commit
+}
+
 export function useDragDrop() {
   const dragState = reactive({
     isDragging: false,
-    sourceType: null as 'branch' | null,
-    sourceData: null as any,
+    source: null as DragSource | null,
     targetCommit: null as Commit | null,
   })
   
-  function onDragStart(type: string, data: any) {
+  function onDragStart(source: DragSource) {
     dragState.isDragging = true
-    dragState.sourceType = type
-    dragState.sourceData = data
+    dragState.source = source
   }
   
   function onDragOver(commit: Commit) {
-    if (dragState.sourceType === 'branch') {
+    if (dragState.isDragging) {
       dragState.targetCommit = commit
     }
   }
   
   function onDrop(): DragDropResult | null {
-    if (!dragState.isDragging || !dragState.targetCommit) return null
+    if (!dragState.isDragging || !dragState.source || !dragState.targetCommit) return null
     
-    const result = {
-      sourceType: dragState.sourceType!,
-      sourceData: dragState.sourceData,
+    const result: DragDropResult = {
+      source: dragState.source,
       targetCommit: dragState.targetCommit,
     }
     
@@ -624,8 +674,7 @@ export function useDragDrop() {
   
   function reset() {
     dragState.isDragging = false
-    dragState.sourceType = null
-    dragState.sourceData = null
+    dragState.source = null
     dragState.targetCommit = null
   }
   
@@ -913,12 +962,12 @@ pub enum ResetMode {
 4. 虚拟滚动实现
 
 ### Phase 2: 核心功能 (P0)
-5. GraphCell DAG 图形集成
+5. GraphOverlay DAG SVG 叠加层 + GraphCell 占位
 6. TimeGroupHeader 时间分组
 7. 相对时间显示优化
 
 ### Phase 3: 高级交互 (P1)
-8. CommitContextMenu 右键菜单
+8. NDropdown 右键菜单集成
 9. useDragDrop 拖放基础
 10. Solo/Hide 分支筛选
 
