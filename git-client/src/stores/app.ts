@@ -13,7 +13,7 @@ interface AppSettings {
 export const useAppStore = defineStore('app', () => {
   const theme = ref<'dark' | 'light'>('dark')
   const locale = ref<'zh' | 'en'>('zh')
-  const sidebarWidth = ref(240)
+  const sidebarWidth = ref(180)
   const sidebarCollapsed = ref(false)
 
   function setTheme(t: 'dark' | 'light') {

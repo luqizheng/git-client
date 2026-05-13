@@ -23,6 +23,16 @@
         <div class="text-xs text-gray-500 mb-1">Stash</div>
         <div class="text-xs text-gray-600">No stash entries</div>
       </div>
+      <div class="p-2 border-t border-gray-700">
+        <div class="text-xs text-gray-500 mb-1">Working Files</div>
+        <button
+          class="w-full text-left text-xs px-2 py-1 rounded hover:bg-gray-700 text-gray-300 flex items-center gap-1.5"
+          :class="{ 'bg-blue-900/30 text-blue-300': rightPanel.mode === 'staging' && rightPanel.visible }"
+          @click="rightPanel.showPanel('staging')"
+        >
+          <span>📝</span> Files
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -30,8 +40,10 @@
 <script setup lang="ts">
 import { NButton } from 'naive-ui'
 import { useAppStore } from '../../stores/app'
+import { useRightPanelStore } from '../../stores/rightPanel'
 import BranchTree from '../branch/BranchTree.vue'
 import RemotePanel from '../remote/RemotePanel.vue'
 
 const app = useAppStore()
+const rightPanel = useRightPanelStore()
 </script>

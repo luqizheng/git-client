@@ -3,15 +3,6 @@
     <n-message-provider>
       <AppLayout>
         <CommitList />
-        <div class="flex-1 flex flex-col overflow-hidden">
-          <CommitDetailPanel />
-          <div class="border-t border-gray-700 flex-shrink-0" style="height: 200px;">
-            <div class="h-full flex flex-col">
-              <StageArea class="flex-1 overflow-y-auto" />
-              <CommitEditor />
-            </div>
-          </div>
-        </div>
       </AppLayout>
     </n-message-provider>
   </n-config-provider>
@@ -22,21 +13,20 @@ import { computed, onMounted } from 'vue'
 import { darkTheme } from 'naive-ui'
 import AppLayout from './components/layout/AppLayout.vue'
 import CommitList from './components/commit/CommitList.vue'
-import CommitDetailPanel from './components/commit/CommitDetailPanel.vue'
-import StageArea from './components/commit/StageArea.vue'
-import CommitEditor from './components/commit/CommitEditor.vue'
 import { useKeyboard } from './composables/useKeyboard'
 import { useRepoStore } from './stores/repo'
 import { useBranchesStore } from './stores/branches'
 import { useRemoteStore } from './stores/remote'
 import { useCommitsStore } from './stores/commits'
 import { useAppStore } from './stores/app'
+import { useRightPanelStore } from './stores/rightPanel'
 
 const repo = useRepoStore()
 const branches = useBranchesStore()
 const remote = useRemoteStore()
 const commits = useCommitsStore()
 const appStore = useAppStore()
+const rightPanel = useRightPanelStore()
 
 const theme = computed(() => appStore.theme === 'dark' ? darkTheme : undefined)
 
@@ -58,6 +48,9 @@ useKeyboard([
       commits.fetchLogs(repo.activeRepoPath)
       branches.fetchBranches(repo.activeRepoPath)
     }
+  }},
+  { key: 'Escape', handler: () => {
+    rightPanel.hidePanel()
   }},
 ])
 
