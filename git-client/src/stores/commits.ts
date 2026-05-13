@@ -52,8 +52,8 @@ export const useCommitsStore = defineStore('commits', () => {
     }
 
     openRepo.commits = openRepo.commits.filter(commit =>
-      commit.refs.some(ref => ref.includes(branchName))
-    )
+    commit.refs.some(ref => ref.name.includes(branchName))
+  )
   }
 
   function clearBranchFilter(repoPath: string) {

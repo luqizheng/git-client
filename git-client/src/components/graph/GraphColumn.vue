@@ -70,8 +70,8 @@
               </div>
               <div v-if="node.commit.refs.length" class="mt-1">
                 <span class="text-gray-400">Branches: </span>
-                <span v-for="ref in node.commit.refs" :key="ref" class="text-green-400">
-                  {{ ref }}
+                <span v-for="ref in node.commit.refs" :key="ref.name" class="text-green-400">
+                  {{ ref.name }}
                 </span>
               </div>
             </div>
@@ -79,14 +79,14 @@
 
           <g
             v-for="ref in getBranchRefs(node)"
-            :key="ref"
+            :key="ref.name"
             class="branch-tag cursor-pointer"
-            @click.stop="$emit('branch-click', ref)"
+            @click.stop="$emit('branch-click', ref.name)"
           >
             <rect
               :x="getLaneX(node.lane) + 10"
               :y="node.y + ROW_HEIGHT / 2 - 8"
-              :width="getTagWidth(ref)"
+              :width="getTagWidth(ref.name)"
               height="16"
               rx="3"
               :fill="getLaneColorWithAlpha(node.lane, 0.2)"
@@ -97,9 +97,9 @@
               :x="getLaneX(node.lane) + 14"
               :y="node.y + ROW_HEIGHT / 2 + 4"
               :fill="getLaneColor(node.lane)"
-             
+              font-size="8"
               font-family="monospace"
-            >{{ truncateTag(ref) }}</text>
+            >{{ truncateTag(ref.name) }}</text>
           </g>
         </template>
       </g>
@@ -217,9 +217,9 @@ function getLinePath(line: { fromLane: number; toLane: number; fromY: number; to
   return `M ${fromX} ${fromY} Q ${fromX} ${midY} ${(fromX + toX) / 2} ${midY} Q ${toX} ${midY} ${toX} ${toY}`
 }
 
-function getBranchRefs(node: LaneNode): string[] {
-  return node.commit.refs.filter(ref => !ref.startsWith('tag:'))
-}
+function getBranchRefs(node: LaneNode): { name: string; ref_type: string }[] {
+    return node.commit.refs.filter(ref => ref.ref_type !== 'tag')
+  }
 
 function truncateTag(tag: string): string {
   const maxLen = 10

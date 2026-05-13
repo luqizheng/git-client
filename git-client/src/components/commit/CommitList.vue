@@ -59,7 +59,7 @@
             <span class="text-blue-400 text-xs font-mono">{{ commit.id.slice(0, 7) }}</span>
             <span class="text-gray-100 text-xs flex-1 truncate">{{ commit.message.split('\n')[0] }}</span>
             <span
-              v-for="refName in commit.refs"
+              v-for="refName in commit.refs.map(r => r.name)"
               :key="refName"
               class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400"
             >{{ refName }}</span>

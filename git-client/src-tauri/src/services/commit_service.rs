@@ -1,20 +1,36 @@
 use std::collections::HashMap;
 
-use crate::models::commit::Commit;
-use crate::models::commit::SearchFilter;
+use crate::models::commit::{Commit, CommitRef, RefType, SearchFilter};
 use crate::utils::error::AppError;
 
-fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<String>>, AppError> {
-    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<CommitRef>>, AppError> {
+    let mut map: HashMap<String, Vec<CommitRef>> = HashMap::new();
+    let head_shorthand = repo.head()
+        .ok()
+        .and_then(|h| h.shorthand().map(String::from));
+
     let refs = repo.references()?;
     for reference in refs {
         let reference = reference?;
-        if let Some(name) = reference.shorthand() {
-            if let Ok(oid) = reference.target().ok_or_else(|| git2::Error::from_str("no target")) {
-                map.entry(oid.to_string())
-                    .or_default()
-                    .push(name.to_string());
-            }
+        let full_name = reference.name().unwrap_or("");
+        let (ref_type, short_name) = if let Some(s) = full_name.strip_prefix("refs/heads/") {
+            (RefType::Local, s)
+        } else if let Some(s) = full_name.strip_prefix("refs/remotes/") {
+            (RefType::Remote, s)
+        } else if let Some(s) = full_name.strip_prefix("refs/tags/") {
+            (RefType::Tag, s)
+        } else {
+            continue;
+        };
+
+        let is_head = head_shorthand.as_deref() == Some(short_name);
+
+        if let Some(oid) = reference.target() {
+            map.entry(oid.to_string()).or_default().push(CommitRef {
+                name: short_name.to_string(),
+                ref_type,
+                is_head,
+            });
         }
     }
     Ok(map)
@@ -68,7 +84,7 @@ pub fn create_commit(
     Ok(commit_from_git(&new_commit, refs))
 }
 
-fn commit_from_git(c: &git2::Commit, refs: Vec<String>) -> Commit {
+fn commit_from_git(c: &git2::Commit, refs: Vec<CommitRef>) -> Commit {
     Commit {
         id: c.id().to_string(),
         message: c.message().unwrap_or("").to_string(),

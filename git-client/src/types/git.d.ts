@@ -1,3 +1,9 @@
+export interface CommitRef {
+  name: string
+  ref_type: 'local' | 'remote' | 'tag'
+  is_head: boolean
+}
+
 export interface Commit {
   id: string
   message: string
@@ -5,7 +11,7 @@ export interface Commit {
   author_email: string
   time: number
   parent_ids: string[]
-  refs: string[]
+  refs: CommitRef[]
 }
 
 export type SearchFilter = 'all' | 'message' | 'author' | 'hash' | 'file'
