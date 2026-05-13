@@ -106,6 +106,13 @@
     </svg>
 
     <div
+      v-if="layout.maxLane > 12"
+      class="absolute top-2 right-2 text-xs text-yellow-500"
+    >
+      +{{ layout.maxLane - 12 }} more lanes
+    </div>
+
+    <div
       v-if="commits.length === 0"
       class="absolute inset-0 flex items-center justify-center text-gray-500 text-xs"
     >
