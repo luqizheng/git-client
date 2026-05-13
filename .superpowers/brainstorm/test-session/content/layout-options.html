@@ -1,0 +1,165 @@
+<h2>GitKraken 布局重构 - 3 种方案对比</h2>
+<p class="subtitle">选择最适合你项目需求的布局结构</p>
+
+<div class="cards">
+  <div class="card" data-choice="option-a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">方案 A: 经典 GitKraken (推荐)</div>
+        <div class="mockup-body" style="background:#1e1e1e; padding:8px; height:400px; display:flex; flex-direction:column; color:#ccc; font-size:12px;">
+          <div style="background:#2d2d2d; height:32px; margin-bottom:4px; display:flex; align-items:center; padding:0 8px; border-radius:2px;">
+            <span>⌘ Toolbar</span>
+          </div>
+          <div style="flex:1; display:flex; gap:4px; overflow:hidden;">
+            <div style="width:200px; background:#252526; border-radius:2px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:6px; background:#2d2d2d; font-weight:bold; border-bottom:1px solid #3c3c3c;">📂 Explorer</div>
+              <div style="padding:4px 6px; border-bottom:1px solid #3c3c3c;">🌿 Branches</div>
+              <div style="padding:4px 6px; border-bottom:1px solid #3c3c3c;">📡 Remotes</div>
+              <div style="padding:4px 6px;">📦 Stash/Tags</div>
+            </div>
+            <div style="flex:1; background:#1e1e1e; border-radius:2px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="flex:1; padding:8px; border-bottom:1px solid #3c3c3c;">
+                <div style="color:#569cd6; font-weight:bold; margin-bottom:4px;">Commit Graph View</div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span style="color:#4ec9b0;">●</span><span>feat: add new feature</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+                  <span style="color:#4ec9b0;">●</span><span>fix: resolve bug</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#4ec9b0;">●</span><span>docs: update readme</span>
+                </div>
+              </div>
+            </div>
+            <div style="width:280px; background:#252526; border-radius:2px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:6px; background:#2d2d2d; font-weight:bold; border-bottom:1px solid #3c3c3c;">Commit Details</div>
+              <div style="padding:6px; font-size:11px; border-bottom:1px solid #3c3c3c;">
+                <div style="font-weight:bold; color:#569cd6;">abc1234</div>
+                <div style="margin-top:4px; color:#9cdcfe;">feat: add new feature</div>
+                <div style="margin-top:4px; color:#6a9955;">Author: John • 2h ago</div>
+              </div>
+              <div style="padding:6px; font-size:11px; flex:1; overflow-y:auto;">
+                <div style="font-weight:bold; margin-bottom:4px;">Changed Files (3)</div>
+                <div style="padding:2px 0; cursor:pointer; color:#dcdcaa;">📄 src/main.ts +12/-3</div>
+                <div style="padding:2px 0; cursor:pointer; color:#dcdcaa;">📄 utils/helper.ts +5/-1</div>
+                <div style="padding:2px 0; cursor:pointer; color:#dcdcaa;">📄 README.md +8/-0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 A: 经典三栏布局</h3>
+      <p><strong>优点：</strong></p>
+      <ul>
+        <li>完全还原 GitKraken 经典体验</li>
+        <li>信息密度高，一屏览全局</li>
+        <li>符合用户已有认知习惯</li>
+      </ul>
+      <p><strong>缺点：</strong></p>
+      <ul>
+        <li>小屏幕下空间紧张</li>
+      </ul>
+      <p><strong>适用：</strong> 桌面端主力使用场景</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="option-b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">方案 B: 宽屏优化 + 隐藏面板</div>
+        <div class="mockup-body" style="background:#1e1e1e; padding:8px; height:400px; display:flex; flex-direction:column; color:#ccc; font-size:12px;">
+          <div style="background:#2d2d2d; height:32px; margin-bottom:4px; display:flex; align-items:center; padding:0 8px; border-radius:2px;">
+            <span>⌘ Toolbar</span>
+          </div>
+          <div style="flex:1; display:flex; gap:4px; overflow:hidden;">
+            <div style="width:160px; background:#252526; border-radius:2px; overflow:hidden;">
+              <div style="padding:6px; background:#2d2d2d; font-weight:bold; border-bottom:1px solid #3c3c3c; font-size:11px;">📂 Nav</div>
+              <div style="padding:3px 6px; font-size:11px; border-bottom:1px solid #3c3c3c;">🌿 Branches</div>
+              <div style="padding:3px 6px; font-size:11px;">📡 Remotes</div>
+            </div>
+            <div style="flex:1; background:#1e1e1e; border-radius:2px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="flex:1; padding:8px;">
+                <div style="color:#569cd6; font-weight:bold; margin-bottom:8px;">📊 Commit Graph (Maximized)</div>
+                <div style="margin-bottom:4px;"><span style="color:#4ec9b0;">●</span> feat: add new feature</div>
+                <div style="margin-bottom:4px;"><span style="color:#4ec9b0;">●</span> fix: resolve bug</div>
+                <div style="margin-bottom:4px;"><span style="color:#4ec9b0;">●</span> docs: update readme</div>
+                <div style="margin-top:12px; color:#888; font-style:italic;">→ 点击 commit 时右侧面板滑出 →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 B: 宽屏优先 + 按需展开</h3>
+      <p><strong>优点：</strong></p>
+      <ul>
+        <li>主工作区最大化，专注代码审查</li>
+        <li>右侧面板按需显示，减少干扰</li>
+        <li>适合大屏显示器 (≥1920px)</li>
+      </ul>
+      <p><strong>缺点：</strong></p>
+      <ul>
+        <li>频繁查看详情时需要反复操作</li>
+        <li>不能同时看到 graph 和 details</li>
+      </ul>
+      <p><strong>适用：</strong> 大屏幕、重度 diff 使用场景</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="option-c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">方案 C: 紧凑图标导航</div>
+        <div class="mockup-body" style="background:#1e1e1e; padding:8px; height:400px; display:flex; flex-direction:column; color:#ccc; font-size:12px;">
+          <div style="background:#2d2d2d; height:32px; margin-bottom:4px; display:flex; align-items:center; padding:0 8px; border-radius:2px;">
+            <span>⌘ Toolbar</span>
+          </div>
+          <div style="flex:1; display:flex; gap:4px; overflow:hidden;">
+            <div style="width:48px; background:#252526; border-radius:2px; display:flex; flex-direction:column; align-items:center; padding:8px 0; gap:12px;">
+              <div style="text-align:center; cursor:pointer;" title="Explorer">📂</div>
+              <div style="text-align:center; cursor:pointer;" title="Branches">🌿</div>
+              <div style="text-align:center; cursor:pointer;" title="Remotes">📡</div>
+              <div style="text-align:center; cursor:pointer;" title="Search">🔍</div>
+            </div>
+            <div style="flex:1; background:#1e1e1e; border-radius:2px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="flex:1; padding:8px; border-bottom:1px solid #3c3c3c;">
+                <div style="color:#569cd6; font-weight:bold; margin-bottom:4px;">Commit Graph / Diff View</div>
+                <div style="background:#2d2d2d; padding:8px; border-radius:2px; margin-top:4px;">
+                  <div style="color:#4ec9b0; margin-bottom:2px;">+ line added</div>
+                  <div style="color:#f14c4c; margin-bottom:2px;">- line removed</div>
+                  <div style="color:#9cdcfe;"> unchanged code...</div>
+                </div>
+              </div>
+            </div>
+            <div style="width:260px; background:#252526; border-radius:2px; padding:6px;">
+              <div style="font-weight:bold; margin-bottom:6px; font-size:11px;">Details Panel</div>
+              <div style="font-size:10px; color:#888;">Always visible, compact info</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 C: 紧凑图标模式</h3>
+      <p><strong>优点：</strong></p>
+      <ul>
+        <li>左侧极简，为主区域腾出空间</li>
+        <li>图标导航现代感强</li>
+        <li>适合笔记本/小屏设备</li>
+      </ul>
+      <p><strong>缺点：</strong></p>
+      <ul>
+        <li>导航项多时需要 hover/二次点击</li>
+        <li>信息层级不够直观</li>
+      </ul>
+      <p><strong>适用：</strong> 笔记本、便携优先场景</p>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:24px; text-align:center; color:#666;">
+  点击选择一个方案，或告诉我你的偏好组合
+</p>

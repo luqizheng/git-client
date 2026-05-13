@@ -45,6 +45,12 @@ impl From<tokio::task::JoinError> for AppError {
     }
 }
 
+impl From<notify::Error> for AppError {
+    fn from(e: notify::Error) -> Self {
+        AppError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

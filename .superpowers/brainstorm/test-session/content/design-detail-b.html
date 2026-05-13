@@ -1,0 +1,278 @@
+<h2>方案 B 详细设计 - 宽屏优化 GitKraken 布局</h2>
+<p class="subtitle">左侧窄导航 + 中央主工作区 + 右侧按需详情面板</p>
+
+<div class="section">
+  <h3>📐 整体结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">完整布局示意 (1200×800 默认窗口)</div>
+    <div class="mockup-body" style="background:#1e1e1e; padding:0; height:480px; display:flex; flex-direction:column; color:#ccc; font-size:11px; font-family:system-ui;">
+      <!-- Toolbar -->
+      <div style="height:40px; background:#2d2d2d; border-bottom:1px solid #3c3c3c; display:flex; align-items:center; padding:0 12px; gap:12px;">
+        <span style="font-weight:bold; color:#569cd6;">⌘</span>
+        <div style="width:1px; height:20px; background:#3c3c3c;"></div>
+        <span>◀ Pull</span>
+        <span>▶ Push</span>
+        <span>↻ Fetch</span>
+        <div style="flex:1;"></div>
+        <span style="color:#888;">main ●</span>
+        <span style="color:#4ec9b0;">✓ Clean</span>
+      </div>
+
+      <!-- Main Area -->
+      <div style="flex:1; display:flex; overflow:hidden;">
+        <!-- Left Sidebar - Narrow -->
+        <div style="width:180px; background:#252526; border-right:1px solid #3c3c3c; display:flex; flex-direction:column; overflow:hidden;">
+          <div style="padding:8px; background:#2d2d2d; font-weight:bold; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; color:#888; border-bottom:1px solid #3c3c3c;">Explorer</div>
+          
+          <!-- Repo Section -->
+          <div style="padding:8px; border-bottom:1px solid #3c3c3c;">
+            <div style="font-weight:bold; color:#9cdcfe; margin-bottom:4px;">📂 Repositories</div>
+            <div style="padding:2px 4px; cursor:pointer; background:#37373d; border-radius:2px;">git-client</div>
+          </div>
+
+          <!-- Branches -->
+          <div style="padding:8px; border-bottom:1px solid #3c3c3c; overflow-y:auto;">
+            <div style="font-weight:bold; color:#9cdcfe; margin-bottom:4px;">🌿 Branches</div>
+            <div style="margin-left:8px;">
+              <div style="padding:2px 4px; color:#4ec9b0; font-weight:bold;">● main</div>
+              <div style="margin-left:8px; padding:2px 4px; color:#dcdcaa;">├─ feature/auth</div>
+              <div style="margin-left:8px; padding:2px 4px; color:#dcdcaa;">├─ feature/ui</div>
+              <div style="margin-left:8px; padding:2px 4px; color:#dcdcaa;">└─ hotfix/bug-123</div>
+            </div>
+          </div>
+
+          <!-- Remotes -->
+          <div style="padding:8px; border-bottom:1px solid #3c3c3c;">
+            <div style="font-weight:bold; color:#9cdcfe; margin-bottom:4px;">📡 Remotes</div>
+            <div style="padding:2px 4px;">origin</div>
+            <div style="padding:2px 4px;">upstream</div>
+          </div>
+
+          <!-- Stash/Tags -->
+          <div style="padding:8px; overflow-y:auto;">
+            <div style="font-weight:bold; color:#9cdcfe; margin-bottom:4px;">📦 Stash</div>
+            <div style="color:#666; font-style:italic;">No entries</div>
+          </div>
+        </div>
+
+        <!-- Center - Main Workspace -->
+        <div style="flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative;">
+          <!-- Mode Indicator -->
+          <div style="background:#1a1a1a; padding:4px 12px; font-size:10px; color:#888; border-bottom:1px solid #3c3c3c; display:flex; align-items:center; justify-content:space-between;">
+            <span><strong style="color:#569cd6;">Commit Graph View</strong></span>
+            <span style="cursor:pointer; color:#4ec9b0;">→ 点击 commit 查看详情 →</span>
+          </div>
+
+          <!-- Commit Graph Content -->
+          <div style="flex:1; padding:12px; overflow-y:auto;" class="custom-scrollbar">
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #4ec9b0;">
+              <span style="color:#4ec9b0; margin-right:12px; font-size:14px;">●</span>
+              <span style="flex:1; color:#d4d4d4;"><strong>feat:</strong> implement user authentication flow</span>
+              <span style="color:#888; margin-left:12px;">2 hours ago</span>
+            </div>
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; border-radius:3px; cursor:pointer; border-left:3px solid transparent;">
+              <span style="color:#f14c4c; margin-right:12px; font-size:14px;">●</span>
+              <span style="flex:1; color:#d4d4d4;"><strong>fix:</strong> resolve login redirect issue</span>
+              <span style="color:#888; margin-left:12px;">5 hours ago</span>
+            </div>
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; border-radius:3px; cursor:pointer; border-left:3px solid transparent;">
+              <span style="color:#4ec9b0; margin-right:12px; font-size:14px;">●</span>
+              <span style="flex:1; color:#d4d4d4;"><strong>refactor:</strong> extract auth service module</span>
+              <span style="color:#888; margin-left:12px;">yesterday</span>
+            </div>
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; border-radius:3px; cursor:pointer; border-left:3px solid transparent;">
+              <span style="color:#4ec9b0; margin-right:12px; font-size:14px;">●</span>
+              <span style="flex:1; color:#d4d4d4;"><strong>docs:</strong> update API authentication guide</span>
+              <span style="color:#888; margin-left:12px;">2 days ago</span>
+            </div>
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; border-radius:3px; cursor:pointer; border-left:3px solid transparent;">
+              <span style="color:#d16969; margin-right:12px; font-size:14px;">●</span>
+              <span style="flex:1; color:#d4d4d4;"><strong>style:</strong> format code with prettier</span>
+              <span style="color:#888; margin-left:12px;">3 days ago</span>
+            </div>
+          </div>
+
+          <!-- Bottom Panel: Stage + Editor (always visible) -->
+          <div style="height:200px; border-top:1px solid #3c3c3c; display:flex; flex-direction:column; background:#252526;">
+            <div style="padding:6px 12px; background:#2d2d2d; font-size:10px; font-weight:bold; color:#888; border-bottom:1px solid #3c3c3c; display:flex; justify-content:space-between;">
+              <span>STAGED CHANGES (2 files)</span>
+              <span style="cursor:pointer;">▼</span>
+            </div>
+            <div style="flex:1; padding:8px; overflow-y:auto;">
+              <div style="display:flex; align-items:center; padding:4px; background:#2d2d2d; border-radius:2px; margin-bottom:4px;">
+                <input type="checkbox" checked style="margin-right:8px;">
+                <span style="color:#4ec9b0;">A</span>
+                <span style="margin-left:8px; color:#d4d4d4;">src/services/auth.ts</span>
+                <span style="margin-left:auto; color:#888;">+45 / -12</span>
+              </div>
+              <div style="display:flex; align-items:center; padding:4px; background:#2d2d2d; border-radius:2px;">
+                <input type="checkbox" checked style="margin-right:8px;">
+                <span style="color:#4ec9b0;">A</span>
+                <span style="margin-left:8px; color:#d4d4d4;">src/components/LoginForm.vue</span>
+                <span style="margin-left:auto; color:#888;">+23 / -5</span>
+              </div>
+            </div>
+            <div style="border-top:1px solid #3c3c3c; padding:8px;">
+              <textarea placeholder="Commit message..." style="width:100%; background:#1e1e1e; border:1px solid #3c3c3c; border-radius:3px; padding:8px; color:#d4d4d4; resize:none; height:48px; font-family:inherit; box-sizing:border-box;"></textarea>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button style="padding:4px 16px; background:#3c3c3c; border:none; border-radius:3px; color:#ccc; cursor:pointer;">Cancel</button>
+                <button style="padding:4px 24px; background:#0e639c; border:none; border-radius:3px; color:white; cursor:pointer; font-weight:bold;">Commit ✓</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel - Slide-out (shown for demo) -->
+        <div style="width:300px; background:#252526; border-left:1px solid #3c3c3c; display:flex; flex-direction:column; overflow:hidden;">
+          <div style="padding:8px 12px; background:#2d2d2d; font-weight:bold; font-size:11px; border-bottom:1px solid #3c3c3c; display:flex; justify-content:space-between; align-items:center;">
+            <span>COMMIT DETAILS</span>
+            <span style="cursor:pointer; color:#888; font-size:14px;">×</span>
+          </div>
+          
+          <div style="padding:12px; border-bottom:1px solid #3c3c3c;">
+            <div style="color:#569cd6; font-family:monospace; font-size:10px; margin-bottom:6px;">abc1234def567890</div>
+            <div style="font-weight:bold; color:#d4d4d4; margin-bottom:4px;">feat: implement user authentication flow</div>
+            <div style="color:#888; font-size:10px;">
+              <div><strong>Author:</strong> John Doe</div>
+              <div><strong>Date:</strong> 2026-05-13 14:30</div>
+              <div><strong>Parents:</strong> def5678...</div>
+            </div>
+          </div>
+
+          <div style="padding:8px 12px; font-weight:bold; font-size:10px; color:#888; border-bottom:1px solid #3c3c3c;">
+            CHANGED FILES (5)
+          </div>
+
+          <div style="flex:1; overflow-y:auto; padding:8px;">
+            <div style="padding:6px; margin-bottom:4px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #73c991;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:#73c991; font-size:10px; font-weight:bold;">M</span>
+                <span style="color:#d4d4d4; font-size:11px;">src/services/auth.ts</span>
+              </div>
+              <div style="margin-top:4px; font-size:10px; color:#888;">+45 / -12 lines</div>
+            </div>
+            <div style="padding:6px; margin-bottom:4px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #73c991;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:#73c991; font-size:10px; font-weight:bold;">M</span>
+                <span style="color:#d4d4d4; font-size:11px;">src/components/LoginForm.vue</span>
+              </div>
+              <div style="margin-top:4px; font-size:10px; color:#888;">+23 / -5 lines</div>
+            </div>
+            <div style="padding:6px; margin-bottom:4px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #e2c08d;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:#e2c08d; font-size:10px; font-weight:bold;">A</span>
+                <span style="color:#d4d4d4; font-size:11px;">src/utils/token.ts</span>
+              </div>
+              <div style="margin-top:4px; font-size:10px; color:#888;">+67 / -0 lines</div>
+            </div>
+            <div style="padding:6px; margin-bottom:4px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #73c991;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:#73c991; font-size:10px; font-weight:bold;">M</span>
+                <span style="color:#d4d4d4; font-size:11px;">src/types/user.d.ts</span>
+              </div>
+              <div style="margin-top:4px; font-size:10px; color:#888;">+8 / -3 lines</div>
+            </div>
+            <div style="padding:6px; background:#2d2d2d; border-radius:3px; cursor:pointer; border-left:3px solid #f14c4c;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:#f14c4c; font-size:10px; font-weight:bold;">D</span>
+                <span style="color:#d4d4d4; font-size:11px;">src/old-auth.js</span>
+              </div>
+              <div style="margin-top:4px; font-size:10px; color:#888;">+0 / -120 lines</div>
+            </div>
+            
+            <div style="margin-top:12px; padding:8px; background:#1a1a1a; border-radius:3px; font-size:10px; color:#888; text-align:center;">
+              💡 点击文件 → Diff 显示在中央区域
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Bar -->
+      <div style="height:24px; background:#007acc; display:flex; align-items:center; padding:0 12px; font-size:10px; color:white; justify-content:space-between;">
+        <span>● main | ↑ 3 ↓ 1</span>
+        <span>UTF-8 | LF | TypeScript</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🎯 核心交互逻辑</h3>
+  
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>默认状态（无选中）</h4>
+      <ul>
+        <li>左侧：完整导航栏 (180px)</li>
+        <li>中央：Commit Graph 全宽显示</li>
+        <li>底部：StageArea + CommitEditor 固定 (200px)</li>
+        <li>右侧：<strong>隐藏</strong></li>
+      </ul>
+    </div>
+    
+    <div class="cons">
+      <h4>点击 Commit 后</h4>
+      <ul>
+        <li>右侧面板从边缘滑出 (320px)</li>
+        <li>中央区域自适应缩小</li>
+        <li>显示 commit 详情 + 文件列表</li>
+        <li>可拖拽调整右侧面板宽度</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="pros-cons" style="margin-top:16px;">
+    <div class="pros">
+      <h4>点击文件后</h4>
+      <ul>
+        <li>Diff 内容替换中央区域内容</li>
+        <li>保留左右面板不变</li>
+        <li>最大化 diff 查看面积</li>
+        <li>支持 Monaco Editor 三路对比</li>
+      </ul>
+    </div>
+    
+    <div class="cons">
+      <h4>返回 Graph 视图</h4>
+      <ul>
+        <li>点击 "Back to Graph" 按钮</li>
+        <li>或按 Escape 键返回</li>
+        <li>右侧面板保持打开状态</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔧 技术实现要点</h3>
+  
+  <div style="background:#f5f5f5; padding:16px; border-radius:6px; font-size:13px; line-height:1.6;">
+    <p><strong>1. 可拖拽分栏：</strong> 使用自定义 ResizeHandle 组件，监听 mousedown/mousemove/mouseup 事件，动态更新 store 中的宽度值。</p>
+    
+    <p style="margin-top:12px;"><strong>2. 右侧面板动画：</strong> CSS transition: width 0.2s ease, opacity 0.2s ease；使用 v-show 控制显隐避免销毁组件。</p>
+    
+    <p style="margin-top:12px;"><strong>3. 视图切换：</strong> 中央区域使用动态组件 &lt;component :is="currentView"&gt; 切换 GraphView ↔ DiffView；通过 Pinia store 管理当前视图状态。</p>
+    
+    <p style="margin-top:12px;"><strong>4. NaiveUI Scrollbar：</strong> 所有滚动区域统一使用 &lt;n-scrollbar&gt; 组件，配置 themeOverrides 自定义深色样式。</p>
+    
+    <p style="margin-top:12px;"><strong>5. 响应式断点：</strong> 窗口 < 1024px 时自动隐藏右侧面板，< 768px 时隐藏左侧导航（仅图标模式）。</p>
+  </div>
+</div>
+
+<div class="options" style="margin-top:24px;">
+  <h3>这个设计方案是否符合你的预期？</h3>
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>批准设计</h3>
+      <p>开始编写设计文档并进入实施计划</p>
+    </div>
+  </div>
+  <div class="option" data-choice="modify" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content">
+      <h3>需要调整</h3>
+      <p>告诉我需要修改的部分</p>
+    </div>
+  </div>
+</div>

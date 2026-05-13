@@ -1,0 +1,317 @@
+<h2>方案 B 修订版 - 右侧面板双模式</h2>
+<p class="subtitle">根据 GitKraken 截图优化：右侧面板支持 Commit 详情 / Staging 两种视图</p>
+
+<div class="section">
+  <h3>🔄 核心交互流程</h3>
+  
+  <div class="mockup" style="margin-bottom:24px;">
+    <div class="mockup-header">状态机：右侧面板内容切换逻辑</div>
+    <div class="mockup-body" style="background:#f8f9fa; padding:20px; font-size:13px;">
+      <div style="display:flex; align-items:center; justify-content:center; gap:40px; flex-wrap:wrap;">
+        <!-- State 1 -->
+        <div style="background:#e3f2fd; padding:16px; border-radius:8px; border:2px solid #2196f3; text-align:center; min-width:180px;">
+          <div style="font-weight:bold; color:#1565c0; margin-bottom:8px;">📭 默认状态</div>
+          <div style="color:#666;">右侧面板隐藏</div>
+          <div style="margin-top:12px; font-size:11px; color:#888;">中央：Commit Graph 全宽</div>
+        </div>
+        
+        <div style="font-size:24px; color:#999;">→</div>
+        
+        <!-- State 2 -->
+        <div style="background:#fff3e0; padding:16px; border-radius:8px; border:2px solid #ff9800; text-align:center; min-width:200px;">
+          <div style="font-weight:bold; color:#e65100; margin-bottom:8px;">📝 点击 Commit 节点</div>
+          <div style="color:#666;">右侧滑出 → Commit Details</div>
+          <div style="margin-top:8px; padding:8px; background:white; border-radius:4px; font-size:11px; text-align:left;">
+            • Commit hash<br>
+            • Author/Date<br>
+            • Message<br>
+            • Changed Files 列表<br>
+            • <span style="color:#2196f3;">点击文件 → Diff 在中央</span>
+          </div>
+        </div>
+
+        <div style="font-size:24px; color:#999;">↔</div>
+
+        <!-- State 3 -->
+        <div style="background:#e8f5e9; padding:16px; border-radius:8px; border:2px solid #4caf50; text-align:center; min-width:220px;">
+          <div style="font-weight:bold; color:#2e7d32; margin-bottom:8px;">✏️ 点击 Working Files 图标</div>
+          <div style="color:#666;">右侧滑出 → Staging Panel</div>
+          <div style="margin-top:8px; padding:8px; background:white; border-radius:4px; font-size:11px; text-align:left;">
+            • Unstaged Files 列表<br>
+            • Staged Files 列表<br>
+            • Stage/Unstage 操作<br>
+            • Commit Message 编辑器<br>
+            • <span style="color:#4caf50;">底部 "Stage Changes to Commit"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📋 视图 A：Commit Details 模式</h3>
+  
+  <div class="mockup">
+    <div class="mockup-header">右侧面板 - 选中 commit 时显示</div>
+    <div class="mockup-body" style="background:#1e1e1e; padding:0; height:500px; display:flex; flex-direction:column; color:#ccc; font-family:system-ui; font-size:11px;">
+      <!-- Panel Header -->
+      <div style="padding:10px 14px; background:#2d2d2d; border-bottom:1px solid #3c3c3c; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:bold; color:#569cd6;">COMMIT DETAILS</span>
+        <div style="display:flex; gap:8px;">
+          <span style="cursor:pointer; color:#888;" title="Copy SHA">📋</span>
+          <span style="cursor:pointer; color:#888;" title="Close">×</span>
+        </div>
+      </div>
+
+      <!-- Commit Info -->
+      <div style="padding:14px; background:#252526; border-bottom:1px solid #3c3c3c;">
+        <div style="color:#569cd6; font-family:monospace; font-size:10px; margin-bottom:6px; cursor:pointer;">abc1234def567890abcdef1234567890</div>
+        <div style="font-size:13px; font-weight:bold; color:#d4d4d4; margin-bottom:8px; line-height:1.4;">feat: implement user authentication flow with JWT tokens and session management</div>
+        <div style="font-size:10px; color:#888; line-height:1.6;">
+          <div><strong style="color:#9cdcfe;">Author:</strong> John Doe &lt;john@example.com&gt;</div>
+          <div><strong style="color:#9cdcfe;">Date:</strong> Wed May 13, 2026, 2:30 PM GMT+8</div>
+          <div><strong style="color:#9cdcfe;">Parents:</strong> def5678... (main)</div>
+          <div style="margin-top:6px;"><strong style="color:#9cdcfe;">Co-Authors:</strong> Jane Smith</div>
+        </div>
+      </div>
+
+      <!-- Changed Files Section -->
+      <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="padding:8px 14px; background:#2d2d2d; font-size:10px; font-weight:bold; color:#888; letter-spacing:0.5px; border-bottom:1px solid #3c3c3c; display:flex; justify-content:space-between; align-items:center;">
+          <span>CHANGED FILES (5)</span>
+          <div style="display:flex; gap:8px; font-weight:normal;">
+            <span style="cursor:pointer; color:#4ec9b0;">☰ Path</span>
+            <span style="cursor:pointer; color:#888;">⊞ Tree</span>
+          </div>
+        </div>
+
+        <!-- File List -->
+        <div style="flex:1; overflow-y:auto; padding:8px;">
+          <div style="padding:8px 10px; margin-bottom:4px; background:#2d2d2d; border-radius:4px; cursor:pointer; border-left:3px solid #73c991; display:flex; align-items:center; gap:8px;" title="Click to view diff in center area">
+            <input type="checkbox" style="width:14px; height:14px;">
+            <span style="color:#73c991; font-weight:bold; width:20px;">M</span>
+            <span style="flex:1; color:#d4d4d4; font-size:11px;">src/services/auth.service.ts</span>
+            <span style="color:#888; font-size:10px;">+45 −12</span>
+          </div>
+
+          <div style="padding:8px 10px; margin-bottom:4px; background:#2d2d2d; border-radius:4px; cursor:pointer; border-left:3px solid #73c991; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" checked style="width:14px; height:14px;">
+            <span style="color:#73c991; font-weight:bold; width:20px;">M</span>
+            <span style="flex:1; color:#d4d4d4; font-size:11px;">src/components/LoginForm.vue</span>
+            <span style="color:#888; font-size:10px;">+23 −5</span>
+          </div>
+
+          <div style="padding:8px 10px; margin-bottom:4px; background:#2d2d2d; border-radius:4px; cursor-pointer; border-left:3px solid #e2c08d; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" style="width:14px; height:14px;">
+            <span style="color:#e2c08d; font-weight:bold; width:20px;">A</span>
+            <span style="flex:1; color:#d4d4d4; font-size:11px;">src/utils/token.helper.ts</span>
+            <span style="color:#888; font-size:10px;">+67 −0</span>
+          </div>
+
+          <div style="padding:8px 10px; margin-bottom:4px; background:#2d2d2d; border-radius:4px; cursor:pointer; border-left:3px solid #73c991; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" style="width:14px; height:14px;">
+            <span style="color:#73c991; font-weight:bold; width:20px;">M</span>
+            <span style="flex:1; color:#d4d4d4; font-size:11px;">src/types/user.interface.ts</span>
+            <span style="color:#888; font-size:10px;">+8 −3</span>
+          </div>
+
+          <div style="padding:8px 10px; background:#2d2d2d; border-radius:4px; cursor:pointer; border-left:3px solid #f14c4c; display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" style="width:14px; height:14px;">
+            <span style="color:#f14c4c; font-weight:bold; width:20px;">D</span>
+            <span style="flex:1; color:#d4d4d4; font-size:11px;">src/legacy/old-auth.js</span>
+            <span style="color:#888; font-size:10px;">+0 −120</span>
+          </div>
+
+          <div style="margin-top:16px; padding:12px; background:#1a1a1a; border-radius:4px; text-align:center; color:#666; font-size:10px;">
+            💡 勾选文件后可批量操作 | 点击文件名在中央区域查看 Diff
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📝 视图 B：Staging Panel 模式（Working Directory）</h3>
+  
+  <div class="mockup">
+    <div class="mockup-header">右侧面板 - Working Files 模式（仿 GitKraken）</div>
+    <div class="mockup-body" style="background:#1e1e1e; padding:0; height:560px; display:flex; flex-direction:column; color:#ccc; font-family:system-ui; font-size:11px;">
+      <!-- Header: File Stats -->
+      <div style="padding:10px 14px; background:#2d2d2d; border-bottom:1px solid #3c3c3c; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:bold; color:#d4d4d4;">4 file changes on</span>
+          <span style="background:#0e639c; color:white; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:bold;">master</span>
+        </div>
+        <span style="cursor:pointer; color:#888; font-size:16px;" title="Refresh">↻</span>
+      </div>
+
+      <!-- Toolbar: Path/Tree toggle -->
+      <div style="padding:8px 14px; background:#252526; border-bottom:1px solid #3c3c3c; display:flex; gap:8px;">
+        <button style="padding:4px 12px; background:#3c3c3c; border:none; border-radius:3px; color:#ccc; cursor:pointer; font-size:10px; display:flex; align-items:center; gap:4px;">
+          ☰ Path
+        </button>
+        <button style="padding:4px 12px; background:transparent; border:1px solid #3c3c3c; border-radius:3px; color:#888; cursor:pointer; font-size:10px; display:flex; align-items:center; gap:4px;">
+          ⊞ Tree
+        </button>
+      </div>
+
+      <!-- Scrollable Content Area -->
+      <div style="flex:1; overflow-y:auto;">
+        <!-- Unstaged Files Section -->
+        <div style="border-bottom:1px solid #3c3c3c;">
+          <div style="padding:8px 14px; background:#252526; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color:#888; font-size:10px;">▼</span>
+              <span style="font-weight:bold; color:#d4d4d4; font-size:11px;">Unstaged Files (4)</span>
+            </div>
+            <button style="padding:3px 10px; background:#0e639c; border:none; border-radius:3px; color:white; cursor:pointer; font-size:10px; font-weight:bold;">Stage All Changes</button>
+          </div>
+
+          <div style="padding:4px 14px 8px;">
+            <!-- Added files -->
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; background:#2d2d2d; border-radius:3px; cursor:pointer; gap:8px;">
+              <span style="color:#73c991; font-weight:bold; font-size:12px; width:16px;">+</span>
+              <span style="flex:1; color:#d4d4d4; font-size:11px;">superpowers/brainstorm/test-session/content/design-detail-b.html</span>
+            </div>
+
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; background:#2d2d2d; border-radius:3px; cursor:pointer; gap:8px;">
+              <span style="color:#73c991; font-weight:bold; font-size:12px; width:16px;">+</span>
+              <span style="flex:1; color:#d4d4d4; font-size:11px;">superpowers/brainstorm/test-session/content/layout-options.html</span>
+            </div>
+
+            <div style="display:flex; align-items:center; padding:6px 8px; margin-bottom:2px; background:#2d2d2d; border-radius:3px; cursor:pointer; gap:8px;">
+              <span style="color:#73c991; font-weight:bold; font-size:12px; width:16px;">+</span>
+              <span style="flex:1; color:#d4d4d4; font-size:11px;">superpowers/brainstorm/test-session/state/server-info</span>
+            </div>
+
+            <!-- Deleted file -->
+            <div style="display:flex; align-items:center; padding:6px 8px; background:#2d2d2d; border-radius:3px; cursor:pointer; gap:8px;">
+              <span style="color:#f14c4c; font-weight:bold; font-size:12px; width:16px;">−</span>
+              <span style="flex:1; color:#d4d4d4; font-size:11px;">worktrees/plan-02-rust-core</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Staged Files Section -->
+        <div>
+          <div style="padding:8px 14px; background:#252526; border-bottom:1px solid #3c3c3c; cursor:pointer;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color:#888; font-size:10px;">▼</span>
+              <span style="font-weight:bold; color:#d4d4d4; font-size:11px;">Staged Files (0)</span>
+            </div>
+          </div>
+          
+          <div style="padding:16px 14px; text-align:center; color:#666; font-style:italic; font-size:11px;">
+            No staged changes yet.<br>
+            Select files above and click "Stage" or drag them here.
+          </div>
+        </div>
+      </div>
+
+      <!-- Commit Editor Section -->
+      <div style="border-top:1px solid #3c3c3c; background:#252526;">
+        <!-- Commit Action Bar -->
+        <div style="padding:8px 14px; border-bottom:1px solid #3c3c3c; display:flex; align-items:center; gap:12px;">
+          <button style="padding:6px 18px; background:#0e639c; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:bold; font-size:11px; display:flex; align-items:center; gap:4px;">
+            ⚡ Commit
+          </button>
+          <span style="cursor:pointer; color:#888; font-size:14px;" title="Push after commit">⬆</span>
+          <span style="cursor:pointer; color:#888; font-size:14px;" title="Commit and sync">↻</span>
+          <div style="flex:1;"></div>
+          <label style="display:flex; align-items:center; gap:4px; cursor:pointer; color:#888; font-size:10px;">
+            <input type="checkbox"> Amend previous commit
+          </label>
+        </div>
+
+        <!-- Message Input Fields -->
+        <div style="padding:8px 14px;">
+          <input 
+            type="text" 
+            placeholder="Commit summary" 
+            value=""
+            style="width:100%; background:#1e1e1e; border:1px solid #3c3c3c; border-radius:4px; padding:8px 10px; color:#d4d4d4; font-size:12px; box-sizing:border-box; margin-bottom:6px;"
+          >
+          <textarea 
+            placeholder="Description (optional)" 
+            rows="2"
+            style="width:100%; background:#1e1e1e; border:1px solid #3c3c3c; border-radius:4px; padding:8px 10px; color:#d4d4d4; font-size:11px; resize:none; box-sizing:border-box;"
+          ></textarea>
+        </div>
+
+        <!-- Options Row -->
+        <div style="padding:6px 14px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3c3c3c;">
+          <span style="cursor:pointer; color:#888; font-size:10px; display:flex; align-items:center; gap:4px;">
+            ▸ Commit options
+          </span>
+          <button style="padding:4px 12px; background:#6b21a8; border:none; border-radius:3px; color:white; cursor:pointer; font-size:10px; display:flex; align-items:center; gap:4px;">
+            ✨ Compose commits with AI
+          </button>
+        </div>
+
+        <!-- Bottom Action Button -->
+        <div style="padding:10px 14px; border-top:1px solid #3c3c3c;">
+          <button 
+            disabled
+            style="width:100%; padding:10px; background:#2d2d2d; border:1px dashed #3c3c3c; border-radius:4px; color:#666; cursor:not-allowed; font-size:11px; font-weight:bold;"
+          >
+            ⚡ Stage Changes to Commit
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>⚙️ 技术实现架构</h3>
+  
+  <div style="background:#f8f9fa; padding:20px; border-radius:8px; font-size:13px; line-height:1.7;">
+    <p><strong>Store 设计：</strong></p>
+    <pre style="background:#1e1e1e; color:#d4d4d4; padding:12px; border-radius:4px; overflow-x:auto; font-size:11px; margin:8px 0;">// stores/rightPanel.ts
+interface RightPanelState {
+  visible: boolean
+  mode: 'commit' | 'staging' | null
+  selectedCommitSha: string | null
+  width: number  // default: 320, min: 240, max: 480
+}</pre>
+
+    <p style="margin-top:16px;"><strong>组件结构：</strong></p>
+    <pre style="background:#1e1e1e; color:#d4d4d4; padding:12px; border-radius:4px; overflow-x:auto; font-size:11px; margin:8px 0;">RightPanel.vue
+├── CommitDetails.vue       // mode === 'commit'
+│   ├── CommitHeader.vue     // sha, author, date, parents
+│   └── ChangedFilesList.vue // file list with diff link
+└── StagingPanel.vue         // mode === 'staging'
+    ├── FileStatsHeader.vue   // "N file changes on branch"
+    ├── UnstagedFiles.vue     // file list + stage button
+    ├── StagedFiles.vue       // file list + unstage button
+    └── CommitEditor.vue      // summary, description, options</pre>
+
+    <p style="margin-top:16px;"><strong>事件触发：</strong></p>
+    <ul style="margin:8px 0; padding-left:20px;">
+      <li>点击 Graph 中的 commit 节点 → <code>store.showPanel('commit', sha)</code></li>
+      <li>点击左侧导航的 "Working Files" 图标 → <code>store.showPanel('staging')</code></li>
+      <li>点击关闭按钮或 Escape → <code>store.hidePanel()</code></li>
+      <li>拖拽分隔线 → 更新 <code>store.width</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="options" style="margin-top:24px;">
+  <h3>这个修订后的设计方案是否符合预期？</h3>
+  <div class="option" data-choice="approve-final" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>批准最终设计</h3>
+      <p>开始编写设计文档并进入实施计划</p>
+    </div>
+  </div>
+  <div class="option" data-choice="modify-more" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content">
+      <h3>还需要调整</h3>
+      <p>告诉我具体需要修改的部分</p>
+    </div>
+  </div>
+</div>
