@@ -1,33 +1,68 @@
 <template>
   <aside
-    class="right-panel flex flex-col bg-gray-850 border-l border-gray-700 overflow-hidden"
-    :style="{ width: rightPanel.width + 'px' }"
+    ref="panelRef"
+    class="right-panel flex flex-col bg-gray-850 border-l border-gray-700 overflow-hidden w-full h-full"
   >
-    <div class="panel-header flex items-center justify-between px-3 py-2 border-b border-gray-700">
-      <span class="text-xs text-gray-400 uppercase tracking-wide">
-        {{ modeTitle }}
-      </span>
-      <button class="close-btn text-gray-500 hover:text-gray-200 text-sm leading-none" @click="rightPanel.hidePanel()">✕</button>
+    <div v-if="isCollapsed" class="flex items-center justify-center h-full cursor-pointer hover:bg-gray-700/50" @click="expandPanel">
+      <span class="text-gray-500 text-lg">◂</span>
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CommitDetails v-if="rightPanel.mode === 'commit'" />
-      <StagingPanel v-else-if="rightPanel.mode === 'staging'" />
-    </div>
+    <template v-else>
+      <div class="panel-header flex items-center justify-between px-3 py-2 border-b border-gray-700">
+        <span class="text-xs text-gray-400 uppercase tracking-wide">
+          {{ modeTitle }}
+        </span>
+      </div>
+      <div class="flex-1 overflow-hidden">
+        <CommitDetails v-if="rightPanel.mode === 'commit'" />
+        <StagingPanel v-else-if="rightPanel.mode === 'staging'" />
+      </div>
+    </template>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRightPanelStore } from '../../stores/rightPanel'
-import { useBreakpoints } from '../../composables/useBreakpoint'
 import CommitDetails from '../commit/CommitDetails.vue'
 import StagingPanel from '../staging/StagingPanel.vue'
 
 const rightPanel = useRightPanelStore()
-const { isSmall } = useBreakpoints()
+const panelRef = ref<HTMLElement | null>(null)
+const isCollapsed = ref(false)
+let observer: ResizeObserver | null = null
 
-watch(isSmall, (small) => {
-  if (small) rightPanel.hidePanel()
+const COLLAPSE_THRESHOLD = 60
+
+function checkCollapsed() {
+  if (panelRef.value) {
+    isCollapsed.value = panelRef.value.offsetWidth <= COLLAPSE_THRESHOLD
+  }
+}
+
+function expandPanel() {
+  const parent = panelRef.value?.parentElement as HTMLElement | null
+  if (parent) {
+    const split = parent.closest('[data-split]')
+    if (split) {
+      const pane2 = split.querySelector('[style*="overflow: hidden"]') as HTMLElement
+      if (pane2) {
+        pane2.style.flexBasis = '40%'
+      }
+    }
+  }
+  isCollapsed.value = false
+}
+
+onMounted(() => {
+  checkCollapsed()
+  if (panelRef.value) {
+    observer = new ResizeObserver(checkCollapsed)
+    observer.observe(panelRef.value)
+  }
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
 })
 
 const modeTitle = computed(() => {
@@ -41,8 +76,7 @@ const modeTitle = computed(() => {
 
 <style scoped>
 .right-panel {
-  transition: width 0.2s ease, opacity 0.2s ease;
-  flex-shrink: 0;
+  transition: opacity 0.2s ease;
 }
 .panel-header {
   flex-shrink: 0;

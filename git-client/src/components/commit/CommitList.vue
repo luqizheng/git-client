@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col border-r border-gray-700 w-full max-w-md">
+  <div class="flex flex-col border-r border-gray-700 w-full h-full">
     <div class="flex items-center px-2.5 py-1.5 gap-1.5 border-b border-gray-700 bg-gray-850">
       <span class="text-gray-500 text-xs">🔍</span>
       <n-input

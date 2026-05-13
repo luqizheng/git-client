@@ -5,6 +5,7 @@ import {
   NDialogProvider,
   NNotificationProvider,
   NLoadingBarProvider,
+  NSplit,
 } from 'naive-ui'
 
 const naive = create({
@@ -14,6 +15,7 @@ const naive = create({
     NDialogProvider,
     NNotificationProvider,
     NLoadingBarProvider,
+    NSplit,
   ],
 })
 
