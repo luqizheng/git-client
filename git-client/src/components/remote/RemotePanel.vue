@@ -1,5 +1,23 @@
 <template>
   <div class="text-xs">
+    <div v-if="progress.isActive" class="px-2 py-1 mb-1 bg-gray-800 rounded">
+      <div class="flex items-center justify-between mb-0.5">
+        <span class="text-gray-400">{{ progress.type === 'fetch' ? 'Fetching' : 'Pushing' }}</span>
+        <span class="text-gray-500">{{ progress.bytes }}</span>
+      </div>
+      <n-progress
+        type="line"
+        :percentage="Math.round(progress.progress)"
+        :show-indicator="false"
+        :height="4"
+        :border-radius="2"
+        :fill-border-radius="2"
+        :color="progress.type === 'fetch' ? '#3b82f6' : '#10b981'"
+        :rail-color="'#374151'"
+      />
+      <div class="text-gray-600 mt-0.5">{{ progress.phase }}</div>
+    </div>
+
     <div v-for="remote in remoteStore.remotes" :key="remote.name"
       class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
     >
@@ -29,13 +47,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { NButton, NModal, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
+import { NButton, NModal, NForm, NFormItem, NInput, NProgress, useMessage } from 'naive-ui'
 import { useRemoteStore } from '../../stores/remote'
 import { useRepoStore } from '../../stores/repo'
+import { useRemoteProgress } from '../../composables/useRemoteProgress'
 
 const remoteStore = useRemoteStore()
 const repo = useRepoStore()
 const msgApi = useMessage()
+const { progress } = useRemoteProgress()
 const showAdd = ref(false)
 const remoteName = ref('')
 const remoteUrl = ref('')

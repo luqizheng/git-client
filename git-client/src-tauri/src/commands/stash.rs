@@ -42,7 +42,7 @@ pub async fn stash_pop(
 ) -> Result<(), AppError> {
     let repos = state.repos.clone();
     tokio::task::spawn_blocking(move || {
-        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;
         stash_service::stash_pop(&mut repo, index)
     })
