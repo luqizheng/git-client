@@ -1,7 +1,26 @@
+use std::collections::HashMap;
+
 use crate::models::commit::Commit;
 use crate::utils::error::AppError;
 
+fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<String>>, AppError> {
+    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+    let refs = repo.references()?;
+    for reference in refs {
+        let reference = reference?;
+        if let Some(name) = reference.shorthand() {
+            if let Ok(oid) = reference.target().ok_or_else(|| git2::Error::from_str("no target")) {
+                map.entry(oid.to_string())
+                    .or_default()
+                    .push(name.to_string());
+            }
+        }
+    }
+    Ok(map)
+}
+
 pub fn log(repo: &git2::Repository, limit: u32, after: Option<&str>) -> Result<Vec<Commit>, AppError> {
+    let ref_map = build_ref_map(repo)?;
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
     if let Some(id) = after {
@@ -12,7 +31,8 @@ pub fn log(repo: &git2::Repository, limit: u32, after: Option<&str>) -> Result<V
     for oid_result in revwalk.take(limit as usize) {
         let oid = oid_result?;
         let git_commit = repo.find_commit(oid)?;
-        commits.push(commit_from_git(&git_commit));
+        let refs = ref_map.get(&oid.to_string()).cloned().unwrap_or_default();
+        commits.push(commit_from_git(&git_commit, refs));
     }
     Ok(commits)
 }
@@ -42,10 +62,12 @@ pub fn create_commit(
     let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
     let oid = repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &parent_refs)?;
     let new_commit = repo.find_commit(oid)?;
-    Ok(commit_from_git(&new_commit))
+    let ref_map = build_ref_map(repo)?;
+    let refs = ref_map.get(&oid.to_string()).cloned().unwrap_or_default();
+    Ok(commit_from_git(&new_commit, refs))
 }
 
-fn commit_from_git(c: &git2::Commit) -> Commit {
+fn commit_from_git(c: &git2::Commit, refs: Vec<String>) -> Commit {
     Commit {
         id: c.id().to_string(),
         message: c.message().unwrap_or("").to_string(),
@@ -53,6 +75,7 @@ fn commit_from_git(c: &git2::Commit) -> Commit {
         author_email: c.author().email().unwrap_or("").to_string(),
         time: c.time().seconds(),
         parent_ids: c.parent_ids().map(|p| p.to_string()).collect(),
+        refs,
     }
 }
 
