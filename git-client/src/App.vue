@@ -2,10 +2,15 @@
   <n-config-provider :theme="theme">
     <n-message-provider>
       <AppLayout>
-        <div class="flex-1 flex overflow-hidden">
-          <GraphView />
-          <DiffView />
-          <CommitPanel />
+        <CommitList />
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <CommitDetailPanel />
+          <div class="border-t border-gray-700 flex-shrink-0" style="height: 200px;">
+            <div class="h-full flex flex-col">
+              <StageArea class="flex-1 overflow-y-auto" />
+              <CommitEditor />
+            </div>
+          </div>
         </div>
       </AppLayout>
     </n-message-provider>
@@ -16,9 +21,10 @@
 import { computed, onMounted } from 'vue'
 import { darkTheme } from 'naive-ui'
 import AppLayout from './components/layout/AppLayout.vue'
-import GraphView from './components/graph/GraphView.vue'
-import DiffView from './components/diff/DiffView.vue'
-import CommitPanel from './components/commit/CommitPanel.vue'
+import CommitList from './components/commit/CommitList.vue'
+import CommitDetailPanel from './components/commit/CommitDetailPanel.vue'
+import StageArea from './components/commit/StageArea.vue'
+import CommitEditor from './components/commit/CommitEditor.vue'
 import { useKeyboard } from './composables/useKeyboard'
 import { useRepoStore } from './stores/repo'
 import { useBranchesStore } from './stores/branches'

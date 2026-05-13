@@ -1,12 +1,12 @@
 <template>
   <div class="h-6 flex items-center px-3 bg-gray-800 border-t border-gray-700 text-xs text-gray-400 gap-4">
     <span v-if="repo.activeRepo" class="text-blue-400">
-      ⑂ {{ currentBranchName || 'detached' }}
+      ⑂ {{ branches.currentBranch(repo.activeRepoPath!) || 'detached' }}
     </span>
     <span v-if="repo.activeRepo">
       {{ repo.activeRepo.state.head_commit_id?.slice(0, 7) || 'no commits' }}
     </span>
-    <span v-if="repo.activeRepoPath && remote.isSyncing(repo.activeRepoPath)" class="text-yellow-400">Syncing...</span>
+    <span v-if="isSyncing" class="text-yellow-400">Syncing...</span>
     <div class="flex-1" />
     <span v-if="repo.activeRepoPath">{{ repo.activeRepoPath }}</span>
   </div>
@@ -22,8 +22,8 @@ const repo = useRepoStore()
 const branches = useBranchesStore()
 const remote = useRemoteStore()
 
-const currentBranchName = computed(() => {
-  if (!repo.activeRepoPath) return ''
-  return branches.currentBranch(repo.activeRepoPath)
+const isSyncing = computed(() => {
+  if (!repo.activeRepoPath) return false
+  return remote.isSyncing(repo.activeRepoPath)
 })
 </script>
