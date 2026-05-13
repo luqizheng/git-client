@@ -1,0 +1,29 @@
+{
+  "name": "req2task-2",
+  "version": "1.0.0",
+  "description": "Multi-package project with Git Client and Agents",
+  "private": true,
+  "workspaces": [
+    "git-client"
+  ],
+  "scripts": {
+    "agents:list": "node scripts/agents/list.js",
+    "agents:info": "node scripts/agents/info.js",
+    "agents:skills": "ls -la .agents/skills/",
+    "dev:git-client": "npm run dev --workspace=git-client",
+    "dev:all": "npm run dev:git-client",
+    "build:git-client": "npm run build --workspace=git-client",
+    "test:git-client": "npm run test --workspace=git-client",
+    "workflow:plan": "echo 'Use: Skill \"writing-plans\" to create implementation plan'",
+    "workflow:execute": "echo 'Use: Skill \"subagent-driven-development\" to execute plan'",
+    "workflow:review": "echo 'Use: Skill \"requesting-code-review\" for code review'",
+    "skills:refresh": "node scripts/agents/refresh.js"
+  },
+  "keywords": [
+    "git-client",
+    "agents",
+    "multi-agent"
+  ],
+  "author": "",
+  "license": "ISC"
+}

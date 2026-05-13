@@ -27,36 +27,22 @@ pub fn create_commit(
 
     let tree_id = index.write_tree()?;
     let tree = repo.find_tree(tree_id)?;
+    let sig = repo.signature()?;
 
-    if amend {
+    let parents: Vec<git2::Commit> = if amend {
         let head = repo.head()?;
-        let head_commit = head.peel_to_commit()?;
-        let sig = repo.signature()?;
-        let oid = repo.commit(
-            Some("HEAD"),
-            &sig,
-            &sig,
-            message,
-            &tree,
-            &[&head_commit],
-        )?;
-        let new_commit = repo.find_commit(oid)?;
-        Ok(commit_from_git(&new_commit))
+        vec![head.peel_to_commit()?]
+    } else if repo.is_empty()? {
+        vec![]
     } else {
-        let sig = repo.signature()?;
         let head = repo.head()?;
-        let parent = head.peel_to_commit()?;
-        let oid = repo.commit(
-            Some("HEAD"),
-            &sig,
-            &sig,
-            message,
-            &tree,
-            &[&parent],
-        )?;
-        let new_commit = repo.find_commit(oid)?;
-        Ok(commit_from_git(&new_commit))
-    }
+        vec![head.peel_to_commit()?]
+    };
+
+    let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+    let oid = repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &parent_refs)?;
+    let new_commit = repo.find_commit(oid)?;
+    Ok(commit_from_git(&new_commit))
 }
 
 fn commit_from_git(c: &git2::Commit) -> Commit {
@@ -111,6 +97,67 @@ mod tests {
         let commits = log(&repo, 10, None).unwrap();
         assert_eq!(commits.len(), 1);
         assert_eq!(commits[0].message, "initial commit");
+        drop(repo);
+        drop(dir);
+    }
+
+    #[test]
+    fn test_create_commit_on_empty_repo() {
+        let (dir, repo) = setup_repo();
+        std::fs::write(repo.workdir().unwrap().join("hello.txt"), "hello world").unwrap();
+        let mut index = repo.index().unwrap();
+        index.add_path(std::path::Path::new("hello.txt")).unwrap();
+        index.write().unwrap();
+        let result = create_commit(&repo, "first commit", false);
+        assert!(result.is_ok(), "create_commit should work on empty repo");
+        let commit = result.unwrap();
+        assert_eq!(commit.message, "first commit");
+        assert!(commit.parent_ids.is_empty());
+        drop(repo);
+        drop(dir);
+    }
+
+    #[test]
+    fn test_create_commit_on_non_empty_repo() {
+        let (dir, repo) = setup_repo();
+        create_initial_commit(&repo);
+        std::fs::write(repo.workdir().unwrap().join("second.txt"), "second file").unwrap();
+        let mut index = repo.index().unwrap();
+        index.add_path(std::path::Path::new("second.txt")).unwrap();
+        index.write().unwrap();
+        let result = create_commit(&repo, "add second file", false);
+        assert!(result.is_ok());
+        let commit = result.unwrap();
+        assert_eq!(commit.message, "add second file");
+        assert_eq!(commit.parent_ids.len(), 1);
+        drop(repo);
+        drop(dir);
+    }
+
+    #[test]
+    fn test_full_workflow_init_add_commit_log() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().to_string_lossy().to_string();
+
+        let repo_state = repo_service::init_repo(&path, false).unwrap();
+        assert!(repo_state.is_empty);
+        assert!(repo_state.head_branch.is_none());
+
+        let repo = git2::Repository::open(&path).unwrap();
+
+        let workdir = repo.workdir().unwrap();
+        std::fs::write(workdir.join("hello.txt"), "hello world").unwrap();
+
+        crate::services::diff_service::stage_files(&repo, &["hello.txt".to_string()]).unwrap();
+
+        let commit = create_commit(&repo, "first commit", false).unwrap();
+        assert_eq!(commit.message, "first commit");
+        assert!(commit.parent_ids.is_empty());
+
+        let commits = log(&repo, 10, None).unwrap();
+        assert_eq!(commits.len(), 1);
+        assert_eq!(commits[0].id, commit.id);
+
         drop(repo);
         drop(dir);
     }
