@@ -4,6 +4,7 @@ export interface LaneNode {
   commit: Commit
   lane: number
   y: number
+  isMerge: boolean
 }
 
 export interface LaneLine {
@@ -53,6 +54,7 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
       commit,
       lane,
       y: i * rowHeight,
+      isMerge: commit.parent_ids.length >= 2,
     })
 
     for (const parentId of commit.parent_ids) {
