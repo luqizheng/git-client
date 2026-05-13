@@ -1,7 +1,9 @@
 <template>
   <div class="flex flex-col border-r border-gray-700 w-full h-full">
     <div class="flex items-center px-2.5 py-1.5 gap-1.5 border-b border-gray-700 bg-gray-850">
-      <span class="text-gray-500 text-xs">🔍</span>
+      <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
       <n-input
         v-model:value="repo.searchQuery"
         size="tiny"
@@ -22,7 +24,10 @@
         quaternary
         @click="clearBranchFilter"
       >
-        ✕ {{ activeBranchFilter }}
+        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        {{ activeBranchFilter }}
       </n-button>
     </div>
 
