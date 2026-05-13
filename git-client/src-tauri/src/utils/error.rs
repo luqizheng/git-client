@@ -37,6 +37,12 @@ impl Serialize for AppError {
     }
 }
 
+impl From<tokio::task::JoinError> for AppError {
+    fn from(e: tokio::task::JoinError) -> Self {
+        AppError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

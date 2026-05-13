@@ -65,6 +65,33 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .manage(state)
+        .invoke_handler(tauri::generate_handler![
+            commands::repo::open_repo,
+            commands::repo::init_repo,
+            commands::repo::clone_repo,
+            commands::commit::get_log,
+            commands::commit::commit,
+            commands::branch::list_branches,
+            commands::branch::create_branch,
+            commands::branch::switch_branch,
+            commands::branch::delete_branch,
+            commands::remote::list_remotes,
+            commands::remote::add_remote,
+            commands::remote::fetch,
+            commands::remote::pull,
+            commands::remote::push,
+            commands::diff::get_diff,
+            commands::diff::get_working_diff,
+            commands::diff::get_staged_diff,
+            commands::diff::stage_files,
+            commands::diff::unstage_files,
+            commands::diff::resolve_conflict,
+            commands::stash::stash_save,
+            commands::stash::stash_list,
+            commands::stash::stash_pop,
+            commands::stash::get_credentials,
+            commands::stash::set_credentials,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
