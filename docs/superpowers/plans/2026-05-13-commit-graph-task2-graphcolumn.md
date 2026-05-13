@@ -1,3 +1,25 @@
+# Task 2: 创建 GraphColumn.vue 组件
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans.
+
+**Goal:** 创建左侧 SVG 图形列组件，包含节点渲染（圆形/方形）、贝塞尔曲线连线、分支标签、虚拟滚动。
+
+**Architecture:** GraphColumn.vue 接收 commits 和 selectedId props，内部调用 computeGraphLayout 计算布局，通过 visibleRange 实现虚拟滚动。SVG 分两层：连线层（底层）和节点层（顶层）。
+
+**Tech Stack:** Vue 3, SVG, TypeScript
+
+**Dependencies:** Task 1（graphLayout.ts 的 isMerge 字段）
+
+---
+
+**Files:**
+- Create: `src/components/graph/GraphColumn.vue`
+
+- [ ] **Step 1: 创建 GraphColumn.vue 组件**
+
+创建 `src/components/graph/GraphColumn.vue`:
+
+```vue
 <template>
   <div
     ref="containerRef"
@@ -25,57 +47,33 @@
 
       <g class="nodes-layer">
         <template v-for="node in visibleNodes" :key="node.commit.id">
-          <NTooltip
-            trigger="hover"
-            :delay="300"
-            placement="right"
-            :style="{ maxWidth: '280px' }"
-          >
-            <template #trigger>
-              <circle
-                v-if="!node.isMerge"
-                :cx="getLaneX(node.lane)"
-                :cy="node.y + ROW_HEIGHT / 2"
-                :r="selectedId === node.commit.id ? 6 : 4"
-                :fill="getLaneColor(node.lane)"
-                stroke="#ffffff"
-                :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
-                class="commit-node cursor-pointer transition-all duration-200"
-                :class="{ 'selected': selectedId === node.commit.id }"
-                @click.stop="$emit('select', node.commit)"
-              />
+          <circle
+            v-if="!node.isMerge"
+            :cx="getLaneX(node.lane)"
+            :cy="node.y + ROW_HEIGHT / 2"
+            :r="selectedId === node.commit.id ? 6 : 4"
+            :fill="getLaneColor(node.lane)"
+            stroke="#ffffff"
+            :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
+            class="commit-node cursor-pointer transition-all duration-200"
+            :class="{ 'selected': selectedId === node.commit.id }"
+            @click.stop="$emit('select', node.commit)"
+          />
 
-              <rect
-                v-else
-                :x="getLaneX(node.lane) - (selectedId === node.commit.id ? 5 : 4)"
-                :y="node.y + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
-                :width="selectedId === node.commit.id ? 10 : 8"
-                :height="selectedId === node.commit.id ? 10 : 8"
-                rx="1"
-                :fill="getLaneColor(node.lane)"
-                stroke="#ffffff"
-                :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
-                class="merge-node cursor-pointer transition-all duration-200"
-                :class="{ 'selected': selectedId === node.commit.id }"
-                @click.stop="$emit('select', node.commit)"
-              />
-            </template>
-
-            <div class="text-xs space-y-1 p-1">
-              <div class="font-mono text-blue-400">{{ node.commit.id }}</div>
-              <div>{{ node.commit.author }}</div>
-              <div class="text-gray-400">{{ formatFullTime(node.commit.time) }}</div>
-              <div v-if="node.isMerge" class="text-yellow-400">
-                {{ node.commit.parent_ids.length }}-way merge
-              </div>
-              <div v-if="node.commit.refs.length" class="mt-1">
-                <span class="text-gray-400">Branches: </span>
-                <span v-for="ref in node.commit.refs" :key="ref" class="text-green-400">
-                  {{ ref }}
-                </span>
-              </div>
-            </div>
-          </NTooltip>
+          <rect
+            v-else
+            :x="getLaneX(node.lane) - (selectedId === node.commit.id ? 5 : 4)"
+            :y="node.y + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
+            :width="selectedId === node.commit.id ? 10 : 8"
+            :height="selectedId === node.commit.id ? 10 : 8"
+            rx="1"
+            :fill="getLaneColor(node.lane)"
+            stroke="#ffffff"
+            :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
+            class="merge-node cursor-pointer transition-all duration-200"
+            :class="{ 'selected': selectedId === node.commit.id }"
+            @click.stop="$emit('select', node.commit)"
+          />
 
           <g
             v-for="ref in getBranchRefs(node)"
@@ -97,20 +95,13 @@
               :x="getLaneX(node.lane) + 14"
               :y="node.y + ROW_HEIGHT / 2 + 4"
               :fill="getLaneColor(node.lane)"
-             
+              font-size="10"
               font-family="monospace"
             >{{ truncateTag(ref) }}</text>
           </g>
         </template>
       </g>
     </svg>
-
-    <div
-      v-if="layout.maxLane > 12"
-      class="absolute top-2 right-2 text-xs text-yellow-500"
-    >
-      +{{ layout.maxLane - 12 }} more lanes
-    </div>
 
     <div
       v-if="commits.length === 0"
@@ -123,7 +114,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { NTooltip } from 'naive-ui'
 import type { Commit } from '../../types/git'
 import { computeGraphLayout, type GraphLayout, type LaneNode } from '../../utils/graphLayout'
 
@@ -223,10 +213,6 @@ function getTagWidth(tag: string): number {
   return Math.max(40, tag.length * 6 + 8)
 }
 
-function formatFullTime(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleString()
-}
-
 function onScroll() {
   if (!containerRef.value) return
   scrollTop.value = containerRef.value.scrollTop
@@ -275,3 +261,11 @@ watch(() => props.commits.length, () => {
   filter: drop-shadow(0 0 4px currentColor);
 }
 </style>
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/components/graph/GraphColumn.vue
+git commit -m "feat: add GraphColumn.vue with SVG rendering, merge nodes, and branch tags"
+```
