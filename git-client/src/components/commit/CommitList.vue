@@ -16,49 +16,75 @@
         size="tiny"
         style="width: 90px"
       />
-    </div>
-    <div class="flex-1 overflow-y-auto" @scroll="onScroll">
-      <div v-if="isSearching" class="text-xs text-gray-500 p-2">
-        {{ repo.searchLoading ? 'Searching...' : `${repo.searchResults.length} results` }}
-      </div>
-      <div
-        v-for="commit in displayCommits"
-        :key="commit.id"
-        class="px-3 py-2 border-b border-gray-750 cursor-pointer transition-colors"
-        :class="commit.id === selectedId ? 'bg-blue-900/40' : 'hover:bg-gray-800'"
-        @click="selectCommit(commit)"
+      <n-button
+        v-if="activeBranchFilter"
+        size="tiny"
+        quaternary
+        @click="clearBranchFilter"
       >
-        <div class="flex items-center gap-2">
-          <span class="text-blue-400 text-xs font-mono">{{ commit.id.slice(0, 7) }}</span>
-          <span class="text-gray-100 text-xs flex-1 truncate">{{ commit.message.split('\n')[0] }}</span>
-          <span
-            v-for="refName in commit.refs"
-            :key="refName"
-            class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400"
-          >{{ refName }}</span>
+        ✕ {{ activeBranchFilter }}
+      </n-button>
+    </div>
+
+    <div class="flex-1 flex overflow-hidden" ref="listContainerRef">
+      <GraphColumn
+        :width="120"
+        :commits="displayCommits"
+        :selected-id="selectedId"
+        class="flex-shrink-0"
+        @select="selectCommit"
+        @branch-click="onBranchClick"
+      />
+
+      <div
+        class="flex-1 overflow-y-auto"
+        @scroll="onScroll"
+      >
+        <div v-if="isSearching" class="text-xs text-gray-500 p-2">
+          {{ repo.searchLoading ? 'Searching...' : `${repo.searchResults.length} results` }}
         </div>
-        <div class="text-gray-500 text-xs mt-0.5">{{ commit.author }} · {{ relativeTime(commit.time) }}</div>
+        <div
+          v-for="commit in displayCommits"
+          :key="commit.id"
+          class="px-3 py-2 border-b border-gray-750 cursor-pointer transition-colors"
+          :class="commit.id === selectedId ? 'bg-blue-900/40' : 'hover:bg-gray-800'"
+          @click="selectCommit(commit)"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-blue-400 text-xs font-mono">{{ commit.id.slice(0, 7) }}</span>
+            <span class="text-gray-100 text-xs flex-1 truncate">{{ commit.message.split('\n')[0] }}</span>
+            <span
+              v-for="refName in commit.refs"
+              :key="refName"
+              class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400"
+            >{{ refName }}</span>
+          </div>
+          <div class="text-gray-500 text-xs mt-0.5">{{ commit.author }} · {{ relativeTime(commit.time) }}</div>
+        </div>
+        <div v-if="activeOpenRepo?.loading" class="text-center text-gray-500 text-xs py-3">Loading...</div>
+        <div v-if="!isSearching && activeOpenRepo?.hasMore && !activeOpenRepo?.loading" ref="loadMoreRef" class="h-1" />
       </div>
-      <div v-if="activeOpenRepo?.loading" class="text-center text-gray-500 text-xs py-3">Loading...</div>
-      <div v-if="!isSearching && activeOpenRepo?.hasMore && !activeOpenRepo?.loading" ref="loadMoreRef" class="h-1" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { NInput, NSelect } from 'naive-ui'
+import { NInput, NSelect, NButton } from 'naive-ui'
 import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
 import { useRightPanelStore } from '../../stores/rightPanel'
 import { invoke } from '../../utils/ipc'
 import type { Commit } from '../../types/git'
+import GraphColumn from '../graph/GraphColumn.vue'
 
 const repo = useRepoStore()
 const commits = useCommitsStore()
 const rightPanel = useRightPanelStore()
 
 const loadMoreRef = ref<HTMLElement | null>(null)
+const listContainerRef = ref<HTMLElement | null>(null)
+const activeBranchFilter = ref<string | null>(null)
 
 const filterOptions = [
   { label: 'All', value: 'all' },
@@ -99,6 +125,20 @@ function selectCommit(commit: Commit) {
   }
 }
 
+function onBranchClick(branchName: string) {
+  if (repo.activeRepoPath) {
+    commits.filterByBranch(repo.activeRepoPath, branchName)
+    activeBranchFilter.value = branchName
+  }
+}
+
+function clearBranchFilter() {
+  if (repo.activeRepoPath) {
+    commits.clearBranchFilter(repo.activeRepoPath)
+    activeBranchFilter.value = null
+  }
+}
+
 function relativeTime(timestamp: number): string {
   const diff = Math.floor(Date.now() / 1000) - timestamp
   if (diff < 60) return 'just now'
@@ -109,7 +149,7 @@ function relativeTime(timestamp: number): string {
 }
 
 function onScroll() {
-  // scroll handler kept for potential future use (e.g. scroll position tracking)
+  // scroll handler kept for potential future use
 }
 
 let observer: IntersectionObserver | null = null
@@ -135,6 +175,7 @@ watch(() => repo.activeRepoPath, async (newPath) => {
       await commits.fetchLogs(newPath)
     }
     invoke('start_watch', { repoPath: newPath })
+    activeBranchFilter.value = null
   }
   setupObserver()
 })

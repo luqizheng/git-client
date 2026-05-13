@@ -42,5 +42,31 @@ export const useCommitsStore = defineStore('commits', () => {
     }
   }
 
-  return { fetchLogs, selectCommit, clearCommits }
+  function filterByBranch(repoPath: string, branchName: string) {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (!openRepo) return
+
+    if (!(openRepo as any)._originalCommits) {
+      (openRepo as any)._originalCommits = [...openRepo.commits]
+    }
+
+    openRepo.commits = openRepo.commits.filter(commit =>
+      commit.refs.some(ref => ref.includes(branchName))
+    )
+  }
+
+  function clearBranchFilter(repoPath: string) {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    if (!openRepo) return
+
+    const original = (openRepo as any)._originalCommits
+    if (original) {
+      openRepo.commits = [...original]
+      delete (openRepo as any)._originalCommits
+    }
+  }
+
+  return { fetchLogs, selectCommit, clearCommits, filterByBranch, clearBranchFilter }
 })
