@@ -50,11 +50,13 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { NInput, NSelect } from 'naive-ui'
 import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
+import { useRightPanelStore } from '../../stores/rightPanel'
 import { invoke } from '../../utils/ipc'
 import type { Commit } from '../../types/git'
 
 const repo = useRepoStore()
 const commits = useCommitsStore()
+const rightPanel = useRightPanelStore()
 
 const loadMoreRef = ref<HTMLElement | null>(null)
 
@@ -93,6 +95,7 @@ function onSearchInput() {
 function selectCommit(commit: Commit) {
   if (repo.activeRepoPath) {
     commits.selectCommit(repo.activeRepoPath, commit)
+    rightPanel.showPanel('commit', commit.id)
   }
 }
 
