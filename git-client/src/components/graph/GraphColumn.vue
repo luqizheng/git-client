@@ -25,33 +25,57 @@
 
       <g class="nodes-layer">
         <template v-for="node in visibleNodes" :key="node.commit.id">
-          <circle
-            v-if="!node.isMerge"
-            :cx="getLaneX(node.lane)"
-            :cy="node.y + ROW_HEIGHT / 2"
-            :r="selectedId === node.commit.id ? 6 : 4"
-            :fill="getLaneColor(node.lane)"
-            stroke="#ffffff"
-            :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
-            class="commit-node cursor-pointer transition-all duration-200"
-            :class="{ 'selected': selectedId === node.commit.id }"
-            @click.stop="$emit('select', node.commit)"
-          />
+          <NTooltip
+            trigger="hover"
+            :delay="300"
+            placement="right"
+            :style="{ maxWidth: '280px' }"
+          >
+            <template #trigger>
+              <circle
+                v-if="!node.isMerge"
+                :cx="getLaneX(node.lane)"
+                :cy="node.y + ROW_HEIGHT / 2"
+                :r="selectedId === node.commit.id ? 6 : 4"
+                :fill="getLaneColor(node.lane)"
+                stroke="#ffffff"
+                :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
+                class="commit-node cursor-pointer transition-all duration-200"
+                :class="{ 'selected': selectedId === node.commit.id }"
+                @click.stop="$emit('select', node.commit)"
+              />
 
-          <rect
-            v-else
-            :x="getLaneX(node.lane) - (selectedId === node.commit.id ? 5 : 4)"
-            :y="node.y + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
-            :width="selectedId === node.commit.id ? 10 : 8"
-            :height="selectedId === node.commit.id ? 10 : 8"
-            rx="1"
-            :fill="getLaneColor(node.lane)"
-            stroke="#ffffff"
-            :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
-            class="merge-node cursor-pointer transition-all duration-200"
-            :class="{ 'selected': selectedId === node.commit.id }"
-            @click.stop="$emit('select', node.commit)"
-          />
+              <rect
+                v-else
+                :x="getLaneX(node.lane) - (selectedId === node.commit.id ? 5 : 4)"
+                :y="node.y + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
+                :width="selectedId === node.commit.id ? 10 : 8"
+                :height="selectedId === node.commit.id ? 10 : 8"
+                rx="1"
+                :fill="getLaneColor(node.lane)"
+                stroke="#ffffff"
+                :stroke-width="selectedId === node.commit.id ? 2 : 1.5"
+                class="merge-node cursor-pointer transition-all duration-200"
+                :class="{ 'selected': selectedId === node.commit.id }"
+                @click.stop="$emit('select', node.commit)"
+              />
+            </template>
+
+            <div class="text-xs space-y-1 p-1">
+              <div class="font-mono text-blue-400">{{ node.commit.id }}</div>
+              <div>{{ node.commit.author }}</div>
+              <div class="text-gray-400">{{ formatFullTime(node.commit.time) }}</div>
+              <div v-if="node.isMerge" class="text-yellow-400">
+                {{ node.commit.parent_ids.length }}-way merge
+              </div>
+              <div v-if="node.commit.refs.length" class="mt-1">
+                <span class="text-gray-400">Branches: </span>
+                <span v-for="ref in node.commit.refs" :key="ref" class="text-green-400">
+                  {{ ref }}
+                </span>
+              </div>
+            </div>
+          </NTooltip>
 
           <g
             v-for="ref in getBranchRefs(node)"
@@ -92,6 +116,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { NTooltip } from 'naive-ui'
 import type { Commit } from '../../types/git'
 import { computeGraphLayout, type GraphLayout, type LaneNode } from '../../utils/graphLayout'
 
@@ -189,6 +214,10 @@ function truncateTag(tag: string): string {
 
 function getTagWidth(tag: string): number {
   return Math.max(40, tag.length * 6 + 8)
+}
+
+function formatFullTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleString()
 }
 
 function onScroll() {
