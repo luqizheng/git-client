@@ -1,0 +1,46 @@
+{
+  "app": { "title": "Git Client" },
+  "toolbar": {
+    "open": "Open Repo",
+    "clone": "Clone Repo",
+    "fetch": "Fetch",
+    "pull": "Pull",
+    "push": "Push"
+  },
+  "sidebar": {
+    "branches": "Branches",
+    "remotes": "Remotes",
+    "stash": "Stash",
+    "tags": "Tags"
+  },
+  "commit": {
+    "message": "Commit Message",
+    "amend": "Amend",
+    "submit": "Commit",
+    "staged": "Staged",
+    "unstaged": "Unstaged"
+  },
+  "branch": {
+    "create": "Create Branch",
+    "switch": "Switch Branch",
+    "delete": "Delete Branch",
+    "name": "Branch Name",
+    "checkout": "Checkout after creation"
+  },
+  "remote": {
+    "add": "Add Remote",
+    "name": "Name",
+    "url": "URL"
+  },
+  "conflict": {
+    "title": "Conflict Resolution",
+    "ours": "Ours",
+    "theirs": "Theirs",
+    "base": "Base",
+    "complete": "Complete Merge"
+  },
+  "status": {
+    "syncing": "Syncing...",
+    "no_commits": "No commits"
+  }
+}

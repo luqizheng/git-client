@@ -1,0 +1,46 @@
+{
+  "app": { "title": "Git客户端" },
+  "toolbar": {
+    "open": "打开仓库",
+    "clone": "克隆仓库",
+    "fetch": "拉取",
+    "pull": "拉取合并",
+    "push": "推送"
+  },
+  "sidebar": {
+    "branches": "分支",
+    "remotes": "远程",
+    "stash": "暂存",
+    "tags": "标签"
+  },
+  "commit": {
+    "message": "提交信息",
+    "amend": "修改提交",
+    "submit": "提交",
+    "staged": "已暂存",
+    "unstaged": "未暂存"
+  },
+  "branch": {
+    "create": "创建分支",
+    "switch": "切换分支",
+    "delete": "删除分支",
+    "name": "分支名称",
+    "checkout": "创建后切换"
+  },
+  "remote": {
+    "add": "添加远程",
+    "name": "名称",
+    "url": "URL"
+  },
+  "conflict": {
+    "title": "冲突解决",
+    "ours": "我们的",
+    "theirs": "他们的",
+    "base": "基础",
+    "complete": "完成合并"
+  },
+  "status": {
+    "syncing": "同步中...",
+    "no_commits": "无提交"
+  }
+}

@@ -4,3 +4,4 @@ pub mod branch;
 pub mod remote;
 pub mod diff;
 pub mod stash;
+pub mod settings;

@@ -91,6 +91,8 @@ pub fn run() {
             commands::stash::stash_pop,
             commands::stash::get_credentials,
             commands::stash::set_credentials,
+            commands::settings::load_settings,
+            commands::settings::save_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
