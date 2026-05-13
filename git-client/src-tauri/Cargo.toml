@@ -1,0 +1,23 @@
+[package]
+name = "git-client"
+version = "1.0.0"
+description = "Git Client - A desktop Git client"
+authors = [""]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+git2 = "0.19"
+tokio = { version = "1", features = ["full"] }
+notify = "7"
+keyring = "3"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"

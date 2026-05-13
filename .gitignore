@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+package-lock.json
+git-client/node_modules/
+git-client/dist/
+
+# Rust
+target/
+Cargo.lock
+*.pdb
+
+# Frontend build
+git-client/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# System files
+Thumbs.db
