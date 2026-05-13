@@ -94,7 +94,7 @@ pub async fn pull(
 
     let repos_inner = repos.clone();
     tokio::task::spawn_blocking(move || {
-        let mut manager = repos_inner
+        let  manager = repos_inner
             .lock()
             .map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;

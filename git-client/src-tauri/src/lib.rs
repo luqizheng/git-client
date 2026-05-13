@@ -64,6 +64,7 @@ pub fn run() {
     };
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(state)
         .invoke_handler(tauri::generate_handler![
             commands::repo::open_repo,
@@ -71,6 +72,7 @@ pub fn run() {
             commands::repo::clone_repo,
             commands::commit::get_log,
             commands::commit::commit,
+            commands::commit::search_commits,
             commands::branch::list_branches,
             commands::branch::create_branch,
             commands::branch::switch_branch,

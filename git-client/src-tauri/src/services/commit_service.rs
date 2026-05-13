@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::models::commit::Commit;
+use crate::models::commit::SearchFilter;
 use crate::utils::error::AppError;
 
 fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<String>>, AppError> {
@@ -77,6 +78,78 @@ fn commit_from_git(c: &git2::Commit, refs: Vec<String>) -> Commit {
         parent_ids: c.parent_ids().map(|p| p.to_string()).collect(),
         refs,
     }
+}
+
+pub fn search(
+    repo: &git2::Repository,
+    query: &str,
+    filter: &SearchFilter,
+    limit: u32,
+) -> Result<Vec<Commit>, AppError> {
+    let query_lower = query.to_lowercase();
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    let ref_map = build_ref_map(repo)?;
+    let mut results = Vec::new();
+
+    for oid_result in revwalk {
+        if results.len() >= limit as usize {
+            break;
+        }
+        let oid = oid_result?;
+        let git_commit = repo.find_commit(oid)?;
+        let id_str = oid.to_string();
+        let matched = match filter {
+            SearchFilter::Hash => id_str.starts_with(query),
+            SearchFilter::Message => git_commit
+                .message()
+                .unwrap_or("")
+                .to_lowercase()
+                .contains(&query_lower),
+            SearchFilter::Author => {
+                let author = git_commit.author();
+                let name_match = author.name().unwrap_or("").to_lowercase().contains(&query_lower);
+                let email_match = author.email().unwrap_or("").to_lowercase().contains(&query_lower);
+                name_match || email_match
+            }
+            SearchFilter::File => {
+                git_commit.tree().ok().map_or(false, |t| tree_contains_path(repo, &t, &query_lower))
+            }
+            SearchFilter::All => {
+                id_str.starts_with(query)
+                    || git_commit.message().unwrap_or("").to_lowercase().contains(&query_lower)
+                    || {
+                        let author = git_commit.author();
+                        author.name().unwrap_or("").to_lowercase().contains(&query_lower)
+                            || author.email().unwrap_or("").to_lowercase().contains(&query_lower)
+                    }
+                    || git_commit.tree().ok().map_or(false, |t| tree_contains_path(repo, &t, &query_lower))
+            }
+        };
+
+        if matched {
+            let refs = ref_map.get(&id_str).cloned().unwrap_or_default();
+            results.push(commit_from_git(&git_commit, refs));
+        }
+    }
+    Ok(results)
+}
+
+fn tree_contains_path(repo: &git2::Repository, tree: &git2::Tree, query_lower: &str) -> bool {
+    for entry in tree.iter() {
+        let name = entry.name().unwrap_or("").to_lowercase();
+        if name.contains(query_lower) {
+            return true;
+        }
+        if let Ok(obj) = entry.to_object(repo) {
+            if let Some(sub_tree) = obj.as_tree() {
+                if tree_contains_path(repo, sub_tree, query_lower) {
+                    return true;
+                }
+            }
+        }
+    }
+    false
 }
 
 #[cfg(test)]

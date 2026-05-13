@@ -11,6 +11,15 @@ pub struct Commit {
     pub refs: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SearchFilter {
+    All,
+    Message,
+    Author,
+    Hash,
+    File,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

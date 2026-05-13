@@ -17,6 +17,8 @@ pub enum AppError {
     BranchNotFound(String),
     #[error("Remote not found: {0}")]
     RemoteNotFound(String),
+    #[error("Search error: {0}")]
+    Search(String),
 }
 
 impl AppError {
