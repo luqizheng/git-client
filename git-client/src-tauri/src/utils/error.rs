@@ -51,6 +51,12 @@ impl From<notify::Error> for AppError {
     }
 }
 
+impl From<std::sync::PoisonError<std::sync::MutexGuard<'_, crate::RepoManager>>> for AppError {
+    fn from(e: std::sync::PoisonError<std::sync::MutexGuard<'_, crate::RepoManager>>) -> Self {
+        AppError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

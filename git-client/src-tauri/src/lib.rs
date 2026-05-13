@@ -96,6 +96,7 @@ pub fn run() {
             commands::settings::load_settings,
             commands::settings::save_settings,
             commands::watch::start_watch,
+            commands::reset::reset_commit,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
