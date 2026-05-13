@@ -1,0 +1,192 @@
+<h2>整体布局架构</h2>
+<p class="subtitle">多仓库 Tab + 左右分栏 Commit 列表 + 搜索</p>
+
+<div class="mockup">
+  <div class="mockup-header">整体布局：暗色主题</div>
+  <div class="mockup-body" style="display:flex;flex-direction:column;height:480px;font-size:13px;background:#1e1e1e;color:#ddd;">
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;padding:4px 12px;gap:8px;border-bottom:1px solid #333;background:#2d2d2d;height:40px;">
+      <button style="background:#0e639c;color:#fff;border:none;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;">Open</button>
+      <button style="background:#0e639c;color:#fff;border:none;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;">Clone</button>
+      <div style="flex:1;"></div>
+      <button style="background:#333;color:#ddd;border:1px solid #555;border-radius:3px;padding:4px 8px;font-size:12px;">Fetch</button>
+      <button style="background:#333;color:#ddd;border:1px solid #555;border-radius:3px;padding:4px 8px;font-size:12px;">Pull</button>
+      <button style="background:#333;color:#ddd;border:1px solid #555;border-radius:3px;padding:4px 8px;font-size:12px;">Push</button>
+      <div style="flex:1;"></div>
+      <span style="color:#888;font-size:12px;">🌙</span>
+    </div>
+
+    <!-- Tab Bar -->
+    <div style="display:flex;align-items:center;border-bottom:1px solid #333;background:#252526;height:35px;padding:0 8px;">
+      <div style="display:flex;align-items:center;background:#1e1e1e;padding:4px 16px;border-right:1px solid #333;cursor:pointer;gap:6px;border-top:2px solid #0e639c;">
+        <span style="color:#ddd;font-size:12px;">git-client</span>
+        <span style="color:#666;font-size:10px;cursor:pointer;margin-left:4px;">✕</span>
+      </div>
+      <div style="display:flex;align-items:center;background:#2d2d2d;padding:4px 16px;border-right:1px solid #333;cursor:pointer;gap:6px;border-top:2px solid transparent;">
+        <span style="color:#999;font-size:12px;">my-project</span>
+        <span style="color:#666;font-size:10px;cursor:pointer;margin-left:4px;">✕</span>
+      </div>
+      <div style="display:flex;align-items:center;padding:4px 12px;cursor:pointer;color:#666;">
+        <span style="font-size:14px;">+</span>
+      </div>
+    </div>
+
+    <!-- Main: Sidebar + Content -->
+    <div style="display:flex;flex:1;overflow:hidden;">
+      <!-- Sidebar -->
+      <div style="width:220px;border-right:1px solid #333;background:#252526;overflow-y:auto;flex-shrink:0;">
+        <div style="padding:8px 12px;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Branches</div>
+        <div style="padding:4px 12px 4px 20px;color:#ddd;font-size:12px;display:flex;align-items:center;gap:6px;background:#094771;">
+          <span style="color:#4ec9b0;">⎇</span> main
+        </div>
+        <div style="padding:4px 12px 4px 20px;color:#999;font-size:12px;display:flex;align-items:center;gap:6px;">
+          <span style="color:#f97583;">⎇</span> feature/tabs
+        </div>
+        <div style="padding:4px 12px 4px 20px;color:#999;font-size:12px;display:flex;align-items:center;gap:6px;">
+          <span style="color:#d29922;">⎇</span> dev
+        </div>
+        <div style="padding:8px 12px;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:8px;">Remotes</div>
+        <div style="padding:4px 12px 4px 20px;color:#999;font-size:12px;">origin</div>
+        <div style="padding:8px 12px;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:8px;">Stash</div>
+        <div style="padding:4px 12px 4px 20px;color:#666;font-size:12px;">No stash entries</div>
+      </div>
+
+      <!-- Content: Left panel (commit list) + Right panel (detail + stage) -->
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <!-- Left: Commit list with search -->
+        <div style="width:420px;border-right:1px solid #333;display:flex;flex-direction:column;flex-shrink:0;">
+          <!-- Search bar -->
+          <div style="display:flex;align-items:center;padding:6px 10px;gap:6px;border-bottom:1px solid #333;background:#252526;">
+            <span style="color:#888;font-size:12px;">🔍</span>
+            <input style="flex:1;background:#1e1e1e;border:1px solid #444;border-radius:3px;padding:4px 8px;color:#ddd;font-size:12px;" value="Search message, author, hash..." readonly>
+            <select style="background:#1e1e1e;border:1px solid #444;border-radius:3px;padding:3px 6px;color:#999;font-size:11px;">
+              <option>All</option>
+            </select>
+          </div>
+          <!-- Commit list -->
+          <div style="flex:1;overflow-y:auto;">
+            <div style="padding:8px 12px;border-bottom:1px solid #2d2d2d;background:#094771;cursor:pointer;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">a1b2c3d</span>
+                <span style="color:#ddd;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">feat: add multi-repo tab support</span>
+                <span style="color:#4ec9b0;font-size:10px;background:#1a3a2a;padding:1px 5px;border-radius:2px;">main</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:3px;">Alice · 2 hours ago</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #2d2d2d;cursor:pointer;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">e4f5g6h</span>
+                <span style="color:#ddd;font-size:12px;flex:1;">fix: resolve merge conflict</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:3px;">Bob · 5 hours ago</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #2d2d2d;cursor:pointer;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">i7j8k9l</span>
+                <span style="color:#ddd;font-size:12px;flex:1;">chore: update dependencies</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:3px;">Charlie · 1 day ago</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #2d2d2d;cursor:pointer;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">m0n1o2p</span>
+                <span style="color:#ddd;font-size:12px;flex:1;">refactor: extract git service</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:3px;">Alice · 2 days ago</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #2d2d2d;cursor:pointer;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">q3r4s5t</span>
+                <span style="color:#ddd;font-size:12px;flex:1;">docs: update README</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:3px;">David · 3 days ago</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Commit detail (top) + Stage/Commit (bottom) -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <!-- Commit Detail -->
+          <div style="flex:1;overflow-y:auto;padding:12px 16px;border-bottom:1px solid #333;">
+            <div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Commit Detail</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-family:monospace;color:#58a6ff;font-size:12px;">a1b2c3d</span>
+              <span style="color:#4ec9b0;font-size:10px;background:#1a3a2a;padding:1px 5px;border-radius:2px;">main</span>
+            </div>
+            <div style="color:#ddd;font-size:14px;margin-bottom:6px;">feat: add multi-repo tab support</div>
+            <div style="color:#888;font-size:12px;">Alice &lt;alice@example.com&gt; · 2025-05-13 10:30</div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid #333;">
+              <div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Changed Files</div>
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;padding:2px 0;">
+                <span style="color:#4ec9b0;font-family:monospace;width:16px;">M</span>
+                <span style="color:#ddd;">src/App.vue</span>
+              </div>
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;padding:2px 0;">
+                <span style="color:#58a6ff;font-family:monospace;width:16px;">A</span>
+                <span style="color:#ddd;">src/components/RepoTabs.vue</span>
+              </div>
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;padding:2px 0;">
+                <span style="color:#4ec9b0;font-family:monospace;width:16px;">M</span>
+                <span style="color:#ddd;">src/stores/repo.ts</span>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid #333;">
+              <div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Diff Preview</div>
+              <div style="background:#1e1e1e;border:1px solid #333;border-radius:3px;padding:8px;font-family:monospace;font-size:11px;overflow-x:auto;">
+                <div style="color:#4ec9b0;">+ import RepoTabs from './RepoTabs.vue'</div>
+                <div style="color:#f97583;">- &lt;GraphView /&gt;</div>
+                <div style="color:#4ec9b0;">+ &lt;RepoTabs /&gt;</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage Area + Commit Editor -->
+          <div style="height:200px;flex-shrink:0;display:flex;flex-direction:column;background:#252526;border-top:1px solid #333;">
+            <div style="display:flex;border-bottom:1px solid #333;">
+              <div style="padding:6px 14px;color:#ddd;font-size:12px;border-bottom:2px solid #0e639c;cursor:pointer;">Staged (2)</div>
+              <div style="padding:6px 14px;color:#888;font-size:12px;cursor:pointer;">Unstaged (3)</div>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:6px 12px;">
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;padding:2px 0;">
+                <span style="color:#4ec9b0;width:16px;font-family:monospace;">M</span>
+                <span style="color:#ddd;">src/App.vue</span>
+              </div>
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;padding:2px 0;">
+                <span style="color:#58a6ff;width:16px;font-family:monospace;">A</span>
+                <span style="color:#ddd;">src/components/RepoTabs.vue</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;padding:6px 12px;border-top:1px solid #333;">
+              <input style="flex:1;background:#1e1e1e;border:1px solid #444;border-radius:3px;padding:4px 8px;color:#ddd;font-size:12px;" value="Commit message..." readonly>
+              <button style="background:#0e639c;color:#fff;border:none;border-radius:3px;padding:4px 12px;font-size:12px;cursor:pointer;">Commit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- StatusBar -->
+    <div style="display:flex;align-items:center;padding:2px 12px;border-top:1px solid #333;background:#0e639c;height:24px;font-size:11px;color:#fff;gap:12px;">
+      <span>⎇ main</span>
+      <span>a1b2c3d</span>
+      <span style="flex:1;"></span>
+      <span>d:\projects\git-client</span>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:20px;">
+  <h3>数据流</h3>
+  <div style="background:#1e1e1e;border:1px solid #333;border-radius:6px;padding:16px;font-family:monospace;font-size:12px;color:#ddd;line-height:1.8;">
+    <div style="color:#4ec9b0;">Frontend (Pinia):</div>
+    <div>&nbsp;&nbsp;repoStore.openRepos = Map&lt;path, { repoState, commits, branches }&gt;</div>
+    <div>&nbsp;&nbsp;repoStore.activeRepoPath = "d:/projects/git-client"</div>
+    <div>&nbsp;&nbsp;repoStore.switchTab(path) → 切换 activeRepoPath，触发 UI 刷新</div>
+    <div style="margin-top:8px;color:#f97583;">Backend (Rust):</div>
+    <div>&nbsp;&nbsp;RepoManager.handles = HashMap&lt;PathBuf, RepoHandle&gt;</div>
+    <div>&nbsp;&nbsp;search_commits(path, query, filters) → git2 revwalk + filter</div>
+    <div style="margin-top:8px;color:#d29922;">IPC Flow:</div>
+    <div>&nbsp;&nbsp;Tab 切换 → 前端缓存命中 → 即时渲染</div>
+    <div>&nbsp;&nbsp;搜索 → invoke("search_commits") → 后端 git2 查询 → 返回结果</div>
+  </div>
+</div>

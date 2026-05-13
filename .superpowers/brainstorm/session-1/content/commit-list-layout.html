@@ -1,0 +1,158 @@
+<h2>Commit 列表区域的布局方式</h2>
+<p class="subtitle">主内容区中间最大区域如何展示 commit log + 搜索</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Preview: 左右分栏</div>
+        <div class="mockup-body" style="display:flex;flex-direction:column;height:280px;">
+          <div style="display:flex;align-items:center;padding:6px 12px;gap:8px;border-bottom:1px solid #444;background:#1e1e1e;">
+            <span style="color:#888;font-size:12px;">🔍</span>
+            <input style="flex:1;background:#2d2d2d;border:1px solid #555;border-radius:4px;padding:4px 8px;color:#ddd;font-size:13px;" value="Search commits..." readonly>
+          </div>
+          <div style="display:flex;flex:1;overflow:hidden;">
+            <div style="width:55%;border-right:1px solid #444;overflow-y:auto;padding:0;">
+              <div style="padding:8px 12px;border-bottom:1px solid #333;background:#252526;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:#58a6ff;font-size:11px;font-family:monospace;">a1b2c3d</span>
+                  <span style="color:#ddd;font-size:13px;">feat: add multi-repo tab support</span>
+                </div>
+                <div style="color:#888;font-size:11px;margin-top:2px;">Alice · 2 hours ago · main</div>
+              </div>
+              <div style="padding:8px 12px;border-bottom:1px solid #333;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:#58a6ff;font-size:11px;font-family:monospace;">e4f5g6h</span>
+                  <span style="color:#ddd;font-size:13px;">fix: resolve merge conflict</span>
+                </div>
+                <div style="color:#888;font-size:11px;margin-top:2px;">Bob · 5 hours ago</div>
+              </div>
+              <div style="padding:8px 12px;border-bottom:1px solid #333;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:#58a6ff;font-size:11px;font-family:monospace;">i7j8k9l</span>
+                  <span style="color:#ddd;font-size:13px;">chore: update dependencies</span>
+                </div>
+                <div style="color:#888;font-size:11px;margin-top:2px;">Charlie · 1 day ago</div>
+              </div>
+              <div style="padding:8px 12px;border-bottom:1px solid #333;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:#58a6ff;font-size:11px;font-family:monospace;">m0n1o2p</span>
+                  <span style="color:#ddd;font-size:13px;">refactor: extract git service</span>
+                </div>
+                <div style="color:#888;font-size:11px;margin-top:2px;">Alice · 2 days ago</div>
+              </div>
+            </div>
+            <div style="flex:1;padding:12px;overflow-y:auto;background:#1e1e1e;">
+              <div style="color:#888;font-size:11px;margin-bottom:8px;">COMMIT DETAIL</div>
+              <div style="font-family:monospace;color:#58a6ff;font-size:12px;margin-bottom:4px;">a1b2c3d</div>
+              <div style="color:#ddd;font-size:14px;margin-bottom:8px;">feat: add multi-repo tab support</div>
+              <div style="color:#888;font-size:12px;">Author: Alice &lt;alice@example.com&gt;</div>
+              <div style="color:#888;font-size:12px;">Date: 2025-05-13 10:30</div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid #333;">
+                <div style="color:#888;font-size:11px;margin-bottom:6px;">CHANGED FILES</div>
+                <div style="color:#ddd;font-size:12px;">M  src/App.vue</div>
+                <div style="color:#ddd;font-size:12px;">A  src/components/RepoTabs.vue</div>
+                <div style="color:#ddd;font-size:12px;">M  src/stores/repo.ts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 左右分栏（列表 + 详情）</h3>
+      <p>左侧 commit 列表 + 搜索栏，右侧选中 commit 的详情和文件变更。类似 GitKraken。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Preview: 上下分区</div>
+        <div class="mockup-body" style="display:flex;flex-direction:column;height:280px;">
+          <div style="display:flex;align-items:center;padding:6px 12px;gap:8px;border-bottom:1px solid #444;background:#1e1e1e;">
+            <span style="color:#888;font-size:12px;">🔍</span>
+            <input style="flex:1;background:#2d2d2d;border:1px solid #555;border-radius:4px;padding:4px 8px;color:#ddd;font-size:13px;" value="Search commits..." readonly>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:0;">
+            <div style="padding:8px 12px;border-bottom:1px solid #333;background:#252526;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">a1b2c3d</span>
+                <span style="color:#ddd;font-size:13px;">feat: add multi-repo tab support</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:2px;">Alice · 2 hours ago · main</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #333;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">e4f5g6h</span>
+                <span style="color:#ddd;font-size:13px;">fix: resolve merge conflict</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:2px;">Bob · 5 hours ago</div>
+            </div>
+            <div style="padding:8px 12px;border-bottom:1px solid #333;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#58a6ff;font-size:11px;font-family:monospace;">i7j8k9l</span>
+                <span style="color:#ddd;font-size:13px;">chore: update dependencies</span>
+              </div>
+              <div style="color:#888;font-size:11px;margin-top:2px;">Charlie · 1 day ago</div>
+            </div>
+          </div>
+          <div style="height:90px;border-top:1px solid #444;padding:8px 12px;background:#1e1e1e;overflow-y:auto;">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <span style="font-family:monospace;color:#58a6ff;font-size:11px;">a1b2c3d</span>
+              <span style="color:#ddd;font-size:12px;">feat: add multi-repo tab support</span>
+              <span style="color:#888;font-size:11px;">Alice · 2h ago</span>
+            </div>
+            <div style="margin-top:6px;color:#888;font-size:11px;">M  App.vue  A  RepoTabs.vue  M  repo.ts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 上下分区（列表 + 底部详情）</h3>
+      <p>上方 commit 列表 + 搜索，下方展开选中 commit 的摘要。底部面板可拖拽调整高度。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Preview: Graph + 列表融合</div>
+        <div class="mockup-body" style="display:flex;flex-direction:column;height:280px;">
+          <div style="display:flex;align-items:center;padding:6px 12px;gap:8px;border-bottom:1px solid #444;background:#1e1e1e;">
+            <span style="color:#888;font-size:12px;">🔍</span>
+            <input style="flex:1;background:#2d2d2d;border:1px solid #555;border-radius:4px;padding:4px 8px;color:#ddd;font-size:13px;" value="Search commits..." readonly>
+          </div>
+          <div style="flex:1;overflow-y:auto;">
+            <div style="display:flex;padding:6px 12px;border-bottom:1px solid #333;background:#252526;align-items:center;gap:6px;">
+              <svg width="20" height="20" style="flex-shrink:0;"><circle cx="10" cy="10" r="5" fill="#58a6ff"/></svg>
+              <span style="color:#58a6ff;font-size:11px;font-family:monospace;">a1b2c3d</span>
+              <span style="color:#ddd;font-size:13px;flex:1;">feat: add multi-repo tab support</span>
+              <span style="color:#4ec9b0;font-size:11px;background:#1a3a2a;padding:1px 6px;border-radius:3px;">main</span>
+            </div>
+            <div style="display:flex;padding:6px 12px;border-bottom:1px solid #333;align-items:center;gap:6px;">
+              <svg width="20" height="20" style="flex-shrink:0;"><circle cx="10" cy="10" r="5" fill="#f97583"/></svg>
+              <span style="color:#58a6ff;font-size:11px;font-family:monospace;">e4f5g6h</span>
+              <span style="color:#ddd;font-size:13px;flex:1;">fix: resolve merge conflict</span>
+              <span style="color:#d29922;font-size:11px;background:#3a2a1a;padding:1px 6px;border-radius:3px;">dev</span>
+            </div>
+            <div style="display:flex;padding:6px 12px;border-bottom:1px solid #333;align-items:center;gap:6px;">
+              <svg width="20" height="20" style="flex-shrink:0;"><circle cx="10" cy="10" r="5" fill="#b397f6"/></svg>
+              <span style="color:#58a6ff;font-size:11px;font-family:monospace;">i7j8k9l</span>
+              <span style="color:#ddd;font-size:13px;flex:1;">chore: update dependencies</span>
+            </div>
+            <div style="display:flex;padding:6px 12px;border-bottom:1px solid #333;align-items:center;gap:6px;">
+              <svg width="20" height="20" style="flex-shrink:0;"><circle cx="10" cy="10" r="5" fill="#58a6ff"/></svg>
+              <span style="color:#58a6ff;font-size:11px;font-family:monospace;">m0n1o2p</span>
+              <span style="color:#ddd;font-size:13px;flex:1;">refactor: extract git service</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Graph + 列表融合（保留当前 Canvas 图）</h3>
+      <p>在现有 Canvas 图基础上，搜索栏覆盖顶部。选中 commit 后右侧/底部面板展示详情。</p>
+    </div>
+  </div>
+</div>
