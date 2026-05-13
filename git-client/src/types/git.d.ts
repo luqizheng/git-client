@@ -5,6 +5,18 @@ export interface Commit {
   author_email: string
   time: number
   parent_ids: string[]
+  refs: string[]
+}
+
+export type SearchFilter = 'all' | 'message' | 'author' | 'hash' | 'file'
+
+export interface OpenRepo {
+  state: RepoState
+  commits: Commit[]
+  branches: Branch[]
+  selectedCommit: Commit | null
+  hasMore: boolean
+  loading: boolean
 }
 
 export interface Branch {
