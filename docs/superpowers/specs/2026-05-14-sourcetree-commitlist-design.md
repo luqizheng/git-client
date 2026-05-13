@@ -26,11 +26,12 @@ src/components/commit/
 │   ├── TimeGroupHeader.vue       # 时间分组标题
 │   ├── CommitRow.vue             # 单行组件
 │   ├── BranchTagCell.vue         # 分支标签单元格
-│   ├── GraphCell.vue             # DAG 图形单元格
-│   └── CommitContextMenu.vue     # 右键菜单
+│   ├── GraphCell.vue             # DAG 占位单元格（纯 div）
+│   ├── GraphOverlay.vue          # DAG SVG 叠加层（绝对定位）
+│   └── NDropdown右键菜单（直接在主容器中使用）
 ├── composables/
 │   ├── useResizableColumns.ts    # 列宽调整逻辑
-│   ├── useVirtualScroll.ts       # 虚拟滚动逻辑
+│   ├── useVirtualScroll.ts       # 虚拟滚动逻辑（支持变高行）
 │   ├── useDragDrop.ts            # 拖放逻辑
 │   └── useTimeGrouping.ts        # 时间分组逻辑
 ```
@@ -360,44 +361,130 @@ function getTimeGroup(timestamp: number): { key: string; label: string } {
 </style>
 ```
 
-### 3.6 GraphCell.vue (DAG 图形)
+### 3.6 DAG 图形渲染（SVG 叠加层架构）
 
-**复用现有 GraphColumn 逻辑，但改为单元格模式**
+**⚠️ 单行 GraphCell 无法独立渲染跨行 DAG 连线。采用 SVG 绝对定位叠加层方案。**
 
-**关键改动：**
-- 移除独立滚动，由父容器控制
-- 接收单个 commit 的 lane 信息
-- 保持 SVG 渲染性能优化
+**架构：**
+```
+┌─────────────────────────────────────┐
+│ 统一滚动容器 (position: relative)     │
+│  ┌─────────────────────────────────┐│
+│  │ SVG 层 (position:absolute)      ││  ← 全局 DAG 连线+节点
+│  │  只渲染可视范围内的路径           ││
+│  └─────────────────────────────────┘│
+│  ┌───┬────────┬────────┬─────┬────┐│
+│  │bra│ 透明占位│message │auth │date││  ← CommitRow，graph 列透明
+│  │nch│        │        │or   │    ││
+│  └───┴────────┴────────┴─────┴────┘│
+└─────────────────────────────────────┘
+```
 
-### 3.7 CommitContextMenu.vue (右键菜单)
+**实现：**
+- `GraphCell.vue` 变为纯占位 `<div>`，不画任何图形
+- 新增 `GraphOverlay.vue` 组件，绝对定位在滚动容器上方
+- `GraphOverlay` 接收 `computeGraphLayout` 的完整结果，根据 `scrollTop` 渲染可视范围内的连线和节点
+- SVG 层设置 `pointer-events: none`，节点设置 `pointer-events: auto`（可点击）
+
+**GraphOverlay.vue 核心结构：**
+```vue
+<template>
+  <svg
+    class="graph-overlay"
+    :style="{ width: graphWidth + 'px', height: totalHeight + 'px' }"
+  >
+    <g class="lines-layer">
+      <path
+        v-for="line in visibleLines"
+        :key="line.key"
+        :d="getLinePath(line)"
+        :stroke="line.color"
+        stroke-width="2"
+        fill="none"
+      />
+    </g>
+    <g class="nodes-layer">
+      <circle
+        v-for="node in visibleNodes"
+        :key="node.commit.id"
+        :cx="getLaneX(node.lane)"
+        :cy="node.y + ROW_HEIGHT / 2"
+        :r="node.isMerge ? 5 : 4"
+        :fill="getLaneColor(node.lane)"
+        stroke="#ffffff"
+        stroke-width="1.5"
+        class="cursor-pointer"
+        style="pointer-events: auto"
+        @click="$emit('select', node.commit)"
+      />
+    </g>
+  </svg>
+</template>
+
+<style scoped>
+.graph-overlay {
+  position: absolute;
+  top: 0;
+  left: 140px; /* branch 列宽度 */
+  pointer-events: none;
+  z-index: 1;
+}
+</style>
+```
+
+**关键依赖：** `graphLayout.ts` 需增加 `commitLaneMap: Map<string, { lane: number; isMerge: boolean }>` 导出
+
+### 3.7 右键菜单（使用 Naive UI NDropdown）
+
+**用 `NDropdown` 替代手写 `CommitContextMenu.vue`，减少代码量并获得更好的键盘导航和边界检测支持。**
 
 **菜单项定义：**
 ```typescript
-interface MenuItem {
-  id: string
-  label: string
-  icon?: string
-  shortcut?: string
-  divider?: boolean
-  disabled?: boolean
-  danger?: boolean
-  action: () => void
-}
+import type { DropdownOption } from 'naive-ui'
 
-const menuItems: MenuItem[] = [
-  { id: 'cherry-pick', label: 'Cherry-pick this commit', icon: '🍒' },
-  { id: 'divider-1', label: '', divider: true },
-  { id: 'rebase', label: 'Rebase current branch onto this...', icon: '🔀' },
-  { id: 'reset-soft', label: 'Reset to this commit (Soft)', icon: '↩️' },
-  { id: 'reset-mixed', label: 'Reset to this commit (Mixed)', icon: '↩️' },
-  { id: 'reset-hard', label: 'Reset to this commit (Hard)', icon: '↩️', danger: true },
-  { id: 'divider-2', label: '', divider: true },
-  { id: 'create-branch', label: 'Create Branch here...', icon: '🌿', shortcut: 'B' },
-  { id: 'create-tag', label: 'Tag this version...', icon: '🏷️', shortcut: 'T' },
-  { id: 'divider-3', label: '', divider: true },
-  { id: 'copy-sha', label: 'Copy SHA', icon: '📋', shortcut: 'Ctrl+C' },
-  { id: 'show-history', label: 'Show in File History', icon: '📁' },
-]
+function getMenuOptions(commit: Commit): DropdownOption[] {
+  return [
+    { key: 'cherry-pick', label: 'Cherry-pick this commit', icon: renderIcon('cherry') },
+    { key: 'divider-1', type: 'divider' },
+    { key: 'rebase', label: 'Rebase current branch onto this...', icon: renderIcon('rebase') },
+    { key: 'reset-soft', label: 'Reset to this commit (Soft)' },
+    { key: 'reset-mixed', label: 'Reset to this commit (Mixed)' },
+    { key: 'reset-hard', label: 'Reset to this commit (Hard)', props: { style: 'color: var(--danger-color)' } },
+    { key: 'divider-2', type: 'divider' },
+    { key: 'create-branch', label: 'Create Branch here...', icon: renderIcon('branch') },
+    { key: 'create-tag', label: 'Tag this version...', icon: renderIcon('tag') },
+    { key: 'divider-3', type: 'divider' },
+    { key: 'copy-sha', label: 'Copy SHA' },
+    { key: 'show-history', label: 'Show in File History' },
+  ]
+}
+```
+
+**在 SourceTreeCommitList 中使用：**
+```vue
+<NDropdown
+  trigger="manual"
+  :x="contextMenu.x"
+  :y="contextMenu.y"
+  :options="contextMenu.options"
+  :show="contextMenu.visible"
+  placement="bottom-start"
+  @select="handleMenuAction"
+  @clickoutside="closeContextMenu"
+/>
+```
+
+**自定义 renderIcon 函数（使用内联 SVG）：**
+```typescript
+function renderIcon(name: string) {
+  const paths: Record<string, string> = {
+    cherry: 'M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z',
+    rebase: 'M3 12h18M13 6l6 6-6 6',
+    branch: 'M6 3v12M18 9a3 3 0 100-6 3 3 0 000 6zM6 21a3 3 0 100-6 3 3 0 000 6z',
+    tag: 'M21 12l-9-9H3v9l9 9 9-9z',
+  }
+  return () => h('svg', { class: 'w-4 h-4', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24', innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${paths[name]}"/>` })
+}
 ```
 
 ## 4. Composables 设计
@@ -429,32 +516,73 @@ export function useResizableColumns() {
 
 ### 4.2 useVirtualScroll.ts
 
+**注意：行高不一致（commit 40px / group header 28px），不能用统一 rowHeight 乘法计算 offset。**
+
 ```typescript
-export function useVirtualScroll(containerRef, items, rowHeight = 40) {
+type VirtualItem =
+  | { type: 'commit'; commit: Commit; height: 40 }
+  | { type: 'group'; group: TimeGroup; height: 28 }
+
+export function useVirtualScroll(
+  containerRef: Ref<HTMLElement | null>,
+  items: Ref<VirtualItem[]>,
+) {
   const scrollTop = ref(0)
   const containerHeight = ref(600)
-  
-  const BUFFER_ROWS = 5
-  
-  const visibleRange = computed(() => {
-    const startRow = Math.floor(scrollTop.value / rowHeight)
-    return {
-      start: Math.max(0, startRow - BUFFER_ROWS),
-      end: Math.min(items.value.length, startRow + Math.ceil(containerHeight.value / rowHeight) + BUFFER_ROWS)
+
+  const BUFFER_PX = 200
+
+  const offsetMap = computed(() => {
+    const map: number[] = []
+    let acc = 0
+    for (const item of items.value) {
+      map.push(acc)
+      acc += item.height
     }
+    return map
   })
-  
-  const visibleItems = computed(() => 
-    items.value.slice(visibleRange.value.start, visibleRange.value.end)
-  )
-  
-  const totalHeight = computed(() => items.value.length * rowHeight)
-  
+
+  const totalHeight = computed(() => {
+    if (offsetMap.value.length === 0) return 0
+    return offsetMap.value[offsetMap.value.length - 1] + (items.value[items.value.length - 1]?.height ?? 0)
+  })
+
+  const visibleRange = computed(() => {
+    const top = scrollTop.value - BUFFER_PX
+    const bottom = scrollTop.value + containerHeight.value + BUFFER_PX
+    const map = offsetMap.value
+    let start = 0
+    let end = items.value.length - 1
+
+    for (let i = 0; i < map.length; i++) {
+      if (map[i] + items.value[i].height >= top) { start = i; break }
+    }
+    for (let i = map.length - 1; i >= 0; i--) {
+      if (map[i] <= bottom) { end = i; break }
+    }
+
+    return { start: Math.max(0, start), end: Math.min(items.value.length - 1, end) }
+  })
+
+  const visibleItems = computed(() => {
+    const { start, end } = visibleRange.value
+    return items.value.slice(start, end + 1).map((item, i) => ({
+      ...item,
+      offset: offsetMap.value[start + i],
+    }))
+  })
+
   function handleScroll(e: Event) {
     scrollTop.value = (e.target as HTMLElement).scrollTop
   }
-  
-  return { scrollTop, containerHeight, visibleRange, visibleItems, totalHeight, handleScroll }
+
+  function updateContainerHeight() {
+    if (containerRef.value) {
+      containerHeight.value = containerRef.value.clientHeight
+    }
+  }
+
+  return { scrollTop, containerHeight, visibleRange, visibleItems, totalHeight, offsetMap, handleScroll, updateContainerHeight }
 }
 ```
 
@@ -506,6 +634,86 @@ export function useDragDrop() {
 ```
 
 ## 5. 后端 API 扩展
+
+### 5.0 CommitRef 类型扩展（前置条件）
+
+**当前问题：** `Commit.refs: Vec<String>` 无法区分 local/remote/tag/head 类型，spec 的 BranchTagCell 需要 `ref_type` 和 `is_head`。
+
+**后端修改：** `src-tauri/src/models/commit.rs`
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CommitRef {
+    pub name: String,
+    pub ref_type: RefType,
+    pub is_head: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum RefType {
+    Local,   // refs/heads/*
+    Remote,  // refs/remotes/*
+    Tag,     // refs/tags/*
+}
+```
+
+**后端修改：** `src-tauri/src/services/commit_service.rs` 的 `build_ref_map`
+
+```rust
+fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<CommitRef>>, AppError> {
+    let head_shorthand = repo.head()
+        .ok()
+        .and_then(|h| h.shorthand().map(String::from));
+
+    let refs = repo.references()?;
+    for reference in refs {
+        let reference = reference?;
+        let full_name = reference.name().unwrap_or("");
+        let (ref_type, short_name) = if full_name.starts_with("refs/heads/") {
+            (RefType::Local, full_name.strip_prefix("refs/heads/").unwrap_or(""))
+        } else if full_name.starts_with("refs/remotes/") {
+            (RefType::Remote, full_name.strip_prefix("refs/remotes/").unwrap_or(""))
+        } else if full_name.starts_with("refs/tags/") {
+            (RefType::Tag, full_name.strip_prefix("refs/tags/").unwrap_or(""))
+        } else {
+            continue;
+        };
+
+        let is_head = head_shorthand.as_deref() == Some(short_name);
+
+        if let Some(oid) = reference.target() {
+            map.entry(oid.to_string()).or_default().push(CommitRef {
+                name: short_name.to_string(),
+                ref_type,
+                is_head,
+            });
+        }
+    }
+}
+```
+
+**前端修改：** `src/types/git.d.ts`
+
+```typescript
+export interface CommitRef {
+  name: string
+  ref_type: 'local' | 'remote' | 'tag'
+  is_head: boolean
+}
+
+export interface Commit {
+  id: string
+  message: string
+  author: string
+  email: string
+  time: number
+  parent_ids: string[]
+  refs: CommitRef[]  // 替换原来的 string[]
+}
+```
+
+**⚠️ 破坏性变更：** 所有使用 `commit.refs` 的前端代码需同步更新（从 `string` 改为 `CommitRef`）。
 
 ### 5.1 新增命令
 
@@ -661,6 +869,21 @@ pub enum ResetMode {
 - 右键菜单使用 contextmenu 事件（非 click）
 - 拖放使用 HTML5 Drag and Drop API
 - 列宽调整使用 passive 事件监听
+
+### 7.4 固定列（Sticky）与 Resize 联动
+
+**问题：** `branch` 列固定左侧、`author`+`date` 列固定右侧，在水平滚动时中间列可滚动。纯 flex 下 sticky 列需注意 resize 联动和选中行高亮同步。
+
+**方案：**
+1. 每个列 cell 使用 `position: sticky`，设置 `left/right` 值
+2. 列宽变化时通过 CSS 变量动态更新 sticky offset：
+   ```css
+   .col-branch { position: sticky; left: 0; z-index: 2; }
+   .col-author { position: sticky; right: var(--col-date-width); z-index: 2; }
+   .col-date { position: sticky; right: 0; z-index: 2; }
+   ```
+3. **选中行高亮统一处理**：选中行背景由 `CommitRow` 父层通过 `::before` 伪元素绘制（position absolute, 全宽），各列背景设 transparent 避免遮挡
+4. **sticky 列必须有背景色**：否则滚动内容会透出
 
 ## 8. 测试计划
 
