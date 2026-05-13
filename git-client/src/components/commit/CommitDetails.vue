@@ -35,13 +35,18 @@ function handleSelectFile(filePath: string) {
   }
 }
 
-watch(() => rightPanel.selectedCommitSha, async (sha) => {
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(() => rightPanel.selectedCommitSha, (sha) => {
   if (!sha || !repo.activeRepoPath) return
-  await diffStore.fetchCommitDiff(repo.activeRepoPath, sha)
-  const diffs = diffStore.getDiffs(repo.activeRepoPath)
-  const selectedCommit = repo.activeRepo?.selectedCommit
-  if (selectedCommit) {
-    rightPanel.setCommitDetail({ commit: selectedCommit, files: diffs })
-  }
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(async () => {
+    await diffStore.fetchCommitDiff(repo.activeRepoPath!, sha)
+    const diffs = diffStore.getDiffs(repo.activeRepoPath!)
+    const selectedCommit = repo.activeRepo?.selectedCommit
+    if (selectedCommit) {
+      rightPanel.setCommitDetail({ commit: selectedCommit, files: diffs })
+    }
+  }, 100)
 }, { immediate: true })
 </script>
