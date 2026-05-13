@@ -1,1 +1,31 @@
-// commit model - to be implemented
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Commit {
+    pub id: String,
+    pub message: String,
+    pub author: String,
+    pub author_email: String,
+    pub time: i64,
+    pub parent_ids: Vec<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_commit_serialize_deserialize() {
+        let commit = Commit {
+            id: "abc123".to_string(),
+            message: "init".to_string(),
+            author: "user".to_string(),
+            author_email: "user@example.com".to_string(),
+            time: 1700000000,
+            parent_ids: vec!["parent1".to_string()],
+        };
+        let json = serde_json::to_string(&commit).unwrap();
+        let parsed: Commit = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed, commit);
+    }
+}
