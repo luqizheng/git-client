@@ -25,12 +25,12 @@
         :style="{ height: totalHeight + 'px', position: 'relative', '--col-branch-width': getColumnWidth('branch') + 'px' }"
       >
         <GraphOverlay
-          :commits="displayCommits"
+          :visible-items="visibleGraphItems"
+          :lines="visibleLines"
           :selected-id="selectedCommitId"
           :graph-width="getColumnWidth('graph')"
           :graph-offset="getColumnWidth('branch')"
-          :scroll-top="scrollTop"
-          :viewport-height="containerHeight"
+          :total-height="totalHeight"
           @select="selectCommit"
         />
         <template v-for="item in visibleItems" :key="item.type === 'commit' ? item.commit.id : item.group.key">
@@ -80,6 +80,7 @@ import { useResizableColumns } from './composables/useResizableColumns'
 import { useVirtualScroll, createVirtualItems } from './composables/useVirtualScroll'
 import { useDragDrop } from './composables/useDragDrop'
 import { useTimeGrouping } from './composables/useTimeGrouping'
+import { computeGraphLayout, getLaneColor } from '../../utils/graphLayout'
 import ColumnHeader from './components/ColumnHeader.vue'
 import TimeGroupHeader from './components/TimeGroupHeader.vue'
 import CommitRow from './components/CommitRow.vue'
@@ -99,8 +100,6 @@ const { groups } = useTimeGrouping(displayCommits)
 const virtualItems = computed(() => createVirtualItems(displayCommits.value, groups.value))
 
 const {
-  scrollTop,
-  containerHeight,
   totalHeight,
   visibleItems,
   handleScroll,
@@ -108,6 +107,38 @@ const {
 } = useVirtualScroll(scrollContainer, virtualItems)
 
 const { dragState, onDragOver, onDragLeave } = useDragDrop()
+
+const layout = computed(() => computeGraphLayout(displayCommits.value))
+
+const visibleGraphItems = computed(() => {
+  return visibleItems.value
+    .filter((i): i is { type: 'commit'; commit: Commit; height: 40; offset: number } => i.type === 'commit')
+    .map(i => ({
+      commit: i.commit,
+      offset: i.offset,
+      lane: layout.value.commitLaneMap.get(i.commit.id)?.lane ?? 0,
+      isMerge: i.commit.parent_ids.length >= 2,
+    }))
+})
+
+const visibleLines = computed(() => {
+  const visibleCommitIds = new Set(visibleGraphItems.value.map(n => n.commit.id))
+  return layout.value.lines.filter(line => {
+    const fromCommit = displayCommits.value.find(c => {
+      const laneInfo = layout.value.commitLaneMap.get(c.id)
+      return laneInfo?.lane === line.fromLane
+    })
+    const toCommit = displayCommits.value.find(c => {
+      const laneInfo = layout.value.commitLaneMap.get(c.id)
+      return laneInfo?.lane === line.toLane
+    })
+    return (fromCommit && visibleCommitIds.has(fromCommit.id)) ||
+           (toCommit && visibleCommitIds.has(toCommit.id))
+  }).map(line => ({
+    ...line,
+    color: getLaneColor(line.fromLane),
+  }))
+})
 
 const contextMenu = reactive({
   visible: false,

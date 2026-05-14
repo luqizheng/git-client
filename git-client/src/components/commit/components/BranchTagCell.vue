@@ -1,17 +1,14 @@
 <template>
   <div class="branch-tag-cell" :style="{ width: width + 'px' }">
-    <template v-for="ref in commit.refs" :key="ref.name">
+    <template v-for="ref in sortedRefs" :key="ref.name">
       <div
-        v-if="ref.ref_type !== 'tag'"
         class="branch-tag"
         :class="[ref.ref_type, { 'is-head': ref.is_head }]"
         draggable="true"
         @dragstart="handleDragStart($event, ref)"
       >
-        <svg v-if="ref.is_head" class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16">
-          <circle cx="8" cy="8" r="4"/>
-        </svg>
-        <span class="tag-name">{{ truncate(ref.name, 15) }}</span>
+        <span class="tag-icon" :class="ref.ref_type" :style="{ background: getTagColor(ref) }"></span>
+        <span class="tag-name">{{ truncate(ref.name, 20) }}</span>
         <div class="tag-actions">
           <button class="action-btn" @click.stop="$emit('solo', ref.name)" title="Solo this branch">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Commit, CommitRef } from '../../../types/git'
 
 const props = defineProps<{
@@ -43,8 +41,29 @@ defineEmits<{
   hide: [branchName: string]
 }>()
 
+const sortedRefs = computed(() => {
+  return [...props.commit.refs].sort((a, b) => {
+    if (a.is_head !== b.is_head) return a.is_head ? -1 : 1
+    if (a.ref_type !== b.ref_type) {
+      const order = { local: 0, remote: 1, tag: 2 }
+      return order[a.ref_type] - order[b.ref_type]
+    }
+    return a.name.localeCompare(b.name)
+  })
+})
+
 function truncate(str: string, maxLen: number): string {
   return str.length <= maxLen ? str : str.slice(0, maxLen - 1) + '\u2026'
+}
+
+function getTagColor(ref: CommitRef): string {
+  if (ref.is_head) return '#ffb74d'
+  switch (ref.ref_type) {
+    case 'local': return '#81c784'
+    case 'remote': return '#64b5f6'
+    case 'tag': return '#ba68c8'
+    default: return '#90a4ae'
+  }
 }
 
 function handleDragStart(e: DragEvent, ref: CommitRef) {
@@ -63,42 +82,53 @@ function handleDragStart(e: DragEvent, ref: CommitRef) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .branch-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
   cursor: grab;
   transition: all 0.15s ease;
   white-space: nowrap;
+  height: 22px;
 }
 
 .branch-tag.local {
-  background: rgba(76, 175, 80, 0.15);
+  background: rgba(76, 175, 80, 0.2);
   color: #81c784;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(76, 175, 80, 0.4);
 }
 
 .branch-tag.remote {
-  background: rgba(33, 150, 243, 0.15);
+  background: rgba(33, 150, 243, 0.2);
   color: #64b5f6;
-  border: 1px solid rgba(33, 150, 243, 0.3);
+  border: 1px solid rgba(33, 150, 243, 0.4);
 }
 
 .branch-tag.tag {
-  background: rgba(156, 39, 176, 0.15);
+  background: rgba(156, 39, 176, 0.2);
   color: #ba68c8;
-  border: 1px solid rgba(156, 39, 176, 0.3);
+  border: 1px solid rgba(156, 39, 176, 0.4);
 }
 
 .branch-tag.is-head {
-  box-shadow: 0 0 0 1px currentColor;
+  background: rgba(255, 152, 0, 0.2);
+  color: #ffb74d;
+  border: 1px solid rgba(255, 152, 0, 0.5);
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3);
+}
+
+.tag-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .tag-name {
@@ -109,7 +139,7 @@ function handleDragStart(e: DragEvent, ref: CommitRef) {
 .tag-actions {
   display: none;
   gap: 2px;
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
 .branch-tag:hover .tag-actions {

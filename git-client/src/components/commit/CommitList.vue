@@ -88,7 +88,6 @@ const commits = useCommitsStore()
 const rightPanel = useRightPanelStore()
 
 const loadMoreRef = ref<HTMLElement | null>(null)
-const listContainerRef = ref<HTMLElement | null>(null)
 const activeBranchFilter = ref<string | null>(null)
 
 const filterOptions = [

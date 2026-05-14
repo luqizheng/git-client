@@ -14,11 +14,11 @@ const STORAGE_KEY = 'sourcetree-commit-list-columns'
 
 function getDefaultColumns(): ColumnConfig[] {
   return [
-    { key: 'branch', label: 'BRANCH / TAG', width: 140, minWidth: 80, maxWidth: 250, visible: true, fixed: 'left' },
-    { key: 'graph', label: 'GRAPH', width: 120, minWidth: 80, maxWidth: 200, visible: true },
-    { key: 'message', label: 'COMMIT MESSAGE', width: 300, minWidth: 200, maxWidth: 600, visible: true },
-    { key: 'author', label: 'AUTHOR', width: 100, minWidth: 60, maxWidth: 150, visible: true, fixed: 'right' },
-    { key: 'date', label: 'DATE / TIME', width: 150, minWidth: 120, maxWidth: 200, visible: true, fixed: 'right' },
+    { key: 'branch', label: 'BRANCH / TAG', width: 180, minWidth: 100, maxWidth: 300, visible: true, fixed: 'left' },
+    { key: 'graph', label: 'GRAPH', width: 200, minWidth: 120, maxWidth: 300, visible: true },
+    { key: 'message', label: 'COMMIT MESSAGE', width: 400, minWidth: 200, maxWidth: 800, visible: true },
+    { key: 'author', label: 'AUTHOR', width: 140, minWidth: 80, maxWidth: 200, visible: true },
+    { key: 'date', label: 'DATE', width: 100, minWidth: 80, maxWidth: 150, visible: true, fixed: 'right' },
   ]
 }
 

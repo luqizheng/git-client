@@ -4,10 +4,10 @@
     <div class="flex items-center gap-2 mb-1">
       <span class="font-mono text-blue-400 text-xs">{{ selectedCommit.id.slice(0, 7) }}</span>
       <span
-        v-for="refName in selectedCommit.refs"
-        :key="refName"
+        v-for="(ref, idx) in selectedCommit.refs"
+        :key="idx"
         class="text-xs px-1.5 py-0.5 rounded bg-green-900/40 text-green-400"
-      >{{ refName }}</span>
+      >{{ ref.name }}</span>
     </div>
     <div class="text-gray-100 text-sm mb-1">{{ selectedCommit.message.split('\n')[0] }}</div>
     <div v-if="selectedCommit.message.split('\n').length > 1" class="text-gray-400 text-xs mt-1 whitespace-pre-wrap">

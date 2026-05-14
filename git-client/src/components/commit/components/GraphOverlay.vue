@@ -5,7 +5,7 @@
   >
     <g class="lines-layer">
       <path
-        v-for="(line, idx) in visibleLines"
+        v-for="(line, idx) in lines"
         :key="`line-${idx}`"
         :d="getLinePath(line)"
         :stroke="line.color"
@@ -15,11 +15,11 @@
       />
     </g>
     <g class="nodes-layer">
-      <template v-for="node in visibleNodes" :key="node.commit.id">
+      <template v-for="node in visibleItems" :key="node.commit.id">
         <circle
           v-if="!node.isMerge"
           :cx="getLaneX(node.lane)"
-          :cy="node.y + ROW_HEIGHT / 2"
+          :cy="node.offset + ROW_HEIGHT / 2"
           :r="selectedId === node.commit.id ? 6 : 4"
           :fill="getLaneColor(node.lane)"
           stroke="#ffffff"
@@ -32,7 +32,7 @@
         <rect
           v-else
           :x="getLaneX(node.lane) - (selectedId === node.commit.id ? 5 : 4)"
-          :y="node.y + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
+          :y="node.offset + ROW_HEIGHT / 2 - (selectedId === node.commit.id ? 5 : 4)"
           :width="selectedId === node.commit.id ? 10 : 8"
           :height="selectedId === node.commit.id ? 10 : 8"
           rx="1"
@@ -50,54 +50,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { Commit } from '../../../types/git'
-import { computeGraphLayout, getLaneColor, type GraphLayout } from '../../../utils/graphLayout'
+import { getLaneColor } from '../../../utils/graphLayout'
 
 const ROW_HEIGHT = 40
 const LANE_WIDTH = 20
 
+interface VisibleItem {
+  commit: Commit
+  offset: number
+  lane: number
+  isMerge: boolean
+}
+
+interface Line {
+  fromLane: number
+  toLane: number
+  fromY: number
+  toY: number
+  color: string
+}
+
 const props = defineProps<{
-  commits: Commit[]
+  visibleItems: VisibleItem[]
+  lines: Line[]
   selectedId: string | null
   graphWidth: number
   graphOffset: number
-  scrollTop: number
-  viewportHeight: number
+  totalHeight: number
 }>()
 
 defineEmits<{
   select: [commit: Commit]
 }>()
 
-const layout = computed<GraphLayout>(() => {
-  if (props.commits.length === 0) {
-    return { nodes: [], lines: [], maxLane: 0, commitLaneMap: new Map() }
-  }
-  return computeGraphLayout(props.commits)
-})
-
-const totalHeight = computed(() => props.commits.length * ROW_HEIGHT)
-
-const BUFFER_PX = 200
-
-const visibleNodes = computed(() => {
-  const top = props.scrollTop - BUFFER_PX
-  const bottom = props.scrollTop + props.viewportHeight + BUFFER_PX
-  return layout.value.nodes.filter(node => node.y >= top && node.y <= bottom)
-})
-
-const visibleLines = computed(() => {
-  const top = props.scrollTop - BUFFER_PX
-  const bottom = props.scrollTop + props.viewportHeight + BUFFER_PX
-  return layout.value.lines.filter(line => line.fromY >= top && line.fromY <= bottom + ROW_HEIGHT)
-})
-
 function getLaneX(lane: number): number {
   return 12 + lane * LANE_WIDTH
 }
 
-function getLinePath(line: { fromLane: number; toLane: number; fromY: number; toY: number }): string {
+function getLinePath(line: Line): string {
   const fromX = getLaneX(line.fromLane)
   const toX = getLaneX(line.toLane)
   const fromY = line.fromY + ROW_HEIGHT / 2

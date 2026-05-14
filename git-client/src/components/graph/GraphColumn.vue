@@ -149,11 +149,8 @@ const emit = defineEmits<{
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
-const svgRef = ref<SVGSVGElement | null>(null)
 const scrollTop = ref(0)
 const viewportHeight = ref(600)
-
-const graphWidth = computed(() => props.width ?? 120)
 
 const layout = computed<GraphLayout>(() => {
   if (props.commits.length === 0) {
