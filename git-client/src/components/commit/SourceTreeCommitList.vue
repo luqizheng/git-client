@@ -106,7 +106,7 @@ const {
   updateContainerHeight,
 } = useVirtualScroll(scrollContainer, virtualItems)
 
-const { dragState, onDragOver, onDragLeave, onDrop } = useDragDrop()
+const { dragState, onDragOver, onDragLeave } = useDragDrop()
 
 const contextMenu = reactive({
   visible: false,
@@ -210,9 +210,16 @@ onMounted(() => {
     }
   }
   updateContainerHeight()
+  
+  window.addEventListener('resize', handleResize)
 })
 
+function handleResize() {
+  updateContainerHeight()
+}
+
 onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
