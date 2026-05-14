@@ -23,6 +23,7 @@
 <script setup lang="ts">
 import { NScrollbar } from 'naive-ui'
 import type { FileDiff, DiffStatus } from '../../types/git'
+import { statusIcon } from '../../utils/diff'
 
 defineProps<{
   files: FileDiff[]
@@ -32,11 +33,6 @@ defineProps<{
 defineEmits<{
   select: [path: string]
 }>()
-
-function statusIcon(status: DiffStatus): string {
-  const map: Record<DiffStatus, string> = { Added: 'A', Modified: 'M', Deleted: 'D', Renamed: 'R', Copied: 'C' }
-  return map[status]
-}
 
 function statusTextColor(status: DiffStatus): string {
   const map: Record<DiffStatus, string> = {

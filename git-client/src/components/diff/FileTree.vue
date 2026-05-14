@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import type { FileDiff, DiffStatus } from '../../types/git'
+import { statusIcon } from '../../utils/diff'
 
 defineProps<{
   files: FileDiff[]
@@ -25,16 +26,6 @@ defineProps<{
 }>()
 
 defineEmits<{ select: [path: string] }>()
-
-function statusIcon(status: DiffStatus): string {
-  switch (status) {
-    case 'Added': return 'A'
-    case 'Modified': return 'M'
-    case 'Deleted': return 'D'
-    case 'Renamed': return 'R'
-    case 'Copied': return 'C'
-  }
-}
 
 function statusColor(status: DiffStatus): string {
   switch (status) {

@@ -40,7 +40,8 @@
 import { computed } from 'vue'
 import { useRepoStore } from '../../stores/repo'
 import { useDiffStore } from '../../stores/diff'
-import type { DiffStatus, FileDiff } from '../../types/git'
+import type { FileDiff } from '../../types/git'
+import { statusIcon, statusColor } from '../../utils/diff'
 
 const repo = useRepoStore()
 const diffStore = useDiffStore()
@@ -58,21 +59,5 @@ function selectDiffFile(filePath: string) {
   if (path) {
     diffStore.selectFile(path, filePath)
   }
-}
-
-function statusIcon(status: DiffStatus): string {
-  const map: Record<DiffStatus, string> = { Added: 'A', Modified: 'M', Deleted: 'D', Renamed: 'R', Copied: 'C' }
-  return map[status]
-}
-
-function statusColor(status: DiffStatus): string {
-  const map: Record<DiffStatus, string> = {
-    Added: 'text-blue-400',
-    Modified: 'text-green-400',
-    Deleted: 'text-red-400',
-    Renamed: 'text-yellow-400',
-    Copied: 'text-yellow-400',
-  }
-  return map[status]
 }
 </script>

@@ -5,6 +5,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 
+interface DiffEditorInstance {
+  dispose(): void
+  goToDiff?(direction: 'next' | 'previous'): void
+}
+
 const props = defineProps<{
   original: string
   modified: string
@@ -18,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
-let editor: any = null
+let editor!: DiffEditorInstance | null
 
 onMounted(() => {
   // Monaco will be loaded dynamically
@@ -31,9 +36,7 @@ watch(() => [props.original, props.modified], () => {
 })
 
 onUnmounted(() => {
-  if (editor) {
-    editor.dispose()
-  }
+  editor?.dispose()
 })
 
 function goToNextChange() {

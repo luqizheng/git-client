@@ -75,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch, onMounted, onUnmounted, h } from 'vue'
+import { ref, computed, reactive, watch, onMounted, h } from 'vue'
+import { useEventListener } from '@vueuse/core'
 import { NDropdown } from 'naive-ui'
 import type { DropdownOption } from 'naive-ui'
 import type { Commit } from '../../types/git'
@@ -194,6 +195,7 @@ function selectCommit(commit: Commit) {
   if (repo.activeRepoPath) {
     commitsStore.selectCommit(repo.activeRepoPath, commit)
   }
+  emit('select', commit)
 }
 
 function handleContextMenu(e: MouseEvent, commit: Commit) {
@@ -216,8 +218,20 @@ function handleMenuAction(key: string) {
     case 'cherry-pick':
       emit('cherry-pick', contextMenu.commit.id)
       break
+    case 'rebase':
+      emit('cherry-pick', contextMenu.commit.id)
+      break
+    case 'reset-soft':
+    case 'reset-mixed':
+    case 'reset-hard':
+      break
+    case 'create-branch':
+    case 'create-tag':
+      break
     case 'copy-sha':
       navigator.clipboard.writeText(contextMenu.commit.id)
+      break
+    default:
       break
   }
 }
@@ -253,16 +267,12 @@ onMounted(() => {
     }
   }
   updateContainerHeight()
-  window.addEventListener('resize', handleResize)
+  useEventListener(window, 'resize', handleResize)
 })
 
 function handleResize() {
   updateContainerHeight()
 }
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
 </script>
 
 <style scoped>
@@ -299,7 +309,7 @@ onUnmounted(() => {
 
 .toolbar-btn:hover {
   color: var(--text-primary, #e0e0e0);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--hover-bg, rgba(255, 255, 255, 0.05));
 }
 
 .loading-text {
@@ -335,12 +345,12 @@ onUnmounted(() => {
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.15));
   border-radius: 4px;
 }
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--scrollbar-thumb-hover, rgba(255, 255, 255, 0.25));
 }
 
 .scroll-content {

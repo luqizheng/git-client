@@ -32,7 +32,7 @@ import { computed } from 'vue'
 import { NButton } from 'naive-ui'
 import { useStagingStore } from '../../stores/staging'
 import { useRepoStore } from '../../stores/repo'
-import type { DiffStatus } from '../../types/git'
+import { statusIcon } from '../../utils/diff'
 
 const staging = useStagingStore()
 const repo = useRepoStore()
@@ -43,16 +43,6 @@ const fileState = computed(() => {
 })
 const stagedFiles = computed(() => fileState.value.staged)
 const unstagedFiles = computed(() => fileState.value.unstaged)
-
-function statusIcon(status: DiffStatus): string {
-  switch (status) {
-    case 'Added': return 'A'
-    case 'Modified': return 'M'
-    case 'Deleted': return 'D'
-    case 'Renamed': return 'R'
-    case 'Copied': return 'C'
-  }
-}
 
 async function stage(path: string) {
   if (!repo.activeRepoPath) return
