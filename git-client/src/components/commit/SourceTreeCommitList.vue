@@ -28,6 +28,7 @@
           :commits="displayCommits"
           :selected-id="selectedCommitId"
           :graph-width="getColumnWidth('graph')"
+          :graph-offset="getColumnWidth('branch')"
           :scroll-top="scrollTop"
           :viewport-height="containerHeight"
           @select="selectCommit"

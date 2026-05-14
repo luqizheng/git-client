@@ -1,7 +1,7 @@
 <template>
   <svg
     class="graph-overlay"
-    :style="{ width: graphWidth + 'px', height: totalHeight + 'px' }"
+    :style="{ width: graphWidth + 'px', height: totalHeight + 'px', left: graphOffset + 'px' }"
   >
     <g class="lines-layer">
       <path
@@ -61,6 +61,7 @@ const props = defineProps<{
   commits: Commit[]
   selectedId: string | null
   graphWidth: number
+  graphOffset: number
   scrollTop: number
   viewportHeight: number
 }>()
