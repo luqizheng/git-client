@@ -9,6 +9,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { darkTheme } from 'naive-ui'
+import CommitList from './components/commit/CommitList.vue'
 import AppContent from './components/layout/AppContent.vue'
 import { useAppStore } from './stores/app'
 import { useRightPanelStore } from './stores/rightPanel'
