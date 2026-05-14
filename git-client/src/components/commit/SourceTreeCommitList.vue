@@ -8,32 +8,28 @@
         </svg>
         Show All
       </button>
+      <div v-if="loading" class="loading-text">
+        <span class="spinner"></span>
+        Loading...
+      </div>
     </div>
 
     <ColumnHeader
-      :columns="columns"
+      :columns="visibleColumns"
+      :graph-width="graphWidth"
       @resize="resizeColumn"
     />
 
     <div
       ref="scrollContainer"
       class="scroll-container"
-      @scroll="handleScroll"
+      @scroll="onScroll"
     >
       <div
         class="scroll-content"
-        :style="{ height: totalHeight + 'px', position: 'relative', '--col-branch-width': getColumnWidth('branch') + 'px' }"
+        :style="{ height: totalHeight + 'px' }"
       >
-        <GraphOverlay
-          :visible-items="visibleGraphItems"
-          :lines="visibleLines"
-          :selected-id="selectedCommitId"
-          :graph-width="getColumnWidth('graph')"
-          :graph-offset="getColumnWidth('branch')"
-          :total-height="totalHeight"
-          @select="selectCommit"
-        />
-        <template v-for="item in visibleItems" :key="item.type === 'commit' ? item.commit.id : item.group.key">
+        <template v-for="item in visibleItems" :key="getItemKey(item)">
           <TimeGroupHeader
             v-if="item.type === 'group'"
             :group="item.group"
@@ -42,16 +38,26 @@
           <CommitRow
             v-else
             :commit="item.commit"
-            :columns="columns"
+            :columns="visibleColumns"
+            :graph-width="graphWidth"
+            :graph-node="graph.nodes.get(item.commit.id)"
+            :graph-connections="graph.connections"
+            :max-lane="graph.maxLane"
             :selected="item.commit.id === selectedCommitId"
-            :is-drag-over="dragState.isDragging && dragState.targetCommit?.id === item.commit.id"
             :offset="item.offset"
             @click="selectCommit(item.commit)"
             @contextmenu="handleContextMenu($event, item.commit)"
-            @dragover="onDragOver(item.commit)"
-            @dragleave="onDragLeave"
           />
         </template>
+      </div>
+
+      <div v-if="loadingMore" class="loading-more">
+        <span class="spinner"></span>
+        Loading more commits...
+      </div>
+
+      <div v-if="!hasMore && displayCommits.length > 0" class="no-more">
+        No more commits
       </div>
     </div>
 
@@ -77,24 +83,29 @@ import { useCommitsStore } from '../../stores/commits'
 import { useRepoStore } from '../../stores/repo'
 import { invoke } from '../../utils/ipc'
 import { useResizableColumns } from './composables/useResizableColumns'
-import { useVirtualScroll, createVirtualItems } from './composables/useVirtualScroll'
-import { useDragDrop } from './composables/useDragDrop'
+import { useVirtualScroll, createVirtualItems, type VirtualItem } from './composables/useVirtualScroll'
 import { useTimeGrouping } from './composables/useTimeGrouping'
-import { computeGraphLayout, getLaneColor } from '../../utils/graphLayout'
+import { useInfiniteScroll } from './composables/useInfiniteScroll'
+import { useCommitGraph } from './composables/useCommitGraph'
 import ColumnHeader from './components/ColumnHeader.vue'
 import TimeGroupHeader from './components/TimeGroupHeader.vue'
 import CommitRow from './components/CommitRow.vue'
-import GraphOverlay from './components/GraphOverlay.vue'
 
 const repo = useRepoStore()
-const commits = useCommitsStore()
+const commitsStore = useCommitsStore()
 
-const { columns, resizeColumn, getColumnWidth } = useResizableColumns()
+const { columns, resizeColumn } = useResizableColumns()
 const scrollContainer = ref<HTMLElement | null>(null)
+
+const visibleColumns = computed(() =>
+  columns.value.filter(c => c.key !== 'graph')
+)
 
 const activeOpenRepo = computed(() => repo.activeRepo)
 const selectedCommitId = computed(() => activeOpenRepo.value?.selectedCommit?.id ?? null)
 const displayCommits = computed(() => activeOpenRepo.value?.commits ?? [])
+const loading = computed(() => activeOpenRepo.value?.loading ?? false)
+const hasMore = computed(() => activeOpenRepo.value?.hasMore ?? false)
 
 const { groups } = useTimeGrouping(displayCommits)
 const virtualItems = computed(() => createVirtualItems(displayCommits.value, groups.value))
@@ -106,39 +117,39 @@ const {
   updateContainerHeight,
 } = useVirtualScroll(scrollContainer, virtualItems)
 
-const { dragState, onDragOver, onDragLeave } = useDragDrop()
+const { graph, graphWidth } = useCommitGraph(displayCommits)
 
-const layout = computed(() => computeGraphLayout(displayCommits.value))
+const loadingMore = ref(false)
 
-const visibleGraphItems = computed(() => {
-  return visibleItems.value
-    .filter((i): i is { type: 'commit'; commit: Commit; height: 40; offset: number } => i.type === 'commit')
-    .map(i => ({
-      commit: i.commit,
-      offset: i.offset,
-      lane: layout.value.commitLaneMap.get(i.commit.id)?.lane ?? 0,
-      isMerge: i.commit.parent_ids.length >= 2,
-    }))
+async function loadMoreCommits() {
+  if (!repo.activeRepoPath || loadingMore.value || !hasMore.value) return
+
+  const lastCommit = displayCommits.value[displayCommits.value.length - 1]
+  if (!lastCommit) return
+
+  loadingMore.value = true
+  try {
+    await commitsStore.fetchLogs(repo.activeRepoPath, 50, lastCommit.id)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+const { handleScroll: handleInfiniteScroll } = useInfiniteScroll(scrollContainer, {
+  threshold: 200,
+  onLoadMore: loadMoreCommits,
+  hasMore,
+  loading: computed(() => loading.value || loadingMore.value),
 })
 
-const visibleLines = computed(() => {
-  const visibleCommitIds = new Set(visibleGraphItems.value.map(n => n.commit.id))
-  return layout.value.lines.filter(line => {
-    const fromCommit = displayCommits.value.find(c => {
-      const laneInfo = layout.value.commitLaneMap.get(c.id)
-      return laneInfo?.lane === line.fromLane
-    })
-    const toCommit = displayCommits.value.find(c => {
-      const laneInfo = layout.value.commitLaneMap.get(c.id)
-      return laneInfo?.lane === line.toLane
-    })
-    return (fromCommit && visibleCommitIds.has(fromCommit.id)) ||
-           (toCommit && visibleCommitIds.has(toCommit.id))
-  }).map(line => ({
-    ...line,
-    color: getLaneColor(line.fromLane),
-  }))
-})
+function onScroll(e: Event) {
+  handleScroll(e)
+  handleInfiniteScroll()
+}
+
+function getItemKey(item: VirtualItem & { offset: number }): string {
+  return item.type === 'commit' ? item.commit.id : item.group.key
+}
 
 const contextMenu = reactive({
   visible: false,
@@ -181,7 +192,7 @@ const contextMenuOptions = computed<DropdownOption[]>(() => [
 
 function selectCommit(commit: Commit) {
   if (repo.activeRepoPath) {
-    commits.selectCommit(repo.activeRepoPath, commit)
+    commitsStore.selectCommit(repo.activeRepoPath, commit)
   }
 }
 
@@ -213,7 +224,7 @@ function handleMenuAction(key: string) {
 
 function onShowAll() {
   if (repo.activeRepoPath) {
-    commits.clearBranchFilter(repo.activeRepoPath)
+    commitsStore.clearBranchFilter(repo.activeRepoPath)
   }
   emit('show-all')
 }
@@ -228,7 +239,7 @@ watch(() => repo.activeRepoPath, async (newPath) => {
   if (newPath) {
     const openRepo = repo.openRepos.get(newPath)
     if (openRepo && openRepo.commits.length === 0) {
-      await commits.fetchLogs(newPath)
+      await commitsStore.fetchLogs(newPath)
     }
     invoke('start_watch', { repoPath: newPath })
   }
@@ -238,11 +249,10 @@ onMounted(() => {
   if (repo.activeRepoPath) {
     const openRepo = repo.openRepos.get(repo.activeRepoPath)
     if (openRepo && openRepo.commits.length === 0) {
-      commits.fetchLogs(repo.activeRepoPath)
+      commitsStore.fetchLogs(repo.activeRepoPath)
     }
   }
   updateContainerHeight()
-  
   window.addEventListener('resize', handleResize)
 })
 
@@ -269,7 +279,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 4px 8px;
-  gap: 8px;
+  gap: 12px;
   border-bottom: 1px solid var(--border-color, #3c3c3c);
   background: var(--bg-secondary, #252526);
 }
@@ -292,6 +302,27 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary, #969696);
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border-color, #3c3c3c);
+  border-top-color: var(--accent-color, #0078d4);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .scroll-container {
   flex: 1;
   overflow-y: auto;
@@ -310,5 +341,27 @@ onUnmounted(() => {
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+.scroll-content {
+  position: relative;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-secondary, #969696);
+}
+
+.no-more {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-secondary, #969696);
+  opacity: 0.6;
 }
 </style>

@@ -1,11 +1,19 @@
 <template>
   <div class="column-header">
+    <!-- Graph 列头 -->
+    <div
+      class="column-header-cell graph-header"
+      :style="{ width: graphWidth + 'px', minWidth: graphWidth + 'px', maxWidth: graphWidth + 'px' }"
+    >
+      <span class="column-label">GRAPH</span>
+    </div>
+
     <div
       v-for="col in visibleColumns"
       :key="col.key"
       class="column-header-cell"
       :class="{ 'fixed-left': col.fixed === 'left', 'fixed-right': col.fixed === 'right' }"
-      :style="{ width: col.width + 'px', minWidth: col.width + 'px', maxWidth: col.width + 'px' }"
+      :style="{ width: col.width + 'px', minWidth: col.width + 'px', maxWidth: col.width + 'px', left: col.fixed === 'left' ? graphWidth + 'px' : 'auto' }"
     >
       <span class="column-label">{{ col.label }}</span>
       <div
@@ -22,13 +30,14 @@ import type { ColumnConfig } from '../composables/useResizableColumns'
 
 const props = defineProps<{
   columns: ColumnConfig[]
+  graphWidth: number
 }>()
 
 const emit = defineEmits<{
   resize: [columnKey: string, delta: number]
 }>()
 
-const visibleColumns = computed(() => props.columns.filter(c => c.visible))
+const visibleColumns = computed(() => props.columns.filter(c => c.visible && c.key !== 'graph'))
 
 let resizingKey: string | null = null
 let startX = 0
@@ -78,9 +87,15 @@ function onMouseUp() {
   background: var(--bg-secondary, #252526);
 }
 
-.column-header-cell.fixed-left {
+.graph-header {
   position: sticky;
   left: 0;
+  z-index: 3;
+  justify-content: center;
+}
+
+.column-header-cell.fixed-left {
+  position: sticky;
   z-index: 3;
 }
 

@@ -1,33 +1,50 @@
 <template>
   <div
     class="commit-row"
-    :class="{ selected, 'drag-over': isDragOver }"
-    :style="{ transform: `translateY(${offset ?? 0}px)` }"
+    :class="{ selected }"
+    :style="{ transform: `translateY(${offset}px)` }"
     @click="$emit('click')"
     @contextmenu="$emit('contextmenu', $event)"
-    @dragover.prevent="$emit('dragover')"
-    @dragleave="$emit('dragleave')"
-    @drop.prevent="handleDrop($event)"
   >
+    <GraphCell
+      :width="graphWidth"
+      :node="graphNode"
+      :connections="graphConnections"
+      :max-lane="maxLane"
+      :is-selected="selected"
+    />
+
     <BranchTagCell
       :commit="commit"
       :width="getColumnWidth('branch')"
       class="col-branch"
-      @solo="$emit('solo', $event)"
-      @hide="$emit('hide', $event)"
     />
-    <GraphCell :width="getColumnWidth('graph')" />
-    <MessageCell :commit="commit" :width="getColumnWidth('message')" />
-    <AuthorCell :commit="commit" :width="getColumnWidth('author')" class="col-author" />
-    <DateCell :commit="commit" :width="getColumnWidth('date')" class="col-date" />
+
+    <MessageCell
+      :commit="commit"
+      :width="getColumnWidth('message')"
+    />
+
+    <AuthorCell
+      :commit="commit"
+      :width="getColumnWidth('author')"
+      class="col-author"
+    />
+
+    <DateCell
+      :commit="commit"
+      :width="getColumnWidth('date')"
+      class="col-date"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Commit } from '../../../types/git'
 import type { ColumnConfig } from '../composables/useResizableColumns'
-import BranchTagCell from './BranchTagCell.vue'
+import type { GraphNode, GraphConnection } from '../composables/useCommitGraph'
 import GraphCell from './GraphCell.vue'
+import BranchTagCell from './BranchTagCell.vue'
 import MessageCell from './MessageCell.vue'
 import AuthorCell from './AuthorCell.vue'
 import DateCell from './DateCell.vue'
@@ -35,32 +52,21 @@ import DateCell from './DateCell.vue'
 const props = defineProps<{
   commit: Commit
   columns: ColumnConfig[]
+  graphWidth: number
+  graphNode: GraphNode | undefined
+  graphConnections: GraphConnection[]
+  maxLane: number
   selected: boolean
-  isDragOver: boolean
-  offset?: number
+  offset: number
 }>()
 
 const emit = defineEmits<{
   click: []
   contextmenu: [event: MouseEvent]
-  dragover: []
-  dragleave: []
-  drop: [data: { branchName: string; branchType: string }]
-  solo: [branchName: string]
-  hide: [branchName: string]
 }>()
 
 function getColumnWidth(key: string): number {
   return props.columns.find(c => c.key === key)?.width ?? 100
-}
-
-function handleDrop(e: DragEvent) {
-  const data = e.dataTransfer?.getData('application/x-branch')
-  if (data) {
-    try {
-      emit('drop', JSON.parse(data))
-    } catch {}
-  }
 }
 </script>
 
@@ -73,7 +79,6 @@ function handleDrop(e: DragEvent) {
   left: 0;
   right: 0;
   cursor: pointer;
-  border-bottom: 1px solid transparent;
   transition: background-color 0.15s ease;
 }
 
@@ -92,14 +97,9 @@ function handleDrop(e: DragEvent) {
   background: var(--row-selected, rgba(59, 130, 246, 0.3));
 }
 
-.commit-row.drag-over {
-  outline: 2px solid var(--drag-over-border, #3b82f6);
-  outline-offset: -2px;
-}
-
 .col-branch {
   position: sticky;
-  left: 0;
+  left: v-bind('graphWidth + "px"');
   z-index: 2;
   background: var(--bg-primary, #1a1a1a);
 }

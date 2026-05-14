@@ -13,6 +13,8 @@ export interface LaneLine {
   fromY: number
   toY: number
   color: string
+  fromCommitId: string
+  toCommitId: string
 }
 
 export interface GraphLayout {
@@ -70,6 +72,8 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
             fromY: i * rowHeight,
             toY: (i + 1) * rowHeight,
             color: getLaneColor(lane),
+            fromCommitId: commit.id,
+            toCommitId: parentId,
           })
         }
       }
@@ -84,6 +88,8 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
           fromY: i * rowHeight,
           toY: (i + 1) * rowHeight,
           color: getLaneColor(lane),
+          fromCommitId: commit.id,
+          toCommitId: nextCommit.id,
         })
       }
     }
