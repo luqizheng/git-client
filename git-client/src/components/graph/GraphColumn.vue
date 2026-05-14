@@ -157,7 +157,7 @@ const graphWidth = computed(() => props.width ?? 120)
 
 const layout = computed<GraphLayout>(() => {
   if (props.commits.length === 0) {
-    return { nodes: [], lines: [], maxLane: 0 }
+    return { nodes: [], lines: [], maxLane: 0, commitLaneMap: new Map() }
   }
   return computeGraphLayout(props.commits)
 })
