@@ -20,7 +20,7 @@ import { useRemoteStore } from './stores/remote'
 import { useCommitsStore } from './stores/commits'
 import { useAppStore } from './stores/app'
 import { useRightPanelStore } from './stores/rightPanel'
-import { injectApintoData } from './mocks/commits'
+import { injectMockData } from './mocks/commits'
 
 const repo = useRepoStore()
 const branches = useBranchesStore()
@@ -64,7 +64,7 @@ onMounted(async () => {
 
   const params = new URLSearchParams(window.location.search)
   if (params.get('mock') === '1' || !window.__TAURI__) {
-    injectApintoData()
+    injectMockData()
   }
 })
 </script>

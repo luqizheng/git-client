@@ -3,9 +3,8 @@ import { useRepoStore } from '../../../stores/repo'
 import { useCommitsStore } from '../../../stores/commits'
 import { invoke } from '../../../utils/ipc'
 import { useFilterGroup } from './useFilterGroup'
-import { useTimeGrouping } from './useTimeGrouping'
 import { useCommitGraph } from './useCommitGraph'
-import { useVirtualScroll, createVirtualItems } from './useVirtualScroll'
+import { useVirtualScroll } from './useVirtualScroll'
 import { useInteractions } from './useInteractions'
 import { useContextMenu } from './useContextMenu'
 import { useKeyboardNav } from './useKeyboardNav'
@@ -32,21 +31,14 @@ export function useCommitList() {
   const hasMore = computed(() => activeOpenRepo.value?.hasMore ?? false)
 
   const { filterText, filterType, filteredCommits } = useFilterGroup(displayCommits)
-  const { groups } = useTimeGrouping(filteredCommits)
 
-  const groupingEnabled = ref(true)
-  const collapsedGroups = ref<Set<string>>(new Set())
-
-  const virtualItems = computed(() => {
-    if (!groupingEnabled.value) {
-      return filteredCommits.value.map(c => ({
-        type: 'commit' as const,
-        commit: c,
-        height: 40,
-      }))
-    }
-    return createVirtualItems(filteredCommits.value, groups.value, collapsedGroups.value)
-  })
+  const virtualItems = computed(() =>
+    filteredCommits.value.map(c => ({
+      type: 'commit' as const,
+      commit: c,
+      height: 40,
+    }))
+  )
 
   const { graph, graphWidth } = useCommitGraph(filteredCommits)
 
@@ -68,12 +60,8 @@ export function useCommitList() {
 
   const { state: contextMenuState, open: openContextMenu, close: closeContextMenu } = useContextMenu()
 
-  const commitOnlyItems = computed(() =>
-    virtualItems.value.filter(i => i.type === 'commit'),
-  )
-
   const { focusedIndex, handleKeyDown, onEnter, onEscape, onSearch: _onSearch, setFocusedIndex } = useKeyboardNav(
-    computed(() => commitOnlyItems.value.length),
+    computed(() => virtualItems.value.length),
   )
 
   const loadingMore = ref(false)
@@ -118,15 +106,6 @@ export function useCommitList() {
     }
   }
 
-  function toggleGroup(key: string) {
-    if (collapsedGroups.value.has(key)) {
-      collapsedGroups.value.delete(key)
-      collapsedGroups.value = new Set(collapsedGroups.value)
-    } else {
-      collapsedGroups.value = new Set([...collapsedGroups.value, key])
-    }
-  }
-
   function scrollToCommit(commitId: string) {
     const idx = filteredCommits.value.findIndex(c => c.id.startsWith(commitId))
     if (idx !== -1) {
@@ -136,7 +115,7 @@ export function useCommitList() {
   }
 
   onEnter(() => {
-    const item = commitOnlyItems.value[focusedIndex.value]
+    const item = virtualItems.value[focusedIndex.value]
     if (item && item.type === 'commit') {
       selectCommit(item.commit)
     }
@@ -192,8 +171,6 @@ export function useCommitList() {
     loading,
     loadingMore,
     hasMore,
-    groupingEnabled,
-    collapsedGroups,
     focusedIndex,
     idToRowIdx,
     selectCommit,
@@ -205,7 +182,6 @@ export function useCommitList() {
     handleKeyDown,
     onScroll,
     loadMoreCommits,
-    toggleGroup,
     scrollToCommit,
     resizeColumn,
   }

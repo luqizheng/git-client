@@ -89,7 +89,24 @@ export function renderConnection(
   const toY = getNodeY(toRowIndex)
 
   ctx.beginPath()
-  if (conn.fromLane === conn.toLane) {
+  if (conn.type === 'merge') {
+    const mergeRow = Math.min(fromRowIndex, toRowIndex)
+    const parentRow = Math.max(fromRowIndex, toRowIndex)
+    const mergeX = getLaneX(conn.toLane)
+    const parentX = getLaneX(conn.fromLane)
+    const mergeY = getNodeY(mergeRow)
+    const parentY = getNodeY(parentRow)
+
+    if (fromRowIndex < toRowIndex) {
+      ctx.moveTo(parentX, parentY)
+      const midY = (parentY + mergeY) / 2
+      ctx.bezierCurveTo(parentX, midY, mergeX, midY, mergeX, mergeY)
+    } else {
+      ctx.moveTo(fromX, fromY)
+      const midY = (fromY + toY) / 2
+      ctx.bezierCurveTo(fromX, midY, toX, midY, toX, toY)
+    }
+  } else if (conn.fromLane === conn.toLane) {
     ctx.moveTo(fromX, fromY)
     ctx.lineTo(toX, toY)
   } else {

@@ -132,6 +132,8 @@ export function useCommitGraph(commits: Ref<Commit[]>) {
       }
     }
 
+    const preRowLanes = new Map<number, number[]>()
+
     for (let row = 0; row < n; row++) {
       const commit = commits.value[row]
       const currentRowLanes: number[] = []
@@ -139,6 +141,8 @@ export function useCommitGraph(commits: Ref<Commit[]>) {
         currentRowLanes.push(al.lane)
       }
       currentRowLanes.sort((a, b) => a - b)
+
+      preRowLanes.set(row, [...currentRowLanes])
 
       let myLaneIdx = findLaneForCommit(commit.id)
       let myLane: number
@@ -162,7 +166,42 @@ export function useCommitGraph(commits: Ref<Commit[]>) {
             type: 'straight',
           })
         } else {
-          activeLanes[myLaneIdx].targetCommitId = visibleParents[0]
+          const secondParents = visibleParents.slice(1)
+          const targetLane = activeLanes[myLaneIdx].lane
+
+          for (const parentId of secondParents) {
+            const parentLaneIdx = findLaneForCommit(parentId)
+            if (parentLaneIdx !== undefined) {
+              const parentLane = activeLanes[parentLaneIdx].lane
+              connections.push({
+                fromLane: parentLane,
+                toLane: targetLane,
+                fromCommitId: commit.id,
+                toCommitId: parentId,
+                type: 'merge',
+              })
+              removeActiveLane(parentLaneIdx)
+            } else {
+              const newLane = allocateLane()
+              activeLanes.push({ lane: newLane, targetCommitId: parentId })
+              laneOfCommit.set(parentId, newLane)
+              connections.push({
+                fromLane: newLane,
+                toLane: targetLane,
+                fromCommitId: commit.id,
+                toCommitId: parentId,
+                type: 'merge',
+              })
+            }
+          }
+
+          myLane = targetLane
+          laneOfCommit.set(commit.id, myLane)
+
+          const finalLaneIdx = activeLanes.findIndex(al => al.lane === targetLane)
+          if (finalLaneIdx >= 0) {
+            activeLanes[finalLaneIdx].targetCommitId = visibleParents[0]
+          }
           laneOfCommit.set(visibleParents[0], myLane)
           connections.push({
             fromLane: myLane,
@@ -171,90 +210,82 @@ export function useCommitGraph(commits: Ref<Commit[]>) {
             toCommitId: visibleParents[0],
             type: 'straight',
           })
+        }
+      } else {
+        const visibleParents = getVisibleParents(commit.parent_ids)
 
-          for (let p = 1; p < visibleParents.length; p++) {
-            const parentLaneIdx = findLaneForCommit(visibleParents[p])
+        if (visibleParents.length === 0) {
+          const lane = allocateLane()
+          activeLanes.push({ lane, targetCommitId: '' })
+          laneOfCommit.set(commit.id, lane)
+          myLane = lane
+          const lastIdx = activeLanes.findIndex(al => al.lane === lane)
+          if (lastIdx >= 0) removeActiveLane(lastIdx)
+        } else {
+          const firstParentLane = laneOfCommit.get(visibleParents[0])
+          let targetLane: number
+          let laneIdx: number
+
+          if (firstParentLane !== undefined) {
+            const existingIdx = activeLanes.findIndex(al => al.lane === firstParentLane)
+            if (existingIdx >= 0) {
+              targetLane = firstParentLane
+              laneIdx = existingIdx
+            } else {
+              laneIdx = activeLanes.length
+              activeLanes.push({ lane: firstParentLane, targetCommitId: '' })
+              targetLane = firstParentLane
+            }
+          } else {
+            const lane = allocateLane()
+            activeLanes.push({ lane, targetCommitId: '' })
+            targetLane = lane
+            laneIdx = activeLanes.length - 1
+            laneOfCommit.set(visibleParents[0], lane)
+          }
+
+          const secondParents = visibleParents.slice(1)
+
+          for (const parentId of secondParents) {
+            const parentLaneIdx = findLaneForCommit(parentId)
             if (parentLaneIdx !== undefined) {
               const parentLane = activeLanes[parentLaneIdx].lane
               connections.push({
                 fromLane: parentLane,
-                toLane: myLane,
+                toLane: targetLane,
                 fromCommitId: commit.id,
-                toCommitId: visibleParents[p],
+                toCommitId: parentId,
                 type: 'merge',
               })
               removeActiveLane(parentLaneIdx)
-              if (parentLaneIdx < myLaneIdx) myLaneIdx--
             } else {
-              const newLaneIdx = insertActiveLane(myLaneIdx, visibleParents[p])
-              const newLane = activeLanes[newLaneIdx].lane
-              laneOfCommit.set(visibleParents[p], newLane)
+              const newLane = allocateLane()
+              activeLanes.push({ lane: newLane, targetCommitId: parentId })
+              laneOfCommit.set(parentId, newLane)
               connections.push({
                 fromLane: newLane,
-                toLane: myLane,
+                toLane: targetLane,
                 fromCommitId: commit.id,
-                toCommitId: visibleParents[p],
+                toCommitId: parentId,
                 type: 'merge',
               })
-              myLaneIdx = newLaneIdx
-              myLane = activeLanes[myLaneIdx].lane
-              laneOfCommit.set(commit.id, myLane)
             }
           }
-        }
-      } else {
-        const lane = allocateLane()
-        activeLanes.push({ lane, targetCommitId: '' })
-        laneOfCommit.set(commit.id, lane)
-        myLane = lane
 
-        const visibleParents = getVisibleParents(commit.parent_ids)
+          myLane = targetLane
+          laneOfCommit.set(commit.id, myLane)
 
-        if (visibleParents.length === 0) {
-          const lastIdx = activeLanes.findIndex(al => al.lane === lane)
-          if (lastIdx >= 0) removeActiveLane(lastIdx)
-        } else if (visibleParents.length >= 1) {
-          const lastIdx = activeLanes.findIndex(al => al.lane === lane)
-          if (lastIdx >= 0) {
-            activeLanes[lastIdx].targetCommitId = visibleParents[0]
-            laneOfCommit.set(visibleParents[0], lane)
+          const finalLaneIdx = activeLanes.findIndex(al => al.lane === targetLane)
+          if (finalLaneIdx >= 0) {
+            activeLanes[finalLaneIdx].targetCommitId = visibleParents[0]
           }
           connections.push({
-            fromLane: lane,
-            toLane: lane,
+            fromLane: myLane,
+            toLane: myLane,
             fromCommitId: commit.id,
             toCommitId: visibleParents[0],
             type: 'straight',
           })
-
-          for (let p = 1; p < visibleParents.length; p++) {
-            const parentLaneIdx = findLaneForCommit(visibleParents[p])
-            if (parentLaneIdx !== undefined) {
-              const parentLane = activeLanes[parentLaneIdx].lane
-              connections.push({
-                fromLane: parentLane,
-                toLane: lane,
-                fromCommitId: commit.id,
-                toCommitId: visibleParents[p],
-                type: 'merge',
-              })
-              removeActiveLane(parentLaneIdx)
-            } else {
-              const newLaneIdx = insertActiveLane(
-                activeLanes.findIndex(al => al.lane === lane),
-                visibleParents[p],
-              )
-              const newLane = activeLanes[newLaneIdx].lane
-              laneOfCommit.set(visibleParents[p], newLane)
-              connections.push({
-                fromLane: newLane,
-                toLane: lane,
-                fromCommitId: commit.id,
-                toCommitId: visibleParents[p],
-                type: 'merge',
-              })
-            }
-          }
         }
       }
 
@@ -279,15 +310,42 @@ export function useCommitGraph(commits: Ref<Commit[]>) {
     }
 
     const activeLanesPerRow = new Map<number, number[]>()
-    for (let row = 0; row < n - 1; row++) {
-      const currLane = nodes.get(commits.value[row].id)?.lane
-      const nextLanes = new Set(postRowLanes.get(row + 1) ?? [])
-      const rowActiveLanes = (postRowLanes.get(row) ?? []).filter(
-        l => l !== currLane && nextLanes.has(l)
-      )
-      if (rowActiveLanes.length > 0) {
-        activeLanesPerRow.set(row, rowActiveLanes)
+    const tipLanes = new Set(tips.map(id => laneOfCommit.get(id)).filter((l): l is number => l !== undefined))
+
+    for (let row = 0; row < n; row++) {
+      const commitId = commits.value[row].id
+      const currLane = nodes.get(commitId)?.lane ?? 0
+      const preLanes = preRowLanes.get(row) ?? []
+      const postLanes = postRowLanes.get(row) ?? []
+      const nextPostLanes = row < n - 1 ? (postRowLanes.get(row + 1) ?? []) : []
+
+      const postLaneSet = new Set(postLanes)
+      const nextPostLaneSet = new Set(nextPostLanes)
+
+      const visibleParents = commits.value[row].parent_ids.filter(pid => idToIdx.has(pid))
+      const parentLanes = new Set(visibleParents.map(pid => laneOfCommit.get(pid)).filter((l): l is number => l !== undefined))
+
+      const passLanes = preLanes.filter(lane => {
+        if (lane === currLane) return false
+        if (parentLanes.has(lane)) return false
+        if (tipLanes.has(lane)) return false
+        if (!postLaneSet.has(lane)) return false
+        if (!nextPostLaneSet.has(lane)) return false
+        return true
+      })
+
+      const uniquePassLanes = [...new Set(passLanes)].sort((a, b) => a - b)
+
+      if (uniquePassLanes.length > 0) {
+        activeLanesPerRow.set(row, uniquePassLanes)
       }
+    }
+
+    for (const conn of connections) {
+      const fromNode = nodes.get(conn.fromCommitId)
+      const toNode = nodes.get(conn.toCommitId)
+      if (fromNode) conn.fromLane = fromNode.lane
+      if (toNode) conn.toLane = toNode.lane
     }
 
     return { nodes, connections, maxLane: nextLane, passThroughLanes: activeLanesPerRow, rowLanes }

@@ -7,10 +7,8 @@
     <CommitToolbar
       :filter-type="filterType"
       :match-count="filteredCommits.length !== displayCommits.length ? filteredCommits.length : null"
-      :grouping-enabled="groupingEnabled"
       @update:filter-type="filterType = $event"
       @search="filterText = $event"
-      @toggle-grouping="groupingEnabled = !groupingEnabled"
       @show-all="onShowAll"
     />
 
@@ -40,16 +38,8 @@
         class="scroll-content"
         :style="{ height: totalHeight + 'px' }"
       >
-        <template v-for="item in visibleItems" :key="item.type === 'group' ? item.group.key : item.commit.id">
-          <GroupHeader
-            v-if="item.type === 'group'"
-            :group="item.group"
-            :offset="item.offset"
-            :collapsed="collapsedGroups.has(item.group.key)"
-            @toggle="toggleGroup(item.group.key)"
-          />
+        <template v-for="item in visibleItems" :key="item.commit.id">
           <CommitRow
-            v-else
             :commit="item.commit"
             :columns="visibleColumns"
             :graph-width="graphWidth"
@@ -110,7 +100,6 @@ import { useRepoStore } from '../../stores/repo'
 import type { Commit } from '../../types/git'
 import CommitToolbar from './components/CommitToolbar.vue'
 import ColumnHeader from './components/ColumnHeader.vue'
-import GroupHeader from './components/GroupHeader.vue'
 import CommitRow from './components/CommitRow.vue'
 import CommitCanvas from './components/CommitCanvas.vue'
 import ContextMenu from './components/ContextMenu.vue'
@@ -135,8 +124,6 @@ const {
   loading: _loading,
   loadingMore,
   hasMore,
-  groupingEnabled,
-  collapsedGroups,
   focusedIndex,
   idToRowIdx,
   selectCommit,
@@ -146,7 +133,6 @@ const {
   closeContextMenu,
   handleKeyDown,
   onScroll,
-  toggleGroup,
   resizeColumn,
 } = useCommitList()
 
@@ -174,9 +160,8 @@ function handleClick(commit: Commit, e?: MouseEvent) {
 }
 
 function isFocusedItem(item: { type: string; commit?: Commit }): boolean {
-  if (item.type !== 'commit' || !item.commit) return false
-  const commitItems = visibleItems.value.filter(v => v.type === 'commit')
-  const idx = commitItems.findIndex(v => v.type === 'commit' && v.commit.id === item.commit!.id)
+  if (!item.commit) return false
+  const idx = visibleItems.value.findIndex(v => v.commit?.id === item.commit!.id)
   return idx === focusedIndex.value
 }
 

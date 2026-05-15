@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { GraphNode, GraphConnection } from '../composables/useCommitGraph'
 import { renderFullGraph, ROW_HEIGHT, getGraphWidth } from '../utils/graphRenderer'
 
@@ -27,9 +27,10 @@ const props = defineProps<{
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
-const canvasWidth = getGraphWidth(props.maxLane)
-const canvasHeight = props.totalRows * ROW_HEIGHT
 const dpr = window.devicePixelRatio || 1
+
+const canvasWidth = computed(() => getGraphWidth(props.maxLane))
+const canvasHeight = computed(() => props.totalRows * ROW_HEIGHT)
 
 function setupCanvas() {
   const canvas = canvasRef.value
@@ -67,6 +68,15 @@ function draw() {
 watch(
   () => [props.scrollTop, props.selectedCommitId, props.nodes, props.connections],
   () => draw(),
+  { flush: 'post' },
+)
+
+watch(
+  () => [canvasWidth.value, canvasHeight.value],
+  () => {
+    setupCanvas()
+    draw()
+  },
   { flush: 'post' },
 )
 

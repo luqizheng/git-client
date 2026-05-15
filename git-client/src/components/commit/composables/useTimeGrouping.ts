@@ -11,7 +11,8 @@ function getTimeGroup(timestamp: number): { key: string; label: string } {
   if (diffDays === 1) return { key: 'yesterday', label: 'Yesterday' }
   if (diffDays < 7) return { key: 'this-week', label: 'This Week' }
   if (diffDays < 30) return { key: 'this-month', label: 'This Month' }
-  return { key: 'older', label: 'Older' }
+  const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+  return { key: `older-${monthKey}`, label: `${date.getFullYear()}-${date.getMonth() + 1}` }
 }
 
 export function useTimeGrouping(commits: Ref<Commit[]>) {
