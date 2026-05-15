@@ -11,6 +11,8 @@
       :node="graphNode"
       :connections="graphConnections"
       :max-lane="maxLane"
+      :row-index="rowIndex"
+      :pass-through-lanes="passThroughLanes"
       :is-selected="selected"
     />
 
@@ -56,6 +58,8 @@ const props = defineProps<{
   graphNode: GraphNode | undefined
   graphConnections: GraphConnection[]
   maxLane: number
+  passThroughLanes: Map<number, number[]>
+  rowIndex: number
   selected: boolean
   offset: number
 }>()

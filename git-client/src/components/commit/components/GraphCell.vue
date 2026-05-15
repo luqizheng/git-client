@@ -1,10 +1,9 @@
 <template>
   <div class="graph-cell" :style="{ width: width + 'px' }">
     <svg class="graph-svg" :width="width" height="40">
-      <!-- 垂直连接线 -->
-      <template v-for="lane in visibleLanes" :key="`vline-${lane}`">
+      <!-- 穿越垂直线：只在需要时画（上下行有commit但当前行没有） -->
+      <template v-for="lane in passThroughLanesForRow" :key="`pt-${lane}`">
         <line
-          v-if="shouldDrawVerticalLine(lane)"
           :x1="getLaneX(lane)"
           :y1="0"
           :x2="getLaneX(lane)"
@@ -14,11 +13,11 @@
         />
       </template>
 
-      <!-- 水平连接线（从当前 commit 到父 commit） -->
+      <!-- 从当前commit出发的连接线 -->
       <template v-for="(conn, idx) in outgoingConnections" :key="`conn-${idx}`">
         <path
           :d="getConnectionPath(conn)"
-          :stroke="getLaneColor(conn.fromLane)"
+          :stroke="getConnectionColor(conn)"
           stroke-width="2"
           fill="none"
         />
@@ -63,18 +62,16 @@ const props = defineProps<{
   node: GraphNode | undefined
   connections: GraphConnection[]
   maxLane: number
+  passThroughLanes: Map<number, number[]>
+  rowIndex: number
   isSelected: boolean
 }>()
 
 const LANE_WIDTH = 16
 const PADDING = 12
 
-const visibleLanes = computed(() => {
-  const lanes = new Set<number>()
-  for (let i = 0; i <= props.maxLane; i++) {
-    lanes.add(i)
-  }
-  return Array.from(lanes).sort((a, b) => a - b)
+const passThroughLanesForRow = computed(() => {
+  return props.passThroughLanes.get(props.rowIndex) ?? []
 })
 
 const outgoingConnections = computed(() => {
@@ -85,14 +82,8 @@ function getLaneX(lane: number): number {
   return PADDING + lane * LANE_WIDTH
 }
 
-function shouldDrawVerticalLine(lane: number): boolean {
-  // 如果当前 commit 在这个 lane 上，或者有连接经过这个 lane
-  if (props.node?.lane === lane) return true
-
-  // 检查是否有连接经过这个 lane
-  return props.connections.some(conn =>
-    conn.fromLane === lane || conn.toLane === lane
-  )
+function getConnectionColor(conn: GraphConnection): string {
+  return getLaneColor(conn.fromLane)
 }
 
 function getConnectionPath(conn: GraphConnection): string {
@@ -105,9 +96,8 @@ function getConnectionPath(conn: GraphConnection): string {
     return `M ${fromX} ${fromY} L ${toX} ${toY}`
   }
 
-  // 曲线连接
   const midY = (fromY + toY) / 2
-  return `M ${fromX} ${fromY} Q ${fromX} ${midY} ${(fromX + toX) / 2} ${midY} Q ${toX} ${midY} ${toX} ${toY}`
+  return `M ${fromX} ${fromY} C ${fromX} ${midY} ${(fromX + toX) / 2} ${midY} ${toX} ${midY} C ${toX} ${midY} ${toX} ${(midY + toY) / 2} ${toX} ${toY}`
 }
 </script>
 

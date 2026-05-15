@@ -43,6 +43,8 @@
             :graph-node="graph.nodes.get(item.commit.id)"
             :graph-connections="graph.connections"
             :max-lane="graph.maxLane"
+            :pass-through-lanes="graph.passThroughLanes"
+            :row-index="getCommitRowIndex(item.commit.id)"
             :selected="item.commit.id === selectedCommitId"
             :offset="item.offset"
             @click="selectCommit(item.commit)"
@@ -120,6 +122,12 @@ const {
 
 const { graph, graphWidth } = useCommitGraph(displayCommits)
 
+const idToRowIdx = computed(() => {
+  const map = new Map<string, number>()
+  displayCommits.value.forEach((c, i) => map.set(c.id, i))
+  return map
+})
+
 const loadingMore = ref(false)
 
 async function loadMoreCommits() {
@@ -150,6 +158,10 @@ function onScroll(e: Event) {
 
 function getItemKey(item: VirtualItem & { offset: number }): string {
   return item.type === 'commit' ? item.commit.id : item.group.key
+}
+
+function getCommitRowIndex(commitId: string): number {
+  return idToRowIdx.value.get(commitId) ?? 0
 }
 
 const contextMenu = reactive({
