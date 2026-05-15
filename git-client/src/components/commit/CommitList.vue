@@ -40,7 +40,7 @@
         class="scroll-content"
         :style="{ height: totalHeight + 'px' }"
       >
-        <template v-for="item in visibleItems" :key="item.key ?? (item.type === 'group' ? item.group.key : item.commit.id)">
+        <template v-for="item in visibleItems" :key="item.type === 'group' ? item.group.key : item.commit.id">
           <GroupHeader
             v-if="item.type === 'group'"
             :group="item.group"

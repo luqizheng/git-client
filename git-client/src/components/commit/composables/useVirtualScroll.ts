@@ -1,5 +1,4 @@
-import { computed, type Ref } from 'vue'
-import { useVirtualizer } from '@tanstack/vue-virtual'
+import { ref, computed, type Ref } from 'vue'
 import type { Commit } from '../../../types/git'
 
 export interface TimeGroup {
@@ -37,38 +36,82 @@ export function createVirtualItems(
 }
 
 export function useVirtualScroll(
-  scrollContainerRef: Ref<HTMLElement | null>,
-  virtualItems: Ref<VirtualItem[]>,
+  containerRef: Ref<HTMLElement | null>,
+  items: Ref<VirtualItem[]>,
 ) {
-  const rowVirtualizer = useVirtualizer({
-    count: virtualItems.value.length,
-    getScrollElement: () => scrollContainerRef.value,
-    estimateSize: (index: number) => virtualItems.value[index]?.height ?? COMMIT_ROW_HEIGHT,
-    overscan: 10,
+  const scrollTop = ref(0)
+  const containerHeight = ref(600)
+  const BUFFER_PX = 200
+
+  const offsetMap = computed(() => {
+    const map: number[] = []
+    let acc = 0
+    for (const item of items.value) {
+      map.push(acc)
+      acc += item.height
+    }
+    return map
   })
 
-  const totalHeight = computed(() => rowVirtualizer.value.getTotalSize())
+  const totalHeight = computed(() => {
+    if (offsetMap.value.length === 0) return 0
+    const lastIdx = items.value.length - 1
+    return offsetMap.value[lastIdx] + (items.value[lastIdx]?.height ?? 0)
+  })
+
+  const visibleRange = computed(() => {
+    const top = scrollTop.value - BUFFER_PX
+    const bottom = scrollTop.value + containerHeight.value + BUFFER_PX
+    const map = offsetMap.value
+    let start = 0
+    let end = items.value.length - 1
+
+    for (let i = 0; i < map.length; i++) {
+      if (map[i] + items.value[i].height >= top) { start = i; break }
+    }
+    for (let i = map.length - 1; i >= 0; i--) {
+      if (map[i] <= bottom) { end = i; break }
+    }
+
+    return { start: Math.max(0, start), end: Math.min(items.value.length - 1, end) }
+  })
 
   const visibleItems = computed(() => {
-    return rowVirtualizer.value.getVirtualItems().map(vi => {
-      const item = virtualItems.value[vi.index]
-      return {
-        ...item,
-        offset: vi.start,
-        size: vi.size,
-        key: vi.key,
-      }
-    })
+    const { start, end } = visibleRange.value
+    return items.value.slice(start, end + 1).map((item, i) => ({
+      ...item,
+      offset: offsetMap.value[start + i],
+    }))
   })
 
+  function handleScroll(e: Event) {
+    scrollTop.value = (e.target as HTMLElement).scrollTop
+  }
+
+  function updateContainerHeight() {
+    if (containerRef.value) {
+      containerHeight.value = containerRef.value.clientHeight
+    }
+  }
+
   function scrollToIndex(index: number) {
-    rowVirtualizer.value.scrollToIndex(index, { align: 'center' })
+    if (!containerRef.value) return
+    const offset = offsetMap.value[index]
+    if (offset !== undefined) {
+      const target = offset - (containerHeight.value / 2) + (items.value[index]?.height ?? 40) / 2
+      containerRef.value.scrollTop = Math.max(0, target)
+    }
   }
 
   return {
-    rowVirtualizer,
-    totalHeight,
+    scrollTop,
+    containerHeight,
+    visibleRange,
     visibleItems,
+    totalHeight,
+    offsetMap,
+    handleScroll,
+    updateContainerHeight,
     scrollToIndex,
   }
 }

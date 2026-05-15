@@ -53,6 +53,8 @@ export function useCommitList() {
   const {
     totalHeight,
     visibleItems,
+    handleScroll: handleVScroll,
+    updateContainerHeight,
     scrollToIndex,
   } = useVirtualScroll(scrollContainer, virtualItems)
 
@@ -95,7 +97,8 @@ export function useCommitList() {
     loading: computed(() => loading.value || loadingMore.value),
   })
 
-  function onScroll() {
+  function onScroll(e: Event) {
+    handleVScroll(e)
     handleInfiniteScroll()
     if (scrollContainer.value) {
       scrollTop.value = scrollContainer.value.scrollTop
@@ -164,6 +167,7 @@ export function useCommitList() {
     if (scrollContainer.value) {
       viewportHeight.value = scrollContainer.value.clientHeight
     }
+    updateContainerHeight()
   })
 
   return {
