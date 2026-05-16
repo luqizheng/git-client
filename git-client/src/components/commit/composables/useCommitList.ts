@@ -2,6 +2,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { useRepoStore } from '../../../stores/repo'
 import { useCommitsStore } from '../../../stores/commits'
+import { useRightPanelStore } from '../../../stores/rightPanel'
 import { useFilter } from './useFilter'
 import { useInfiniteScroll } from './useInfiniteScroll'
 import type { Commit } from '../../../types/git'
@@ -18,6 +19,7 @@ const ROW_HEIGHT = 40
 export function useCommitList() {
   const repoStore = useRepoStore()
   const commitsStore = useCommitsStore()
+  const rightPanelStore = useRightPanelStore()
 
   const scrollContainer = ref<HTMLElement | null>(null)
   const loadingMore = ref(false)
@@ -69,6 +71,9 @@ export function useCommitList() {
   function selectCommit(commit: Commit | null) {
     if (repoStore.activeRepoPath) {
       commitsStore.selectCommit(repoStore.activeRepoPath, commit)
+      if (commit) {
+        rightPanelStore.showPanel('commit', commit.id)
+      }
     }
   }
 
