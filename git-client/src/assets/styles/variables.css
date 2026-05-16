@@ -12,4 +12,59 @@
   --accent-red: #e57373;
   --accent-yellow: #fff176;
   --accent-purple: #ba68c8;
+  --scrollbar-track: #181825;
+  --scrollbar-thumb: #45475a;
+  --scrollbar-thumb-hover: #585b70;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+:root,
+[data-theme="dark"] {
+  --commit-bg: transparent;
+  --commit-bg-hover: rgba(255, 255, 255, 0.05);
+  --commit-bg-selected: rgba(59, 130, 246, 0.3);
+  --commit-text: #e0e0e0;
+  --commit-text-secondary: #969696;
+  --commit-border: #3c3c3c;
+  --scrollbar-track: #1e1e2e;
+  --scrollbar-thumb: #45475a;
+  --scrollbar-thumb-hover: #585b70;
+}
+
+[data-theme="light"] {
+  --commit-bg: transparent;
+  --commit-bg-hover: rgba(0, 0, 0, 0.04);
+  --commit-bg-selected: rgba(59, 130, 246, 0.15);
+  --commit-text: #1a1a1a;
+  --commit-text-secondary: #666666;
+  --commit-border: #e0e0e0;
+  --scrollbar-track: #f5f5f5;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a8a8a8;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
