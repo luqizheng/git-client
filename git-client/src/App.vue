@@ -1,9 +1,7 @@
 <template>
   <n-config-provider :theme="theme">
     <n-message-provider>
-      <AppLayout>
-        <CommitList />
-      </AppLayout>
+      <AppLayout />
     </n-message-provider>
   </n-config-provider>
 </template>
@@ -12,7 +10,6 @@
 import { computed, onMounted } from 'vue'
 import { darkTheme } from 'naive-ui'
 import AppLayout from './components/layout/AppLayout.vue'
-import CommitList from './components/commit/CommitList.vue'
 import { useKeyboard } from './composables/useKeyboard'
 import { useRepoStore } from './stores/repo'
 import { useBranchesStore } from './stores/branches'
