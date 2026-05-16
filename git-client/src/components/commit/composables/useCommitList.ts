@@ -43,6 +43,10 @@ export function useCommitList() {
     getScrollElement: () => scrollContainer.value,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
+    getItem: (index: number) => ({
+      index,
+      commit: filteredCommits.value[index],
+    }),
   })))
 
   const totalHeight = computed(() => rowVirtualizer.value.getTotalSize())
