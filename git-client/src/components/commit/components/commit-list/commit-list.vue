@@ -6,6 +6,7 @@ import type { DropdownOption } from 'naive-ui'
 import { useCommitList } from '../../composables/useCommitList'
 import type { Commit } from '../../../../types/git'
 import HashCell from '../cells/HashCell.vue'
+import BranchTagCell from '../cells/BranchTagCell.vue'
 import MessageCell from '../cells/MessageCell.vue'
 import AuthorCell from '../cells/AuthorCell.vue'
 import DateCell from '../cells/DateCell.vue'
@@ -102,10 +103,11 @@ function renderIcon(name: string) {
     </div>
 
     <div class="column-header flex items-center h-7 px-3 text-xs text-[var(--commit-text-secondary)] border-b border-[var(--commit-border,#3c3c3c)] shrink-0">
-      <span class="w-24 shrink-0">Hash</span>
+      <span class="w-36 shrink-0">Branch / Tag</span>
+      <span class="w-20 shrink-0">Hash</span>
       <span class="flex-1 min-w-0">Message</span>
-      <span class="w-36 shrink-0">Author</span>
-      <span class="w-24 shrink-0 text-right">Date</span>
+      <span class="w-28 shrink-0">Author</span>
+      <span class="w-20 shrink-0 text-right">Date</span>
     </div>
 
     <div
@@ -138,6 +140,9 @@ function renderIcon(name: string) {
             @mouseenter="setHovered(filteredCommits[item.index].id)"
             @mouseleave="setHovered(null)"
           >
+            <div class="w-36 shrink-0 overflow-hidden">
+              <BranchTagCell :refs="filteredCommits[item.index].refs" />
+            </div>
             <div class="w-20 shrink-0">
               <HashCell :hash="filteredCommits[item.index].id" />
             </div>
@@ -147,7 +152,7 @@ function renderIcon(name: string) {
                 :query="filterText"
               />
             </div>
-            <div class="w-32 shrink-0">
+            <div class="w-28 shrink-0 overflow-hidden">
               <AuthorCell :author="filteredCommits[item.index].author" />
             </div>
             <div class="w-20 shrink-0 text-right">
