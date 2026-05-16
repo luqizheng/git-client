@@ -126,37 +126,36 @@ function renderIcon(name: string) {
             width: '100%',
             transform: `translateY(${item.start}px)`,
           }"
-          :data-index="item.index"
         >
           <div
-            v-if="item.commit"
+            v-if="filteredCommits[item.index]"
             class="commit-row flex items-center h-10 px-3 border-b border-[var(--commit-border,#3c3c3c)] cursor-pointer transition-colors"
             :class="{
-              'bg-[var(--commit-bg-selected,rgba(59,130,246,0.3))]': item.commit.id === selectedCommitId,
-              'bg-[var(--commit-bg-hover,rgba(255,255,255,0.05))]': item.commit.id === hoveredId && item.commit.id !== selectedCommitId,
+              'bg-[var(--commit-bg-selected,rgba(59,130,246,0.3))]': filteredCommits[item.index].id === selectedCommitId,
+              'bg-[var(--commit-bg-hover,rgba(255,255,255,0.05))]': filteredCommits[item.index].id === hoveredId && filteredCommits[item.index].id !== selectedCommitId,
             }"
-            @click="handleClick(item.commit)"
-            @contextmenu="onContextMenu($event, item.commit)"
-            @mouseenter="setHovered(item.commit.id)"
+            @click="handleClick(filteredCommits[item.index])"
+            @contextmenu="onContextMenu($event, filteredCommits[item.index])"
+            @mouseenter="setHovered(filteredCommits[item.index].id)"
             @mouseleave="setHovered(null)"
           >
             <div class="w-36 shrink-0 overflow-hidden">
-              <BranchTagCell :refs="item.commit.refs" />
+              <BranchTagCell :refs="filteredCommits[item.index].refs" />
             </div>
             <div class="w-20 shrink-0">
-              <HashCell :hash="item.commit.id" />
+              <HashCell :hash="filteredCommits[item.index].id" />
             </div>
             <div class="flex-1 min-w-0 mr-2">
               <MessageCell
-                :message="item.commit.message"
+                :message="filteredCommits[item.index].message"
                 :query="filterText"
               />
             </div>
             <div class="w-28 shrink-0 overflow-hidden">
-              <AuthorCell :author="item.commit.author" />
+              <AuthorCell :author="filteredCommits[item.index].author" />
             </div>
             <div class="w-20 shrink-0 text-right">
-              <DateCell :timestamp="item.commit.time" />
+              <DateCell :timestamp="filteredCommits[item.index].time" />
             </div>
           </div>
         </div>

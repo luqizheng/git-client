@@ -38,16 +38,12 @@ export function useCommitList() {
     commit: null,
   })
 
-  const rowVirtualizer = useVirtualizer(computed(() => ({
-    count: filteredCommits.value.length,
+  const rowVirtualizer = useVirtualizer({
+    get count() { return filteredCommits.value.length },
     getScrollElement: () => scrollContainer.value,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
-    getItem: (index: number) => ({
-      index,
-      commit: filteredCommits.value[index],
-    }),
-  })))
+  })
 
   const totalHeight = computed(() => rowVirtualizer.value.getTotalSize())
   const visibleItems = computed(() => rowVirtualizer.value.getVirtualItems())
