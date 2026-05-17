@@ -68,5 +68,9 @@ export const useCommitsStore = defineStore('commits', () => {
     }
   }
 
-  return { fetchLogs, selectCommit, clearCommits, filterByBranch, clearBranchFilter }
+  async function cherryPick(repoPath: string, commitId: string) {
+    await invoke('cherry_pick', { repo_path: repoPath, commit_id: commitId })
+  }
+
+  return { fetchLogs, selectCommit, clearCommits, filterByBranch, clearBranchFilter, cherryPick }
 })

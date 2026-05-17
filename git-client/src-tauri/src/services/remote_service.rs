@@ -25,6 +25,16 @@ pub fn add_remote(repo: &git2::Repository, name: &str, url: &str) -> Result<(), 
     Ok(())
 }
 
+pub fn remove_remote(repo: &git2::Repository, name: &str) -> Result<(), AppError> {
+    repo.remote_delete(name)?;
+    Ok(())
+}
+
+pub fn rename_remote(repo: &git2::Repository, old_name: &str, new_name: &str) -> Result<(), AppError> {
+    repo.remote_rename(old_name, new_name)?;
+    Ok(())
+}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct FetchProgress {
     pub stage: String,

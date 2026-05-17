@@ -94,3 +94,15 @@ pub fn cherry_pick(repo: &mut git2::Repository, commit_id: &str) -> Result<Cherr
         conflicts,
     })
 }
+
+pub fn revert(repo: &mut git2::Repository, commit_id: &str) -> Result<(), AppError> {
+    let oid = git2::Oid::from_str(commit_id)?;
+    let commit = repo.find_commit(oid)?;
+    let mut opts = git2::RevertOptions::new();
+    repo.revert(&commit, Some(&mut opts))?;
+    let index = repo.index()?;
+    if index.has_conflicts() {
+        return Err(AppError::Conflict(Vec::new()));
+    }
+    Ok(())
+}

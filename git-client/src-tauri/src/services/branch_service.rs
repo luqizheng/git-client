@@ -71,6 +71,78 @@ pub fn delete_branch(repo: &git2::Repository, name: &str, _force: bool) -> Resul
     Ok(())
 }
 
+pub fn rebase(repo: &mut git2::Repository, upstream: &str, branch: Option<&str>) -> Result<(), AppError> {
+    let target_branch = match branch {
+        Some(name) => {
+            let b = repo.find_branch(name, git2::BranchType::Local)?;
+            repo.reference_to_annotated_commit(b.get())?
+        }
+        None => {
+            let head = repo.head()?;
+            repo.reference_to_annotated_commit(&head)?
+        }
+    };
+
+    let upstream_ref = repo.find_reference(&format!("refs/heads/{}", upstream))?;
+    let upstream_annotated = repo.reference_to_annotated_commit(&upstream_ref)?;
+
+    let mut rebase = repo.rebase(
+        Some(&target_branch),
+        Some(&upstream_annotated),
+        None,
+        None,
+    )?;
+
+    while let Some(operation) = rebase.next() {
+        let _op = operation?;
+        if let Err(e) = rebase.commit(None, &repo.signature()?, None) {
+            rebase.abort()?;
+            return Err(AppError::Git(e));
+        }
+    }
+
+    rebase.finish(None)?;
+    Ok(())
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct BranchCompareResult {
+    pub ahead: u32,
+    pub behind: u32,
+    pub base_commit: String,
+    pub compare_commit: String,
+}
+
+pub fn compare_branches(
+    repo: &git2::Repository,
+    base: &str,
+    compare: &str,
+) -> Result<BranchCompareResult, AppError> {
+    let base_oid = repo.revparse_single(base)?.id();
+    let compare_oid = repo.revparse_single(compare)?.id();
+
+    let ahead = count_commits_between(repo, compare_oid, base_oid)?;
+    let behind = count_commits_between(repo, base_oid, compare_oid)?;
+
+    Ok(BranchCompareResult {
+        ahead,
+        behind,
+        base_commit: base_oid.to_string(),
+        compare_commit: compare_oid.to_string(),
+    })
+}
+
+fn count_commits_between(
+    repo: &git2::Repository,
+    from: git2::Oid,
+    to: git2::Oid,
+) -> Result<u32, AppError> {
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push(to)?;
+    revwalk.hide(from)?;
+    Ok(revwalk.count() as u32)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

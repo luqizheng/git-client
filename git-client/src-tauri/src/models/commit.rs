@@ -35,6 +35,14 @@ pub enum SearchFilter {
     File,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdvancedSearchFilter {
+    pub author: Option<String>,
+    pub since: Option<i64>,
+    pub until: Option<i64>,
+    pub path: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -121,3 +121,20 @@ export interface FileContent {
   old_path: string | null
   new_path: string | null
 }
+
+export interface Tag {
+  name: string
+  target: string
+  message?: string
+  tagger?: string
+  date?: string
+}
+
+export interface Submodule {
+  name: string
+  path: string
+  url: string
+  branch?: string
+  sha: string
+  is_initialized: boolean
+}

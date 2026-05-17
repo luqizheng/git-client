@@ -137,3 +137,34 @@ pub async fn push(
     })
     .await?
 }
+
+#[tauri::command]
+pub async fn remove_remote(
+    state: State<'_, AppState>,
+    repo_path: String,
+    name: String,
+) -> Result<(), AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        remote_service::remove_remote(&repo, &name)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn rename_remote(
+    state: State<'_, AppState>,
+    repo_path: String,
+    old_name: String,
+    new_name: String,
+) -> Result<(), AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        remote_service::rename_remote(&repo, &old_name, &new_name)
+    })
+    .await?
+}

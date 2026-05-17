@@ -1,8 +1,13 @@
-pub mod repo_service;
-pub mod commit_service;
 pub mod branch_service;
-pub mod remote_service;
+pub mod commit_service;
 pub mod diff_service;
+pub mod git_flow_service;
+pub mod hook_service;
 pub mod merge_service;
-pub mod stash_service;
+pub mod remote_service;
+pub mod repo_service;
 pub mod reset_service;
+pub mod stash_service;
+pub mod submodule_service;
+pub mod tag_service;
+pub mod worktree_service;
