@@ -19,6 +19,7 @@
     "@tanstack/vue-virtual": "^3.13.24",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.7.1",
+    "@vicons/ionicons5": "^0.13.0",
     "@vueuse/core": "^14.3.0",
     "naive-ui": "^2.44.1",
     "pinia": "^3.0.4",

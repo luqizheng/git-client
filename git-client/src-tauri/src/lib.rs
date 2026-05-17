@@ -85,6 +85,7 @@ pub fn run() {
             commands::diff::get_diff,
             commands::diff::get_working_diff,
             commands::diff::get_staged_diff,
+            commands::diff::get_file_content,
             commands::diff::stage_files,
             commands::diff::unstage_files,
             commands::diff::resolve_conflict,

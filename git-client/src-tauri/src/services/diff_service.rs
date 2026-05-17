@@ -75,6 +75,79 @@ pub fn unstage_files(repo: &git2::Repository, paths: &[String]) -> Result<(), Ap
     Ok(())
 }
 
+#[derive(serde::Serialize)]
+pub struct FileContent {
+    pub old_content: Option<String>,
+    pub new_content: Option<String>,
+    pub old_path: Option<String>,
+    pub new_path: Option<String>,
+}
+
+pub fn get_file_content(
+    repo: &git2::Repository,
+    commit_id: &str,
+    file_path: &str,
+) -> Result<FileContent, AppError> {
+    let oid = git2::Oid::from_str(commit_id)?;
+    let commit = repo.find_commit(oid)?;
+    let tree = commit.tree()?;
+    let parent_tree = if commit.parent_count() > 0 {
+        Some(repo.find_commit(commit.parent_id(0)?)?.tree()?)
+    } else {
+        None
+    };
+
+    let new_content = get_blob_content(repo, &tree, file_path)?;
+    
+    let (old_content, old_path) = if let Some(ref parent) = parent_tree {
+        let mut old_content = get_blob_content(repo, parent, file_path)?;
+        let mut old_path = Some(file_path.to_string());
+        
+        if old_content.is_none() {
+            if let Ok(diff) = repo.diff_tree_to_tree(Some(parent), Some(&tree), None) {
+                for i in 0..diff.deltas().len() {
+                    if let Some(delta) = diff.get_delta(i) {
+                        let delta_new_path = delta.new_file().path()
+                            .map(|p| p.to_string_lossy().to_string());
+                        if delta_new_path == Some(file_path.to_string()) {
+                            if let Some(old_p) = delta.old_file().path() {
+                                let old_p_str = old_p.to_string_lossy().to_string();
+                                old_content = get_blob_content(repo, parent, &old_p_str)?;
+                                old_path = Some(old_p_str);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        (old_content, old_path)
+    } else {
+        (None, None)
+    };
+
+    Ok(FileContent {
+        old_content,
+        new_content,
+        old_path,
+        new_path: Some(file_path.to_string()),
+    })
+}
+
+fn get_blob_content(
+    repo: &git2::Repository,
+    tree: &git2::Tree,
+    path: &str,
+) -> Result<Option<String>, AppError> {
+    match tree.get_path(std::path::Path::new(path)) {
+        Ok(entry) => {
+            let blob = repo.find_blob(entry.id())?;
+            Ok(Some(String::from_utf8_lossy(blob.content()).to_string()))
+        }
+        Err(_) => Ok(None),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

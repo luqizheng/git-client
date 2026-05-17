@@ -114,3 +114,10 @@ export interface CherryPickResult {
   had_conflicts: boolean
   conflicts: ConflictFile[]
 }
+
+export interface FileContent {
+  old_content: string | null
+  new_content: string | null
+  old_path: string | null
+  new_path: string | null
+}
