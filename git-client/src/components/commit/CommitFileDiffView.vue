@@ -185,7 +185,7 @@ function createEditor(container: HTMLElement, content: string) {
     fontSize: 13,
     fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
     lineHeight: 20,
-    renderLineHighlight: 'line',
+    renderLineHighlight: 'none',
     cursorBlinking: 'smooth',
     smoothScrolling: true,
     overviewRulerBorder: false,
@@ -197,6 +197,80 @@ function createEditor(container: HTMLElement, content: string) {
     folding: false,
     bracketPairColorization: { enabled: true },
   })
+}
+
+let oldEditorDecorations: string[] = []
+let newEditorDecorations: string[] = []
+
+function computeDiffLines(oldContent: string, newContent: string): { removedLines: number[]; addedLines: number[] } {
+  const oldLines = oldContent.split('\n')
+  const newLines = newContent.split('\n')
+  
+  const matrix: number[][] = Array(oldLines.length + 1).fill(null).map(() => Array(newLines.length + 1).fill(0))
+  
+  for (let i = 1; i <= oldLines.length; i++) {
+    for (let j = 1; j <= newLines.length; j++) {
+      if (oldLines[i - 1] === newLines[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1] + 1
+      } else {
+        matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1])
+      }
+    }
+  }
+  
+  const removedLines: number[] = []
+  const addedLines: number[] = []
+  
+  let i = oldLines.length
+  let j = newLines.length
+  
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
+      i--
+      j--
+    } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
+      addedLines.push(j - 1)
+      j--
+    } else if (i > 0) {
+      removedLines.push(i - 1)
+      i--
+    }
+  }
+  
+  return { removedLines, addedLines }
+}
+
+function updateDiffDecorations(
+  oldEditor: monaco.editor.IStandaloneCodeEditor | null,
+  newEditor: monaco.editor.IStandaloneCodeEditor | null,
+  oldContent: string,
+  newContent: string
+) {
+  const { removedLines, addedLines } = computeDiffLines(oldContent, newContent)
+  
+  if (oldEditor) {
+    const decorations: monaco.editor.IModelDeltaDecoration[] = removedLines.map(line => ({
+      range: new monaco.Range(line + 1, 1, line + 1, 1),
+      options: {
+        isWholeLine: true,
+        className: 'diff-line-removed',
+        linesDecorationsClassName: 'diff-line-removed-decoration',
+      },
+    }))
+    oldEditorDecorations = oldEditor.deltaDecorations(oldEditorDecorations, decorations)
+  }
+  
+  if (newEditor) {
+    const decorations: monaco.editor.IModelDeltaDecoration[] = addedLines.map(line => ({
+      range: new monaco.Range(line + 1, 1, line + 1, 1),
+      options: {
+        isWholeLine: true,
+        className: 'diff-line-added',
+        linesDecorationsClassName: 'diff-line-added-decoration',
+      },
+    }))
+    newEditorDecorations = newEditor.deltaDecorations(newEditorDecorations, decorations)
+  }
 }
 
 function generateUnifiedDiff(oldContent: string, newContent: string): string {
@@ -268,6 +342,13 @@ function updateEditors(content?: { old_content: string | null; new_content: stri
     )
     unifiedEditor.setValue(unifiedDiff)
   }
+  
+  updateDiffDecorations(
+    oldEditor,
+    newEditor,
+    targetContent.old_content || '',
+    targetContent.new_content || ''
+  )
 }
 
 function setupScrollSync() {
@@ -553,5 +634,33 @@ function closeDiffView() {
   margin: 0;
   text-align: center;
   max-width: 280px;
+}
+
+:deep(.diff-line-removed) {
+  background-color: rgba(248, 81, 73, 0.15) !important;
+}
+
+:deep(.diff-line-removed-decoration) {
+  background-color: rgba(248, 81, 73, 0.5) !important;
+  width: 4px !important;
+  left: 0 !important;
+}
+
+:deep(.diff-line-added) {
+  background-color: rgba(46, 160, 67, 0.15) !important;
+}
+
+:deep(.diff-line-added-decoration) {
+  background-color: rgba(46, 160, 67, 0.5) !important;
+  width: 4px !important;
+  left: 0 !important;
+}
+
+:deep(.diff-line-removed .line-numbers) {
+  color: rgba(248, 81, 73, 0.8) !important;
+}
+
+:deep(.diff-line-added .line-numbers) {
+  color: rgba(46, 160, 67, 0.8) !important;
 }
 </style>
