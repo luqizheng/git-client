@@ -162,6 +162,11 @@ const language = computed(() => {
     yml: 'yaml',
     toml: 'toml',
     lock: 'ini',
+    cs: 'csharp',
+    csharp: 'csharp',
+    java: 'java',
+    ps1: 'powershell',
+    psm1: 'powershell',
   }
   return langMap[ext || ''] || 'plaintext'
 })
