@@ -9,7 +9,7 @@
     <template v-else>
       <div class="panel-header flex items-center justify-between px-3 py-2 border-b border-gray-700">
         <span class="text-xs text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
-          <n-icon :size="12" class="text-gray-500">{{ modeIcon }}</n-icon>
+          <component :is="modeIcon" :size="12" class="text-gray-500" />
           {{ modeTitle }}
         </span>
         <n-button quaternary size="tiny" @click="collapsePanel" title="Collapse Panel">
