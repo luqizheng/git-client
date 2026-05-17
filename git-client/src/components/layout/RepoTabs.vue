@@ -10,18 +10,28 @@
       :title="path"
       @click="repo.switchTab(path)"
     >
+      <n-icon :size="12" class="text-gray-500"><Folder /></n-icon>
       <span>{{ repo.repoName(path) }}</span>
-      <span
-        class="text-gray-500 hover:text-red-400 ml-1 leading-none"
+      <n-icon
+        :size="12"
+        class="text-gray-500 hover:text-red-400 ml-1 transition-colors"
         @click.stop="repo.closeRepo(path)"
-      >✕</span>
+        title="Close Repository"
+      >
+        <Close />
+      </n-icon>
     </div>
-    <n-button quaternary size="tiny" class="ml-1" @click="$emit('open')">+</n-button>
+    <n-button quaternary size="tiny" class="ml-1" @click="$emit('open')" title="Open Repository">
+      <template #icon>
+        <n-icon :size="12"><Add /></n-icon>
+      </template>
+    </n-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NButton } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
+import { Folder, Close, Add } from '@vicons/ionicons5'
 import { useRepoStore } from '../../stores/repo'
 
 defineEmits<{ open: [] }>()
