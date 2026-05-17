@@ -107,11 +107,13 @@ import * as monaco from 'monaco-editor'
 import { useDiffStore } from '../../stores/diff'
 import { useRepoStore } from '../../stores/repo'
 import { useRightPanelStore } from '../../stores/rightPanel'
+import { useTheme } from '../../composables/useTheme'
 
 const diffStore = useDiffStore()
 const repo = useRepoStore()
 const rightPanel = useRightPanelStore()
 const msg = useMessage()
+const { theme } = useTheme()
 const mode = ref<'split' | 'unified'>('split')
 const loading = ref(false)
 
@@ -171,11 +173,15 @@ const language = computed(() => {
   return langMap[ext || ''] || 'plaintext'
 })
 
+function getMonacoTheme() {
+  return theme === 'dark' ? 'vs-dark' : 'vs'
+}
+
 function createEditor(container: HTMLElement, content: string) {
   return monaco.editor.create(container, {
     value: content || '',
     language: language.value,
-    theme: 'vs-dark',
+    theme: getMonacoTheme(),
     readOnly: true,
     minimap: { enabled: false },
     scrollBeyondLastLine: false,

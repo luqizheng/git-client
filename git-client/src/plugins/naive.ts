@@ -6,6 +6,18 @@ import {
   NNotificationProvider,
   NLoadingBarProvider,
   NSplit,
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NButton,
+  NSpace,
+  NSpin,
+  NEmpty,
+  NList,
+  NListItem,
+  NThing,
+  NTag,
 } from 'naive-ui'
 
 const naive = create({
@@ -16,6 +28,18 @@ const naive = create({
     NNotificationProvider,
     NLoadingBarProvider,
     NSplit,
+    NModal,
+    NForm,
+    NFormItem,
+    NInput,
+    NButton,
+    NSpace,
+    NSpin,
+    NEmpty,
+    NList,
+    NListItem,
+    NThing,
+    NTag,
   ],
 })
 

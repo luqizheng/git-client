@@ -9,8 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useResizable } from '../../composables/useResizable'
+import { ref, onUnmounted } from 'vue'
 
 const props = withDefaults(defineProps<{
   direction?: 'horizontal' | 'vertical'
@@ -29,26 +28,57 @@ const emit = defineEmits<{
 }>()
 
 const dragging = ref(false)
+let isDragging = false
+let startX = 0
+let startY = 0
+let startSize = 0
 
 function getContainer(): HTMLElement {
   return props.container ?? (document.querySelector('.main-container') as HTMLElement) ?? document.body
 }
 
 function onMouseDown(e: MouseEvent) {
-  const { startDrag } = useResizable({
-    container: getContainer(),
-    direction: props.direction,
-    minSize: props.minSize,
-    maxSize: props.maxSize,
-    initialSize: props.getSize?.() ?? 320,
-    onResize: (size) => {
-      dragging.value = true
-      emit('resize', size)
-    },
-  })
-  startDrag(e)
-  setTimeout(() => { dragging.value = false }, 100)
+  e.preventDefault()
+  isDragging = true
+  dragging.value = true
+  startX = e.clientX
+  startY = e.clientY
+  startSize = props.getSize?.() ?? 320
+
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
+  document.body.style.cursor = props.direction === 'horizontal' ? 'col-resize' : 'row-resize'
+  document.body.style.userSelect = 'none'
 }
+
+function onMouseMove(e: MouseEvent) {
+  if (!isDragging) return
+
+  const current = props.direction === 'horizontal' ? e.clientX : e.clientY
+  const start = props.direction === 'horizontal' ? startX : startY
+  const delta = current - start
+  const newSize = props.direction === 'horizontal'
+    ? startSize - delta
+    : startSize + delta
+  const clamped = Math.max(props.minSize, Math.min(props.maxSize, newSize))
+  emit('resize', clamped)
+}
+
+function onMouseUp() {
+  isDragging = false
+  dragging.value = false
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+}
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+})
 </script>
 
 <style scoped>

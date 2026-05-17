@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, onUnmounted } from 'vue'
 import { useMessage } from 'naive-ui'
 import { useRightPanelStore } from '../../stores/rightPanel'
 import { useDiffStore } from '../../stores/diff'
@@ -166,6 +166,13 @@ async function copySha() {
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+onUnmounted(() => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
+})
 
 watch(() => rightPanel.selectedCommitSha, (sha) => {
   if (!sha || !repo.activeRepoPath) return
