@@ -202,52 +202,38 @@ function createEditor(container: HTMLElement, content: string) {
 let oldEditorDecorations: string[] = []
 let newEditorDecorations: string[] = []
 
-function computeDiffLines(oldContent: string, newContent: string): { removedLines: number[]; addedLines: number[] } {
-  const oldLines = oldContent.split('\n')
-  const newLines = newContent.split('\n')
-  
-  const matrix: number[][] = Array(oldLines.length + 1).fill(null).map(() => Array(newLines.length + 1).fill(0))
-  
-  for (let i = 1; i <= oldLines.length; i++) {
-    for (let j = 1; j <= newLines.length; j++) {
-      if (oldLines[i - 1] === newLines[j - 1]) {
-        matrix[i][j] = matrix[i - 1][j - 1] + 1
+function getChangedLinesFromHunks(hunks: import('../../types/git').Hunk[]) {
+  const removedLines: number[] = []
+  const addedLines: number[] = []
+
+  for (const hunk of hunks) {
+    let oldLineNum = hunk.old_start
+    let newLineNum = hunk.new_start
+
+    for (const line of hunk.lines) {
+      if ('Deletion' in line) {
+        removedLines.push(oldLineNum - 1)
+        oldLineNum++
+      } else if ('Addition' in line) {
+        addedLines.push(newLineNum - 1)
+        newLineNum++
       } else {
-        matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1])
+        oldLineNum++
+        newLineNum++
       }
     }
   }
-  
-  const removedLines: number[] = []
-  const addedLines: number[] = []
-  
-  let i = oldLines.length
-  let j = newLines.length
-  
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
-      i--
-      j--
-    } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
-      addedLines.push(j - 1)
-      j--
-    } else if (i > 0) {
-      removedLines.push(i - 1)
-      i--
-    }
-  }
-  
+
   return { removedLines, addedLines }
 }
 
 function updateDiffDecorations(
   oldEditor: monaco.editor.IStandaloneCodeEditor | null,
   newEditor: monaco.editor.IStandaloneCodeEditor | null,
-  oldContent: string,
-  newContent: string
+  hunks: import('../../types/git').Hunk[]
 ) {
-  const { removedLines, addedLines } = computeDiffLines(oldContent, newContent)
-  
+  const { removedLines, addedLines } = getChangedLinesFromHunks(hunks)
+
   if (oldEditor) {
     const decorations: monaco.editor.IModelDeltaDecoration[] = removedLines.map(line => ({
       range: new monaco.Range(line + 1, 1, line + 1, 1),
@@ -259,7 +245,7 @@ function updateDiffDecorations(
     }))
     oldEditorDecorations = oldEditor.deltaDecorations(oldEditorDecorations, decorations)
   }
-  
+
   if (newEditor) {
     const decorations: monaco.editor.IModelDeltaDecoration[] = addedLines.map(line => ({
       range: new monaco.Range(line + 1, 1, line + 1, 1),
@@ -273,59 +259,27 @@ function updateDiffDecorations(
   }
 }
 
-function generateUnifiedDiff(oldContent: string, newContent: string): string {
-  const oldLines = oldContent.split('\n')
-  const newLines = newContent.split('\n')
-  
+function generateUnifiedDiff(hunks: import('../../types/git').Hunk[]): string {
   const result: string[] = []
-  const matrix: number[][] = Array(oldLines.length + 1).fill(null).map(() => Array(newLines.length + 1).fill(0))
-  
-  for (let i = 1; i <= oldLines.length; i++) {
-    for (let j = 1; j <= newLines.length; j++) {
-      if (oldLines[i - 1] === newLines[j - 1]) {
-        matrix[i][j] = matrix[i - 1][j - 1] + 1
-      } else {
-        matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1])
+
+  for (const hunk of hunks) {
+    result.push(`@@ -${hunk.old_start},${hunk.old_lines} +${hunk.new_start},${hunk.new_lines} @@`)
+
+    for (const line of hunk.lines) {
+      if ('Context' in line) {
+        result.push(` ${line.Context}`)
+      } else if ('Addition' in line) {
+        result.push(`+${line.Addition}`)
+      } else if ('Deletion' in line) {
+        result.push(`-${line.Deletion}`)
       }
     }
   }
-  
-  const diffResult: { type: 'add' | 'remove' | 'equal'; line: string }[] = []
-  let i = oldLines.length
-  let j = newLines.length
-  
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
-      diffResult.unshift({ type: 'equal', line: oldLines[i - 1] })
-      i--
-      j--
-    } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
-      diffResult.unshift({ type: 'add', line: newLines[j - 1] })
-      j--
-    } else if (i > 0) {
-      diffResult.unshift({ type: 'remove', line: oldLines[i - 1] })
-      i--
-    }
-  }
-  
-  for (const item of diffResult) {
-    switch (item.type) {
-      case 'add':
-        result.push(`+${item.line}`)
-        break
-      case 'remove':
-        result.push(`-${item.line}`)
-        break
-      case 'equal':
-        result.push(` ${item.line}`)
-        break
-    }
-  }
-  
+
   return result.join('\n')
 }
 
-function updateEditors(content?: { old_content: string | null; new_content: string | null }) {
+function updateEditors(content?: import('../../types/git').FileContent) {
   const targetContent = content ?? fileContent.value
   if (!targetContent) return
 
@@ -336,18 +290,14 @@ function updateEditors(content?: { old_content: string | null; new_content: stri
     newEditor.setValue(targetContent.new_content || '')
   }
   if (unifiedEditor) {
-    const unifiedDiff = generateUnifiedDiff(
-      targetContent.old_content || '',
-      targetContent.new_content || ''
-    )
+    const unifiedDiff = generateUnifiedDiff(targetContent.hunks || [])
     unifiedEditor.setValue(unifiedDiff)
   }
-  
+
   updateDiffDecorations(
     oldEditor,
     newEditor,
-    targetContent.old_content || '',
-    targetContent.new_content || ''
+    targetContent.hunks || []
   )
 }
 
@@ -413,12 +363,10 @@ watch(mode, (newMode) => {
         newEditor = createEditor(newEditorRef.value, fileContent.value?.new_content || '')
       }
       setupScrollSync()
+      updateDiffDecorations(oldEditor, newEditor, fileContent.value?.hunks || [])
     } else {
       if (!unifiedEditor && unifiedEditorRef.value) {
-        const unifiedDiff = generateUnifiedDiff(
-          fileContent.value?.old_content || '',
-          fileContent.value?.new_content || ''
-        )
+        const unifiedDiff = generateUnifiedDiff(fileContent.value?.hunks || [])
         unifiedEditor = createEditor(unifiedEditorRef.value, unifiedDiff)
       }
     }
@@ -459,9 +407,8 @@ function goNext() {
 }
 
 function closeDiffView() {
-  rightPanel.showFileDiff = false
   if (repo.activeRepoPath) {
-    diffStore.clearSelectedFile(repo.activeRepoPath)
+    diffStore.selectFile(repo.activeRepoPath, null)
   }
 }
 </script>

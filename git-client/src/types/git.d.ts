@@ -120,6 +120,7 @@ export interface FileContent {
   new_content: string | null
   old_path: string | null
   new_path: string | null
+  hunks: Hunk[]
 }
 
 export interface Tag {
