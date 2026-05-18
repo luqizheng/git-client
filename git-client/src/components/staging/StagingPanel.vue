@@ -1,15 +1,19 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <FileStatsHeader />
     <div class="flex-1 overflow-y-auto">
       <UnstagedFilesSection
         :files="rightPanel.unstagedFiles"
         @stage="handleStage"
         @stage-all="handleStageAll"
+        @select-file="(path: string) => rightPanel.mode && handleSelectFile(path)"
+        @discard-file="handleDiscard"
+        @discard-all="handleDiscardAll"
       />
       <StagedFilesSection
         :files="rightPanel.stagedFiles"
         @unstage="handleUnstage"
+        @unstage-all="handleUnstageAll"
+        @select-file="(path: string) => rightPanel.mode && handleSelectFile(path)"
       />
     </div>
     <CommitEditorSection
@@ -31,9 +35,9 @@ import { useRightPanelStore } from '../../stores/rightPanel'
 import { useStagingStore } from '../../stores/staging'
 import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
+import { useDiffStore } from '../../stores/diff'
 import { useMessage } from 'naive-ui'
 import { invoke } from '../../utils/ipc'
-import FileStatsHeader from './FileStatsHeader.vue'
 import UnstagedFilesSection from './UnstagedFilesSection.vue'
 import StagedFilesSection from './StagedFilesSection.vue'
 import CommitEditorSection from './CommitEditorSection.vue'
@@ -42,6 +46,7 @@ const rightPanel = useRightPanelStore()
 const staging = useStagingStore()
 const repo = useRepoStore()
 const commits = useCommitsStore()
+const diffStore = useDiffStore()
 const msg = useMessage()
 
 onMounted(async () => {
@@ -79,6 +84,27 @@ async function handleUnstage(path: string) {
   if (!repo.activeRepoPath) return
   await staging.unstageFiles(repo.activeRepoPath, [path])
   await refreshStaging()
+}
+
+async function handleUnstageAll() {
+  if (!repo.activeRepoPath) return
+  const paths = rightPanel.stagedFiles.map(f => f.path)
+  if (paths.length === 0) return
+  await staging.unstageFiles(repo.activeRepoPath, paths)
+  await refreshStaging()
+}
+
+function handleDiscard(_path: string) {
+  msg.warning('Discard is not yet supported')
+}
+
+function handleDiscardAll() {
+  msg.warning('Discard is not yet supported')
+}
+
+function handleSelectFile(path: string) {
+  if (!repo.activeRepoPath) return
+  diffStore.selectFile(repo.activeRepoPath, path)
 }
 
 async function handleCommit() {

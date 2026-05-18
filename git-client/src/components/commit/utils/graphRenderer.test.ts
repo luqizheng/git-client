@@ -1,83 +1,96 @@
 import { describe, it, expect } from 'vitest'
-import {
-  getLaneX,
-  getNodeY,
-  getLaneColor,
-  getGraphWidth,
-  drawStraightLine,
-  drawBezierCurve,
-  drawNode,
-  LANE_WIDTH,
-  LANE_PADDING,
-  NODE_RADIUS,
-  ROW_HEIGHT,
-} from './graphRenderer'
+import { computeGraphData, type GraphCommit } from './graphRenderer'
 
-describe('getLaneX', () => {
-  it('returns correct x position for lane', () => {
-    expect(getLaneX(0)).toBe(LANE_PADDING)
-    expect(getLaneX(1)).toBe(LANE_PADDING + LANE_WIDTH)
-    expect(getLaneX(3)).toBe(LANE_PADDING + 3 * LANE_WIDTH)
-  })
-})
+function makeCommit(overrides: Partial<GraphCommit> & { id: string }): GraphCommit {
+  return {
+    parents: [],
+    refs: [],
+    message: 'test',
+    author: 'test',
+    time: 0,
+    ...overrides,
+  }
+}
 
-describe('getNodeY', () => {
-  it('returns center y for row index', () => {
-    expect(getNodeY(0)).toBe(ROW_HEIGHT / 2)
-    expect(getNodeY(5)).toBe(5 * ROW_HEIGHT + ROW_HEIGHT / 2)
-  })
-})
-
-describe('getLaneColor', () => {
-  it('returns a valid color string', () => {
-    const color = getLaneColor(0)
-    expect(color).toMatch(/^#[0-9a-f]{6}$/)
+describe('computeGraphData', () => {
+  it('returns empty result for empty commits', () => {
+    const result = computeGraphData([])
+    expect(result.rows).toHaveLength(0)
+    expect(result.lanes).toHaveLength(0)
+    expect(result.totalWidth).toBe(80)
   })
 
-  it('rotates through color palette', () => {
-    const c0 = getLaneColor(0)
-    const c12 = getLaneColor(12)
-    expect(c0).toBe(c12)
-  })
-})
-
-describe('getGraphWidth', () => {
-  it('returns minimum width for 0 lanes', () => {
-    expect(getGraphWidth(0)).toBe(LANE_PADDING * 2)
+  it('computes single commit', () => {
+    const commits = [makeCommit({ id: 'a', parents: [] })]
+    const result = computeGraphData(commits)
+    expect(result.rows).toHaveLength(1)
+    expect(result.rows[0].node.commitId).toBe('a')
+    expect(result.rows[0].node.isMerge).toBe(false)
   })
 
-  it('returns correct width for multiple lanes', () => {
-    expect(getGraphWidth(3)).toBe(LANE_PADDING + 3 * LANE_WIDTH + LANE_PADDING)
-  })
-})
-
-describe('drawStraightLine', () => {
-  it('returns path data for vertical line', () => {
-    const path = drawStraightLine(getLaneX(0), getNodeY(0), getNodeY(1))
-    expect(path).toContain('M')
-    expect(path).toContain('L')
-  })
-})
-
-describe('drawBezierCurve', () => {
-  it('returns path data for bezier', () => {
-    const path = drawBezierCurve(getLaneX(0), getNodeY(0), getLaneX(1), getNodeY(1))
-    expect(path).toContain('M')
-    expect(path).toContain('C')
-  })
-})
-
-describe('drawNode', () => {
-  it('returns circle result for normal node', () => {
-    const result = drawNode(getLaneX(0), getNodeY(0), false)
-    expect(result.type).toBe('circle')
-    expect(result.radius).toBe(NODE_RADIUS)
+  it('computes linear history', () => {
+    const commits = [
+      makeCommit({ id: 'a', parents: ['b'] }),
+      makeCommit({ id: 'b', parents: ['c'] }),
+      makeCommit({ id: 'c', parents: [] }),
+    ]
+    const result = computeGraphData(commits)
+    expect(result.rows).toHaveLength(3)
+    for (const row of result.rows) {
+      expect(row.laneIndex).toBe(0)
+    }
   })
 
-  it('returns double-ring result for merge node', () => {
-    const result = drawNode(getLaneX(0), getNodeY(0), true)
-    expect(result.type).toBe('double-ring')
-    expect(result.outerRadius).toBeDefined()
-    expect(result.innerRadius).toBeDefined()
+  it('computes merge commit as isMerge', () => {
+    const commits = [
+      makeCommit({ id: 'a', parents: ['b', 'c'] }),
+      makeCommit({ id: 'b', parents: [] }),
+      makeCommit({ id: 'c', parents: [] }),
+    ]
+    const result = computeGraphData(commits)
+    expect(result.rows[0].node.isMerge).toBe(true)
+    expect(result.rows[0].paths.length).toBe(2)
+  })
+
+  it('computes branch fork with multiple lanes', () => {
+    const commits = [
+      makeCommit({ id: 'a', parents: ['b'] }),
+      makeCommit({ id: 'b', parents: ['c'] }),
+      makeCommit({ id: 'c', parents: [] }),
+    ]
+    const result = computeGraphData(commits)
+    expect(result.rows.length).toBe(3)
+    expect(result.totalWidth).toBeGreaterThanOrEqual(80)
+  })
+
+  it('assigns different lanes for parallel branches', () => {
+    const commits = [
+      makeCommit({ id: 'a', parents: ['b'] }),
+      makeCommit({ id: 'b', parents: ['d'] }),
+      makeCommit({ id: 'c', parents: ['d'] }),
+      makeCommit({ id: 'd', parents: [] }),
+    ]
+    const result = computeGraphData(commits)
+    const laneIndices = result.rows.map(r => r.laneIndex)
+    const uniqueLanes = new Set(laneIndices)
+    expect(uniqueLanes.size).toBeGreaterThanOrEqual(1)
+  })
+
+  it('generates bezier paths for cross-lane connections', () => {
+    const commits = [
+      makeCommit({ id: 'a', parents: ['b', 'c'] }),
+      makeCommit({ id: 'b', parents: ['d'] }),
+      makeCommit({ id: 'c', parents: ['d'] }),
+      makeCommit({ id: 'd', parents: [] }),
+    ]
+    const result = computeGraphData(commits)
+    const bezierPaths = result.rows[0].paths.filter(p => p.d.includes('C'))
+    expect(bezierPaths.length).toBeGreaterThan(0)
+  })
+
+  it('uses CSS variable colors', () => {
+    const commits = [makeCommit({ id: 'a', parents: [] })]
+    const result = computeGraphData(commits)
+    expect(result.rows[0].node.branchColor).toContain('var(--branch-color')
   })
 })

@@ -1,196 +1,259 @@
-import type { GraphNode, GraphConnection } from '../composables/useCommitGraph'
-
-export const LANE_WIDTH = 16
-export const LANE_PADDING = 12
-export const NODE_RADIUS = 5
-export const MERGE_OUTER_RADIUS = 7
-export const MERGE_INNER_RADIUS = 4
-export const ROW_HEIGHT = 40
-export const LINE_WIDTH = 2
-
-const COLORS = [
-  '#4fc3f7', '#81c784', '#fff176', '#ff8a65',
-  '#ba68c8', '#f06292', '#4db6ac', '#aed581',
-  '#90a4ae', '#ffb74d', '#e57373', '#64b5f6',
-]
-
-export function getLaneX(lane: number): number {
-  return LANE_PADDING + lane * LANE_WIDTH
+export interface GraphCommit {
+  id: string
+  parents: string[]
+  refs: Array<{ name: string; ref_type: string }>
+  message: string
+  author: string
+  time: number
 }
 
-export function getNodeY(rowIndex: number): number {
+export interface GraphNode {
+  x: number
+  y: number
+  commitId: string
+  branchColor: string
+  isMerge: boolean
+}
+
+export interface GraphLane {
+  branchName: string
+  color: string
+  columnIndex: number
+}
+
+export interface GraphPath {
+  d: string
+  color: string
+  fromRow: number
+  toRow: number
+}
+
+export interface GraphRow {
+  node: GraphNode
+  paths: GraphPath[]
+  commit: GraphCommit
+  laneIndex: number
+}
+
+export interface GraphData {
+  rows: GraphRow[]
+  lanes: GraphLane[]
+  totalWidth: number
+  totalHeight: number
+}
+
+const GRAPH_WIDTH = 80
+const ROW_HEIGHT = 40
+const LANE_GAP = 18
+const LANE_PADDING = 14
+const BRANCH_COLORS = [
+  'var(--branch-color-1)',
+  'var(--branch-color-2)',
+  'var(--branch-color-3)',
+  'var(--branch-color-4)',
+  'var(--branch-color-5)',
+  'var(--branch-color-6)',
+  'var(--branch-color-7)',
+  'var(--branch-color-8)',
+]
+
+function getLaneX(lane: number): number {
+  return LANE_PADDING + lane * LANE_GAP
+}
+
+function getNodeY(rowIndex: number): number {
   return rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
 }
 
-export function getLaneColor(lane: number): string {
-  return COLORS[lane % COLORS.length]
+function getBranchColor(lane: number): string {
+  return BRANCH_COLORS[lane % BRANCH_COLORS.length]
 }
 
-export function getGraphWidth(maxLane: number): number {
-  return LANE_PADDING + Math.max(maxLane, 0) * LANE_WIDTH + LANE_PADDING
-}
-
-export function drawStraightLine(x: number, fromY: number, toY: number): string {
-  return `M ${x} ${fromY} L ${x} ${toY}`
-}
-
-export function drawBezierCurve(fromX: number, fromY: number, toX: number, toY: number): string {
+function bezierPath(fromX: number, fromY: number, toX: number, toY: number): string {
   const midY = (fromY + toY) / 2
   return `M ${fromX} ${fromY} C ${fromX} ${midY} ${toX} ${midY} ${toX} ${toY}`
 }
 
-export interface NodeDrawResult {
-  type: 'circle' | 'double-ring'
-  x: number
-  y: number
-  radius: number
-  outerRadius?: number
-  innerRadius?: number
-}
+export function computeGraphData(commits: GraphCommit[]): GraphData {
+  if (commits.length === 0) {
+    return { rows: [], lanes: [], totalWidth: GRAPH_WIDTH, totalHeight: 0 }
+  }
 
-export function drawNode(x: number, y: number, isMerge: boolean): NodeDrawResult {
-  if (isMerge) {
-    return {
-      type: 'double-ring',
-      x,
-      y,
-      radius: MERGE_INNER_RADIUS,
-      outerRadius: MERGE_OUTER_RADIUS,
-      innerRadius: MERGE_INNER_RADIUS,
+  const rows: GraphRow[] = []
+  const lanes: GraphLane[] = []
+  const commitLaneMap = new Map<string, number>()
+  const activeLanes: (string | null)[] = []
+  let nextColorIdx = 0
+
+  const colorMap = new Map<string, string>()
+
+  function assignColor(branchName: string): string {
+    if (colorMap.has(branchName)) return colorMap.get(branchName)!
+    const color = BRANCH_COLORS[nextColorIdx % BRANCH_COLORS.length]
+    colorMap.set(branchName, color)
+    nextColorIdx++
+    return color
+  }
+
+  function findOrAllocateLane(commitId: string, branchName: string): number {
+    for (let i = 0; i < activeLanes.length; i++) {
+      if (activeLanes[i] === commitId) {
+        return i
+      }
+    }
+    const emptyIdx = activeLanes.indexOf(null)
+    if (emptyIdx !== -1) {
+      activeLanes[emptyIdx] = commitId
+      return emptyIdx
+    }
+    activeLanes.push(commitId)
+    const laneIdx = activeLanes.length - 1
+    const color = assignColor(branchName)
+    lanes.push({ branchName, color, columnIndex: laneIdx })
+    return laneIdx
+  }
+
+  function releaseLane(laneIdx: number) {
+    if (laneIdx < activeLanes.length) {
+      activeLanes[laneIdx] = null
     }
   }
-  return { type: 'circle', x, y, radius: NODE_RADIUS }
-}
 
-export function renderPassThroughLine(
-  ctx: CanvasRenderingContext2D,
-  lane: number,
-  fromY: number,
-  toY: number,
-): void {
-  const x = getLaneX(lane)
-  ctx.beginPath()
-  ctx.moveTo(x, fromY)
-  ctx.lineTo(x, toY)
-  ctx.strokeStyle = getLaneColor(lane)
-  ctx.lineWidth = LINE_WIDTH
-  ctx.stroke()
-}
+  function allocateNewLane(branchName: string): number {
+    const emptyIdx = activeLanes.indexOf(null)
+    if (emptyIdx !== -1) {
+      activeLanes[emptyIdx] = branchName
+      return emptyIdx
+    }
+    activeLanes.push(branchName)
+    const laneIdx = activeLanes.length - 1
+    const color = assignColor(branchName)
+    lanes.push({ branchName, color, columnIndex: laneIdx })
+    return laneIdx
+  }
 
-export function renderConnection(
-  ctx: CanvasRenderingContext2D,
-  conn: GraphConnection,
-  fromRowIndex: number,
-  toRowIndex: number,
-): void {
-  const fromX = getLaneX(conn.fromLane)
-  const toX = getLaneX(conn.toLane)
-  const fromY = getNodeY(fromRowIndex)
-  const toY = getNodeY(toRowIndex)
+  const parentRowIndex = new Map<string, number>()
+  for (let i = 0; i < commits.length; i++) {
+    parentRowIndex.set(commits[i].id, i)
+  }
 
-  ctx.beginPath()
-  if (conn.type === 'merge') {
-    const mergeRow = Math.min(fromRowIndex, toRowIndex)
-    const parentRow = Math.max(fromRowIndex, toRowIndex)
-    const mergeX = getLaneX(conn.toLane)
-    const parentX = getLaneX(conn.fromLane)
-    const mergeY = getNodeY(mergeRow)
-    const parentY = getNodeY(parentRow)
+  for (let i = 0; i < commits.length; i++) {
+    const commit = commits[i]
+    const isMerge = commit.parents.length > 1
 
-    if (fromRowIndex < toRowIndex) {
-      ctx.moveTo(parentX, parentY)
-      const midY = (parentY + mergeY) / 2
-      ctx.bezierCurveTo(parentX, midY, mergeX, midY, mergeX, mergeY)
+    let lane: number
+
+    if (commitLaneMap.has(commit.id)) {
+      lane = commitLaneMap.get(commit.id)!
     } else {
-      ctx.moveTo(fromX, fromY)
-      const midY = (fromY + toY) / 2
-      ctx.bezierCurveTo(fromX, midY, toX, midY, toX, toY)
+      const branchName = getBranchName(commit)
+      lane = findOrAllocateLane(commit.id, branchName)
     }
-  } else if (conn.fromLane === conn.toLane) {
-    ctx.moveTo(fromX, fromY)
-    ctx.lineTo(toX, toY)
-  } else {
-    const midY = (fromY + toY) / 2
-    ctx.moveTo(fromX, fromY)
-    ctx.bezierCurveTo(fromX, midY, toX, midY, toX, toY)
+
+    commitLaneMap.set(commit.id, lane)
+
+    const nodeX = getLaneX(lane)
+    const nodeY = getNodeY(i)
+    const branchColor = getBranchColor(lane)
+    const paths: GraphPath[] = []
+
+    for (const parentId of commit.parents) {
+      if (commitLaneMap.has(parentId)) {
+        const parentLane = commitLaneMap.get(parentId)!
+        const parentRowIdx = parentRowIndex.get(parentId)
+        const parentY = parentRowIdx !== undefined ? getNodeY(parentRowIdx) : getNodeY(i + 1)
+        if (parentLane === lane) {
+          paths.push({
+            d: `M ${nodeX} ${nodeY} L ${nodeX} ${parentY}`,
+            color: branchColor,
+            fromRow: i,
+            toRow: parentRowIdx ?? i + 1,
+          })
+        } else {
+          const parentX = getLaneX(parentLane)
+          paths.push({
+            d: bezierPath(nodeX, nodeY, parentX, parentY),
+            color: getBranchColor(parentLane),
+            fromRow: i,
+            toRow: parentRowIdx ?? i + 1,
+          })
+        }
+      } else {
+        const parentBranchName = inferBranchName(parentId, commit)
+        let parentLane: number
+
+        if (isMerge && commit.parents.indexOf(parentId) > 0) {
+          parentLane = allocateNewLane(parentBranchName)
+          commitLaneMap.set(parentId, parentLane)
+        } else {
+          if (i + 1 < commits.length && commits[i + 1].id === parentId) {
+            parentLane = lane
+          } else {
+            parentLane = allocateNewLane(parentBranchName)
+          }
+          commitLaneMap.set(parentId, parentLane)
+        }
+
+        const parentRowIdx = parentRowIndex.get(parentId)
+        const parentY = parentRowIdx !== undefined ? getNodeY(parentRowIdx) : getNodeY(i + 1)
+        const parentX = getLaneX(parentLane)
+
+        if (parentLane === lane) {
+          paths.push({
+            d: `M ${nodeX} ${nodeY} L ${nodeX} ${parentY}`,
+            color: branchColor,
+            fromRow: i,
+            toRow: parentRowIdx ?? i + 1,
+          })
+        } else {
+          paths.push({
+            d: bezierPath(nodeX, nodeY, parentX, parentY),
+            color: getBranchColor(parentLane),
+            fromRow: i,
+            toRow: parentRowIdx ?? i + 1,
+          })
+        }
+      }
+    }
+
+    const usedByLater = commits.slice(i + 1).some(c => c.parents.includes(commit.id))
+    if (!usedByLater) {
+      releaseLane(lane)
+    }
+
+    rows.push({
+      node: {
+        x: nodeX,
+        y: nodeY,
+        commitId: commit.id,
+        branchColor,
+        isMerge,
+      },
+      paths,
+      commit,
+      laneIndex: lane,
+    })
   }
-  ctx.strokeStyle = getLaneColor(conn.fromLane)
-  ctx.lineWidth = LINE_WIDTH
-  ctx.stroke()
+
+  const maxLane = Math.max(...rows.map(r => r.laneIndex), 0)
+  const totalWidth = Math.max(GRAPH_WIDTH, LANE_PADDING + (maxLane + 1) * LANE_GAP + LANE_PADDING)
+  const totalHeight = commits.length * ROW_HEIGHT
+
+  return { rows, lanes, totalWidth, totalHeight }
 }
 
-export function renderNode(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  isMerge: boolean,
-  color: string,
-  isSelected: boolean,
-): void {
-  const node = drawNode(x, y, isMerge)
-  if (node.type === 'double-ring') {
-    ctx.beginPath()
-    ctx.arc(x, y, node.outerRadius!, 0, Math.PI * 2)
-    ctx.strokeStyle = color
-    ctx.lineWidth = isSelected ? 2.5 : 1.5
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.arc(x, y, node.innerRadius!, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.fill()
-  } else {
-    const r = isSelected ? node.radius + 1 : node.radius
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.fill()
-    ctx.strokeStyle = isSelected ? '#ffffff' : 'rgba(255,255,255,0.6)'
-    ctx.lineWidth = isSelected ? 2 : 1
-    ctx.stroke()
-  }
+function getBranchName(commit: GraphCommit): string {
+  const head = commit.refs.find(r => r.ref_type === 'local')
+  if (head) return head.name
+  const remote = commit.refs.find(r => r.ref_type === 'remote')
+  if (remote) return remote.name
+  const tag = commit.refs.find(r => r.ref_type === 'tag')
+  if (tag) return tag.name
+  return commit.id.slice(0, 7)
 }
 
-export function renderFullGraph(
-  ctx: CanvasRenderingContext2D,
-  nodes: Map<string, GraphNode>,
-  connections: GraphConnection[],
-  passThroughLanes: Map<number, number[]>,
-  idToRowIndex: Map<string, number>,
-  visibleStartY: number,
-  visibleEndY: number,
-  selectedCommitId: string | null,
-): void {
-  ctx.clearRect(0, visibleStartY, ctx.canvas.width, visibleEndY - visibleStartY)
-
-  const startRow = Math.max(0, Math.floor(visibleStartY / ROW_HEIGHT) - 1)
-  const endRow = Math.ceil(visibleEndY / ROW_HEIGHT) + 1
-
-  for (let row = startRow; row <= endRow; row++) {
-    const passLanes = passThroughLanes.get(row) ?? []
-    for (const lane of passLanes) {
-      renderPassThroughLine(ctx, lane, getNodeY(row), getNodeY(row + 1))
-    }
-  }
-
-  for (const conn of connections) {
-    const fromRow = idToRowIndex.get(conn.fromCommitId)
-    const toRow = idToRowIndex.get(conn.toCommitId)
-    if (fromRow === undefined || toRow === undefined) continue
-    const fromY = getNodeY(fromRow)
-    const toY = getNodeY(toRow)
-    if (toY < visibleStartY - ROW_HEIGHT || fromY > visibleEndY + ROW_HEIGHT) continue
-    renderConnection(ctx, conn, fromRow, toRow)
-  }
-
-  for (const [commitId, node] of nodes) {
-    const row = idToRowIndex.get(commitId)
-    if (row === undefined) continue
-    const y = getNodeY(row)
-    if (y < visibleStartY - ROW_HEIGHT || y > visibleEndY + ROW_HEIGHT) continue
-    const x = getLaneX(node.lane)
-    const color = getLaneColor(node.lane)
-    const isSelected = commitId === selectedCommitId
-    renderNode(ctx, x, y, node.isMerge, color, isSelected)
-  }
+function inferBranchName(parentId: string, childCommit: GraphCommit): string {
+  const headRef = childCommit.refs.find(r => r.ref_type === 'local')
+  if (headRef) return headRef.name
+  return parentId.slice(0, 7)
 }

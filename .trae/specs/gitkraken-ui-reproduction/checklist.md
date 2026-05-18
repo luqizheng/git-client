@@ -1,0 +1,40 @@
+# Checklist
+
+- [x] 配色方案已更新为 GitKraken Dark/Light 主题色值
+- [x] CSS 变量包含 GitKraken 分支颜色调色板
+- [x] Toolbar 使用图标按钮，无文字标签
+- [x] Toolbar 按钮：Undo、Redo、Pull（带下拉）、Push、Branch、Stash、Pop Stash
+- [x] Pull 按钮下拉包含 4 种拉取类型选项
+- [x] 仓库切换已整合到 Toolbar 下拉菜单
+- [x] Undo/Redo 按钮根据状态灰显/亮起
+- [x] 左侧 Reference Panel 包含 5 个分区：Local、Remote、Tags、Stashes、Submodules
+- [x] 每个分区可独立折叠/展开
+- [x] Local 分区当前分支有绿色圆点标记
+- [x] Remote 分区按远程名分组且可折叠
+- [x] Tags 分区显示所有标签
+- [x] Stashes 分区显示 stash 条目
+- [x] Submodules 分区显示子模块列表
+- [x] 分区项支持右键上下文菜单
+- [x] Commit Graph 使用 SVG 渲染分支线（贝塞尔曲线）
+- [x] WIP 节点显示在 Graph 顶部
+- [x] 点击 WIP 节点显示 staging 视图
+- [x] 每个 commit 行显示分支/标签名、message、作者、时间
+- [x] commit 节点点击选中高亮
+- [x] commit 右键上下文菜单包含 Cherry-pick、Rebase、Reset 等选项
+- [x] Graph 支持虚拟滚动
+- [x] Commit Panel Staging 视图：Unstaged → Staged → Commit Message 垂直布局
+- [x] 文件状态图标：M(黄)、A(绿)、D(红)、R(蓝)
+- [x] Unstaged 区域有 Stage All 按钮
+- [x] Commit Message 区域有 Summary + Description + Commit 按钮
+- [x] Commit Detail 视图显示分支标签、message、作者、文件列表
+- [x] 点击文件可显示 diff
+- [x] Status Bar 左侧显示分支名、SHA、ahead/behind
+- [x] Status Bar 右侧显示缩放选择器
+- [x] 同步中显示动画
+- [x] RepoTabs 独立组件已移除
+- [x] 三栏布局比例接近 GitKraken
+- [x] 面板分隔线支持拖拽调整大小
+- [x] 左面板支持折叠/展开
+- [x] vue-tsc 类型检查通过
+- [x] cargo clippy 检查通过
+- [x] dark/light 双主题均正常渲染

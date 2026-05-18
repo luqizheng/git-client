@@ -33,9 +33,11 @@ let startX = 0
 let startY = 0
 let startSize = 0
 
-function getContainer(): HTMLElement {
+function _getContainer(): HTMLElement {
   return props.container ?? (document.querySelector('.main-container') as HTMLElement) ?? document.body
 }
+
+void _getContainer
 
 function onMouseDown(e: MouseEvent) {
   e.preventDefault()

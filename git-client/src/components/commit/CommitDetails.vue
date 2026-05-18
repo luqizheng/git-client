@@ -1,14 +1,14 @@
 <template>
-  <div class="commit-details-card">
+  <div class="commit-details">
     <template v-if="detail?.commit">
-      <div class="card-header">
+      <div class="detail-header">
         <div class="branch-tags" v-if="branchNames.length > 0">
           <span
             v-for="branch in branchNames"
             :key="branch"
-            :class="['branch-tag', isMainBranch(branch) ? 'branch-main' : 'branch-other']"
+            :class="['branch-pill', isMainBranch(branch) ? 'pill-main' : 'pill-other']"
           >
-            <svg class="tag-icon" viewBox="0 0 16 16" fill="currentColor">
+            <svg class="pill-icon" viewBox="0 0 16 16" fill="currentColor">
               <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.492 2.492 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z"/>
             </svg>
             {{ branch }}
@@ -17,22 +17,15 @@
         <h3 class="commit-title">{{ subject }}</h3>
       </div>
 
-      <div class="author-section">
-        <div class="avatar" :style="{ background: avatarColor }">
-          {{ initials }}
-        </div>
-        <div class="author-info">
-          <div class="author-name">{{ commit!.author }}</div>
-          <div class="author-email">{{ commit!.author_email }}</div>
-        </div>
-        <div class="commit-time">{{ relativeTime }}</div>
+      <div class="author-row">
+        <div class="avatar" :style="{ background: avatarColor }">{{ initials }}</div>
+        <span class="author-name">{{ commit!.author }}</span>
+        <span class="commit-time">{{ relativeTime }}</span>
       </div>
 
-      <div v-if="body" class="commit-body">
-        {{ body }}
-      </div>
+      <div v-if="body" class="commit-body">{{ body }}</div>
 
-      <div class="sha-section" @click="copySha">
+      <div class="sha-row" @click="copySha">
         <span class="sha-label">SHA</span>
         <span class="sha-value">{{ shortSha }}</span>
         <svg class="copy-icon" viewBox="0 0 16 16" fill="currentColor">
@@ -45,7 +38,7 @@
 
       <div class="files-section">
         <div class="files-header">
-          <span class="files-count">{{ changedFiles.length }} changed file{{ changedFiles.length !== 1 ? 's' : '' }}</span>
+          {{ changedFiles.length }} changed file{{ changedFiles.length !== 1 ? 's' : '' }}
         </div>
         <ChangedFilesList
           :files="changedFiles"
@@ -189,99 +182,82 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 </script>
 
 <style scoped>
-.commit-details-card {
+.commit-details {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #1e1e1e;
-  border: 1px solid #3c3c3c;
-  border-radius: 8px;
-  overflow: hidden;
+  background: var(--bg-primary);
 }
 
-.card-header {
-  padding: 16px;
-  border-bottom: 1px solid #3c3c3c;
+.detail-header {
+  padding: 12px 12px 8px;
 }
 
 .branch-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
-.branch-tag {
+.branch-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 12px;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 10px;
   font-size: 11px;
   font-weight: 500;
 }
 
-.branch-tag.branch-main {
-  background: #238636;
+.pill-main {
+  background: var(--accent-green);
   color: #ffffff;
 }
 
-.branch-tag.branch-other {
+.pill-other {
   background: #1f6feb;
   color: #ffffff;
 }
 
-.tag-icon {
-  width: 12px;
-  height: 12px;
+.pill-icon {
+  width: 11px;
+  height: 11px;
 }
 
 .commit-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: #cccccc;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.4;
 }
 
-.author-section {
+.author-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.02);
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 600;
   color: #ffffff;
   flex-shrink: 0;
 }
 
-.author-info {
-  flex: 1;
-  min-width: 0;
-}
-
 .author-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  color: #e6e6e6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.author-email {
-  font-size: 11px;
-  color: #8b949e;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -289,57 +265,58 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 
 .commit-time {
   font-size: 11px;
-  color: #6e7681;
+  color: var(--text-muted);
+  margin-left: auto;
   white-space: nowrap;
 }
 
 .commit-body {
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #8b949e;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  border-bottom: 1px solid #3c3c3c;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.sha-section {
+.sha-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: background 0.15s;
 }
 
-.sha-section:hover {
-  background: rgba(255, 255, 255, 0.04);
+.sha-row:hover {
+  background: var(--bg-hover);
 }
 
 .sha-label {
   font-size: 10px;
   font-weight: 600;
-  color: #6e7681;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .sha-value {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-family: 'Consolas', 'Monaco', monospace;
   font-size: 12px;
-  color: #58a6ff;
+  color: var(--accent-blue);
 }
 
 .copy-icon {
-  width: 14px;
-  height: 14px;
-  color: #6e7681;
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted);
   margin-left: auto;
 }
 
 .divider {
   height: 1px;
-  background: #3c3c3c;
+  background: var(--border-color);
 }
 
 .files-section {
@@ -350,16 +327,13 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 }
 
 .files-header {
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.files-count {
+  padding: 6px 12px;
   font-size: 11px;
   font-weight: 500;
-  color: #8b949e;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background: var(--bg-secondary);
 }
 
 .files-list {
@@ -373,14 +347,14 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: #6e7681;
-  font-size: 13px;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .empty-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   opacity: 0.5;
 }
 </style>

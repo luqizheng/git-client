@@ -11,6 +11,7 @@ const mockData: Record<string, unknown> = {
   close_repo: null,
   list_branches: [{ name: 'main', is_remote: false, is_head: true, target_commit_id: 'abc123', upstream: null }],
   list_remotes: [{ name: 'origin', url: 'https://github.com/user/repo.git', push_url: null }],
+  stash_list: [],
   load_settings: { theme: 'dark', sidebarWidth: 250, sidebarCollapsed: false, language: 'en' },
   blame_file: {
     file_path: 'test.txt',

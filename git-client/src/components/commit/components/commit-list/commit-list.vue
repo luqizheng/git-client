@@ -2,35 +2,67 @@
 import { h, computed } from 'vue'
 import { NDropdown } from 'naive-ui'
 import type { DropdownOption } from 'naive-ui'
-
+import CommitGraph from '../../../graph/CommitGraph.vue'
+import type { GraphCommit } from '../../utils/graphRenderer'
 import { useCommitList } from '../../composables/useCommitList'
-import type { Commit } from '../../../../types/git'
-import HashCell from '../cells/HashCell.vue'
-import BranchTagCell from '../cells/BranchTagCell.vue'
-import MessageCell from '../cells/MessageCell.vue'
-import AuthorCell from '../cells/AuthorCell.vue'
-import DateCell from '../cells/DateCell.vue'
+import { useRightPanelStore } from '../../../../stores/rightPanel'
+import { useStagingStore } from '../../../../stores/staging'
+import { useRepoStore } from '../../../../stores/repo'
+
+const rightPanelStore = useRightPanelStore()
+const stagingStore = useStagingStore()
+const repoStore = useRepoStore()
 
 const {
-  scrollContainer,
   filterText,
   filteredCommits,
-  totalHeight,
-  visibleItems,
   selectedCommitId,
-  hoveredId,
   contextMenu,
   handleClick,
-  setHovered,
   hideContextMenu,
-  onScroll,
 } = useCommitList()
 
-void scrollContainer
+const graphCommits = computed<GraphCommit[]>(() =>
+  filteredCommits.value.map(c => ({
+    id: c.id,
+    parents: c.parent_ids,
+    refs: c.refs.map(r => ({ name: r.name, ref_type: r.ref_type })),
+    message: c.message,
+    author: c.author,
+    time: c.time,
+  })),
+)
 
-function onContextMenu(e: MouseEvent, commit: Commit) {
-  e.preventDefault()
-  contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, commit }
+const hasWip = computed(() => {
+  if (!repoStore.activeRepoPath) return false
+  const state = stagingStore.getFileState(repoStore.activeRepoPath)
+  return state.unstaged.length > 0 || state.staged.length > 0
+})
+
+const wipUnstagedCount = computed(() => {
+  if (!repoStore.activeRepoPath) return 0
+  return stagingStore.getFileState(repoStore.activeRepoPath).unstaged.length
+})
+
+const wipStagedCount = computed(() => {
+  if (!repoStore.activeRepoPath) return 0
+  return stagingStore.getFileState(repoStore.activeRepoPath).staged.length
+})
+
+function onCommitClick(commitId: string) {
+  const commit = filteredCommits.value.find(c => c.id === commitId)
+  if (commit) handleClick(commit)
+}
+
+function onWipClick() {
+  rightPanelStore.showPanel('staging')
+}
+
+function onContextMenu(e: MouseEvent, commitId: string) {
+  const commit = filteredCommits.value.find(c => c.id === commitId)
+  if (commit) {
+    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, commit }
+  }
 }
 
 function onDropdownSelect(_key: string) {
@@ -40,27 +72,23 @@ function onDropdownSelect(_key: string) {
 const menuOptions = computed<DropdownOption[]>(() => {
   if (!contextMenu.value.commit) return []
   return [
-    { key: 'cherry-pick', label: 'Cherry-pick this commit', icon: renderIcon('cherry') },
+    { key: 'cherry-pick', label: 'Cherry-pick', icon: renderIcon('cherry') },
     { key: 'divider-1', type: 'divider' },
-    { key: 'rebase', label: 'Rebase onto this commit...', icon: renderIcon('rebase') },
+    { key: 'rebase', label: 'Rebase', icon: renderIcon('rebase') },
     {
       key: 'reset',
       label: 'Reset',
       children: [
         { key: 'reset-soft', label: 'Soft' },
         { key: 'reset-mixed', label: 'Mixed' },
-        { key: 'reset-hard', label: 'Hard', props: { style: 'color: var(--danger-color, #ef4444)' } },
+        { key: 'reset-hard', label: 'Hard', props: { style: 'color: var(--accent-red, #e57373)' } },
       ],
     },
     { key: 'divider-2', type: 'divider' },
-    { key: 'create-branch', label: 'Create Branch here...', icon: renderIcon('branch') },
-    { key: 'create-tag', label: 'Tag this version...', icon: renderIcon('tag') },
+    { key: 'create-branch', label: 'Create Branch', icon: renderIcon('branch') },
+    { key: 'create-tag', label: 'Create Tag', icon: renderIcon('tag') },
     { key: 'divider-3', type: 'divider' },
     { key: 'copy-sha', label: 'Copy SHA', icon: renderIcon('copy') },
-    { key: 'copy-info', label: 'Copy commit info' },
-    { key: 'divider-4', type: 'divider' },
-    { key: 'view-diff', label: 'View diff', icon: renderIcon('diff') },
-    { key: 'scroll-to-head', label: 'Scroll to HEAD', icon: renderIcon('head') },
   ]
 })
 
@@ -70,8 +98,6 @@ const SVG_PATHS: Record<string, string> = {
   branch: 'M6 3v12m0 0a3 3 0 100 6 3 3 0 000-6zm12-6a3 3 0 100 6 3 3 0 000-6zM6 9h12',
   tag: 'M20.59 13.41l-7.17-7.17a2 2 0 00-1.41-.59H5a2 2 0 00-2 2v6.83a2 2 0 00.59 1.41l7.17 7.17a2 2 0 002.83 0l7-7a2 2 0 000-2.83zM8 11a1 1 0 110-2 1 1 0 010 2z',
   copy: 'M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z',
-  diff: 'M9 5l7 7-7 7',
-  head: 'M5 12h14M12 5l7 7-7 7',
 }
 
 function renderIcon(name: string) {
@@ -102,65 +128,16 @@ function renderIcon(name: string) {
       </div>
     </div>
 
-    <div class="column-header flex items-center h-7 px-3 text-xs text-[var(--commit-text-secondary)] border-b border-[var(--commit-border,#3c3c3c)] shrink-0">
-      <span class="w-36 shrink-0">Branch / Tag</span>
-      <span class="w-20 shrink-0">Hash</span>
-      <span class="flex-1 min-w-0">Message</span>
-      <span class="w-28 shrink-0">Author</span>
-      <span class="w-20 shrink-0 text-right">Date</span>
-    </div>
-
-    <div
-      ref="scrollContainer"
-      class="scroll-container flex-1 overflow-y-auto"
-      @scroll="onScroll"
-    >
-      <div :style="{ height: totalHeight + 'px', position: 'relative' }">
-        <div
-          v-for="item in visibleItems"
-          :key="item.index"
-          :style="{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            transform: `translateY(${item.start}px)`,
-          }"
-        >
-          <div
-            v-if="filteredCommits[item.index]"
-            class="commit-row flex items-center h-10 px-3 border-b border-[var(--commit-border,#3c3c3c)] cursor-pointer transition-colors"
-            :class="{
-              'bg-[var(--commit-bg-selected,rgba(59,130,246,0.3))]': filteredCommits[item.index].id === selectedCommitId,
-              'bg-[var(--commit-bg-hover,rgba(255,255,255,0.05))]': filteredCommits[item.index].id === hoveredId && filteredCommits[item.index].id !== selectedCommitId,
-            }"
-            @click="handleClick(filteredCommits[item.index])"
-            @contextmenu="onContextMenu($event, filteredCommits[item.index])"
-            @mouseenter="setHovered(filteredCommits[item.index].id)"
-            @mouseleave="setHovered(null)"
-          >
-            <div class="w-36 shrink-0 overflow-hidden">
-              <BranchTagCell :refs="filteredCommits[item.index].refs" />
-            </div>
-            <div class="w-20 shrink-0">
-              <HashCell :hash="filteredCommits[item.index].id" />
-            </div>
-            <div class="flex-1 min-w-0 mr-2">
-              <MessageCell
-                :message="filteredCommits[item.index].message"
-                :query="filterText"
-              />
-            </div>
-            <div class="w-28 shrink-0 overflow-hidden">
-              <AuthorCell :author="filteredCommits[item.index].author" />
-            </div>
-            <div class="w-20 shrink-0 text-right">
-              <DateCell :timestamp="filteredCommits[item.index].time" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <CommitGraph
+      :commits="graphCommits"
+      :selected-commit-id="selectedCommitId"
+      :has-wip="hasWip"
+      :wip-unstaged-count="wipUnstagedCount"
+      :wip-staged-count="wipStagedCount"
+      @commit-click="onCommitClick"
+      @wip-click="onWipClick"
+      @context-menu="onContextMenu"
+    />
 
     <NDropdown
       :show="contextMenu.visible"

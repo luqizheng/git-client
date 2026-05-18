@@ -1,20 +1,28 @@
 :root {
-  --bg-primary: #1e1e2e;
-  --bg-secondary: #181825;
-  --bg-tertiary: #11111b;
-  --bg-hover: #313244;
-  --border-color: #313244;
-  --text-primary: #cdd6f4;
-  --text-secondary: #a6adc8;
-  --text-muted: #6c7086;
-  --accent-blue: #4fc3f7;
-  --accent-green: #81c784;
+  --bg-primary: #1b1b1b;
+  --bg-secondary: #2b2b2b;
+  --bg-tertiary: #111111;
+  --bg-hover: #3c3c3c;
+  --border-color: #3c3c3c;
+  --text-primary: #e6e6e6;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent-blue: #0e639c;
+  --accent-green: #238636;
   --accent-red: #e57373;
-  --accent-yellow: #fff176;
-  --accent-purple: #ba68c8;
-  --scrollbar-track: #181825;
-  --scrollbar-thumb: #45475a;
-  --scrollbar-thumb-hover: #585b70;
+  --accent-yellow: #d29922;
+  --accent-purple: #8957e5;
+  --branch-color-1: #5B8FF9;
+  --branch-color-2: #5AD8A6;
+  --branch-color-3: #F6BD16;
+  --branch-color-4: #E86452;
+  --branch-color-5: #6DC8EC;
+  --branch-color-6: #9270CA;
+  --branch-color-7: #FF9845;
+  --branch-color-8: #1E9493;
+  --scrollbar-track: #1b1b1b;
+  --scrollbar-thumb: #3c3c3c;
+  --scrollbar-thumb-hover: #555555;
 }
 
 :root {
@@ -29,9 +37,9 @@
   --commit-text: #e0e0e0;
   --commit-text-secondary: #969696;
   --commit-border: #3c3c3c;
-  --scrollbar-track: #1e1e2e;
-  --scrollbar-thumb: #45475a;
-  --scrollbar-thumb-hover: #585b70;
+  --scrollbar-track: #1b1b1b;
+  --scrollbar-thumb: #3c3c3c;
+  --scrollbar-thumb-hover: #555555;
 }
 
 [data-theme="light"] {

@@ -34,7 +34,7 @@
 import { ref, onMounted } from 'vue'
 import { useTagsStore } from '../../stores/tags'
 import type { Tag } from '../../types/git'
-import { Tag as TagIcon } from '@vicons/fluent'
+import { Tag16Regular as TagIcon } from '@vicons/fluent'
 import { useMessage } from 'naive-ui'
 import TagDialog from './TagDialog.vue'
 

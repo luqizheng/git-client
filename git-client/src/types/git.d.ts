@@ -161,4 +161,5 @@ export interface Worktree {
   branch: string
   commit: string
   is_prunable: boolean
+  is_main: boolean
 }

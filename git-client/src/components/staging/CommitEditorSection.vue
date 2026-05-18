@@ -1,43 +1,38 @@
 <template>
-  <div class="commit-editor-section border-t px-3 py-2 flex-shrink-0" style="border-color: #3c3c3c; background: #252526;">
-    <div class="flex items-center gap-1 mb-1.5">
-      <n-button type="primary" size="small" :disabled="!canCommit" @click="$emit('commit')" style="background: #0e639c;">
-        ⚡ Commit
-      </n-button>
-      <n-checkbox v-model:checked="amendVal" size="small">Amend</n-checkbox>
-    </div>
-    <n-input
+  <div class="commit-editor-section">
+    <input
+      class="summary-input"
       :value="summary"
       placeholder="Summary (required)"
-      size="small"
-      class="mb-1"
-      @update:value="(v: string) => $emit('update:summary', v)"
+      @input="$emit('update:summary', ($event.target as HTMLInputElement).value)"
     />
-    <n-input
+    <textarea
+      class="description-input"
       :value="description"
-      type="textarea"
-      :rows="2"
-      placeholder="Description (optional)"
-      size="small"
-      class="mb-1.5"
-      @update:value="(v: string) => $emit('update:description', v)"
+      placeholder="Description"
+      rows="3"
+      @input="$emit('update:description', ($event.target as HTMLTextAreaElement).value)"
     />
-    <button
-      class="w-full py-1.5 text-xs rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      :class="canCommit
-        ? 'border-green-600 text-green-400 hover:bg-green-900/20'
-        : 'border-gray-600 text-gray-500'"
-      :disabled="!canCommit"
-      @click="$emit('commit')"
-    >
-      ⚡ Stage Changes to Commit
-    </button>
+    <div class="commit-actions">
+      <button
+        class="commit-btn"
+        :disabled="!canCommit"
+        @click="$emit('commit')"
+      >Commit</button>
+      <label class="amend-label">
+        <input
+          type="checkbox"
+          :checked="amend"
+          @change="$emit('update:amend', ($event.target as HTMLInputElement).checked)"
+        />
+        <span>Amend</span>
+      </label>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NInput, NButton, NCheckbox } from 'naive-ui'
 
 const props = defineProps<{
   summary: string
@@ -53,10 +48,106 @@ defineEmits<{
   'update:amend': [value: boolean]
 }>()
 
-const amendVal = computed({
-  get: () => props.amend,
-  set: (_v) => { /* handled by parent via emit */ }
-})
-
 const canCommit = computed(() => props.summary.trim().length > 0 && props.hasStagedFiles)
 </script>
+
+<style scoped>
+.commit-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.summary-input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.summary-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.summary-input::placeholder {
+  color: var(--text-muted);
+}
+
+.description-input {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  outline: none;
+  resize: vertical;
+  min-height: 48px;
+  max-height: 120px;
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.description-input:focus {
+  border-color: var(--accent-blue);
+}
+
+.description-input::placeholder {
+  color: var(--text-muted);
+}
+
+.commit-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.commit-btn {
+  height: 26px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #0e639c;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.commit-btn:hover:not(:disabled) {
+  background: #1177bb;
+}
+
+.commit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.amend-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.amend-label input {
+  margin: 0;
+  cursor: pointer;
+}
+</style>

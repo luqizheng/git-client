@@ -3,7 +3,7 @@
     <div v-if="keys.length === 0" class="text-center py-8 text-gray-400">
       暂无 GPG 密钥
     </div>
-    <gpg-key-item v-for="key in keys" :key="key.id" :gpg-key="key" @export="handleExport" @delete="handleDelete" />
+    <gpg-key-item v-for="k in keys" :key="k.fingerprint" :gpg-key="k" @export="handleExport" @delete="handleDelete" />
   </div>
 </template>
 

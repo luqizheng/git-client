@@ -18,6 +18,9 @@ import {
   NListItem,
   NThing,
   NTag,
+  NDropdown,
+  NIcon,
+  NScrollbar,
 } from 'naive-ui'
 
 const naive = create({
@@ -40,6 +43,9 @@ const naive = create({
     NListItem,
     NThing,
     NTag,
+    NDropdown,
+    NIcon,
+    NScrollbar,
   ],
 })
 
