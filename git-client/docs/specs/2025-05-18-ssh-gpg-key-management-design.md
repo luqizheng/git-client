@@ -35,9 +35,9 @@
 │  │  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐   │  │
 │  │  │ssh_commands │  │gpg_commands │  │key_service   │   │  │
 │  │  └─────────────┘  └─────────────┘  └──────────────┘   │  │
-│  │  ┌─────────────┐  ┌─────────────┐                      │  │
-│  │  │ssh_utils    │  │gpg_utils    │                      │  │
-│  │  └─────────────┘  └─────────────┘                      │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐   │  │
+│  │  │ssh_utils    │  │gpg_utils    │  │ssh_agent     │   │  │
+│  │  └─────────────┘  └─────────────┘  └──────────────┘   │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                         │                                    │
 │         ┌───────────────┼───────────────┐                    │
@@ -46,6 +46,11 @@
 │    │~/.ssh/  │    │gpg-agent│    │app_data  │               │
 │    │         │    │         │    │          │               │
 │    └─────────┘    └─────────┘    └──────────┘               │
+│         ▲                                                    │
+│    ┌─────────┐                                               │
+│    │ssh-agent│                                               │
+│    │         │                                               │
+│    └─────────┘                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -110,12 +115,18 @@ pub struct GpgSubkey {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RepoKeyConfig {
-    pub repo_path: String,
+    pub repo_id: String,               // 仓库唯一标识：remote_url + worktree_name
+    pub repo_path: String,             // 仓库路径（用于显示和验证）
     pub ssh_key_id: Option<String>,    // 指定的 SSH 密钥
     pub gpg_key_id: Option<String>,    // 用于签名的 GPG 密钥
     pub use_ssh_agent: bool,           // 是否使用 SSH agent
 }
 ```
+
+**仓库唯一标识生成规则：**
+- 格式：`{remote_origin_url}#{worktree_name}`
+- 如果无 remote：使用 `local:{repo_path_hash}`
+- 示例：`git@github.com:user/repo.git#main`
 
 ## 功能详细设计
 
@@ -133,12 +144,16 @@ pub struct RepoKeyConfig {
 - 调用系统 `ssh-keygen` 命令生成
 - 自动生成文件名：`id_{algorithm}_{timestamp}`
 - 可选：设置密码短语（passphrase）
+- **密码短语处理**：由用户自行记忆，应用不存储。生成时提示用户备份私钥
+- **文件名冲突处理**：如果目标文件已存在，自动追加数字后缀（如 `_1`, `_2`）
 
 #### 3. 密钥导入
 
 - 从文件系统选择私钥文件
 - 自动查找同目录下的 `.pub` 公钥文件
 - 复制到 `~/.ssh/` 目录并设置正确权限
+- **密钥对验证**：导入后验证私钥和公钥是否匹配（通过指纹比对）
+- **重复检测**：检查是否已存在相同指纹的密钥，提示用户
 
 #### 4. 密钥删除
 
@@ -152,6 +167,16 @@ pub struct RepoKeyConfig {
 - 支持复制到剪贴板
 - 显示为 Git 服务（GitHub/GitLab）添加密钥的格式
 
+#### 6. ssh-agent 集成
+
+- **检测 agent 状态**：检查 `SSH_AUTH_SOCK` 环境变量
+- **添加密钥到 agent**：`ssh-add {private_key_path}`
+  - 如果密钥有密码短语，会弹出对话框要求输入
+  - 密码短语仅用于本次添加到 agent，应用不存储
+- **从 agent 移除密钥**：`ssh-add -d {public_key_path}`
+- **列出已加载密钥**：`ssh-add -l`
+- **密钥状态显示**：在 UI 中显示密钥是否已加载到 agent
+
 ### GPG 密钥管理
 
 #### 1. 密钥列表
@@ -159,12 +184,32 @@ pub struct RepoKeyConfig {
 - 调用 `gpg --list-secret-keys --with-colons` 获取密钥列表
 - 解析输出提取关键信息
 - 显示密钥ID、用户ID、指纹、过期时间
+- **GPG 可用性检测**：启动时检测 `gpg` 命令是否存在，不存在时引导用户安装
+  - Windows：提示安装 Gpg4win 或 Git for Windows
+  - macOS：提示安装 GPG Suite 或 `brew install gnupg`
+  - Linux：提示安装 `gnupg` 包
 
 #### 2. 密钥生成
 
-- 调用 `gpg --full-generate-key` 交互式生成
-- 或通过预设参数批量生成
-- 支持设置：算法、密钥长度、过期时间、用户信息
+- **使用批处理模式生成**（非交互式）：
+  ```bash
+  gpg --batch --gen-key <<EOF
+  Key-Type: EDDSA
+  Key-Curve: ed25519
+  Key-Usage: sign
+  Subkey-Type: ECDH
+  Subkey-Curve: cv25519
+  Subkey-Usage: encrypt
+  Name-Real: {user_name}
+  Name-Email: {user_email}
+  Expire-Date: 2y
+  Passphrase: {passphrase}
+  %commit
+  EOF
+  ```
+- 支持算法：Ed25519（推荐）、RSA（4096位）
+- 默认过期时间：2年
+- **密码短语处理**：由用户自行记忆，应用不存储
 
 #### 3. 密钥导入/导出
 
@@ -181,11 +226,21 @@ pub struct RepoKeyConfig {
 
 #### 1. 配置 SSH 密钥
 
-- 设置 `core.sshCommand`：
-  ```
-  git config core.sshCommand "ssh -i ~/.ssh/id_ed25519 -F /dev/null"
-  ```
-- 或使用 SSH config 文件管理 Host 配置
+- **方式一：使用 SSH config 文件（推荐）**
+  - 在 `~/.ssh/config` 中添加 Host 配置：
+    ```
+    Host github.com-work
+        HostName github.com
+        User git
+        IdentityFile ~/.ssh/id_ed25519_work
+        IdentitiesOnly yes
+    ```
+  - 修改 remote URL 使用别名：`git@github.com-work:user/repo.git`
+  
+- **方式二：使用 core.sshCommand**
+  - 设置 `git config core.sshCommand "ssh -i ~/.ssh/id_ed25519"`
+  - 保留用户的 SSH config（不使用 `-F /dev/null`）
+  - 提供选项让用户选择是否保留默认 SSH 配置
 
 #### 2. 配置 GPG 签名
 
@@ -211,7 +266,7 @@ pub async fn list_ssh_keys() -> Result<Vec<SshKey>, AppError>
 pub async fn generate_ssh_key(
     name: String,
     algorithm: SshAlgorithm,
-    passphrase: Option<String>,
+    passphrase: Option<String>,  // 应用不存储，仅传递给 ssh-keygen
     comment: Option<String>,
 ) -> Result<SshKey, AppError>
 
@@ -229,6 +284,21 @@ pub async fn delete_ssh_key(key_id: String) -> Result<(), AppError>
 // 获取公钥内容
 #[tauri::command]
 pub async fn get_ssh_public_key(key_id: String) -> Result<String, AppError>
+
+// 添加密钥到 ssh-agent
+#[tauri::command]
+pub async fn add_key_to_agent(
+    key_id: String,
+    passphrase: Option<String>,  // 临时输入，不存储
+) -> Result<(), AppError>
+
+// 从 ssh-agent 移除密钥
+#[tauri::command]
+pub async fn remove_key_from_agent(key_id: String) -> Result<(), AppError>
+
+// 检查密钥是否在 agent 中
+#[tauri::command]
+pub async fn is_key_in_agent(key_id: String) -> Result<bool, AppError>
 ```
 
 ### GPG 相关命令
@@ -371,7 +441,10 @@ src/components/settings/
 ## 安全考虑
 
 1. **文件权限**：SSH 私钥文件权限设置为 600（仅所有者可读写）
-2. **密码短语**：支持设置密钥密码短语，存储在系统密钥链
+2. **密码短语**：
+   - 应用**不存储**任何密钥的密码短语
+   - SSH 密钥密码仅在添加到 ssh-agent 时临时输入
+   - GPG 密钥密码由 GPG agent 管理
 3. **敏感信息**：不在日志中记录私钥内容或密码
 4. **删除确认**：删除密钥前要求用户确认，防止误删
 5. **备份提醒**：生成新密钥时提醒用户备份私钥
@@ -384,7 +457,8 @@ src/components/settings/
 | 密钥文件权限错误 | 尝试修复权限，失败则提示用户 |
 | 导入的密钥格式错误 | 返回具体错误信息，提示检查文件 |
 | 密钥被占用（ssh-agent） | 提示用户先移除 agent 中的密钥 |
-| GPG 操作需要密码 | 弹出密码输入对话框 |
+| GPG 操作需要密码 | 弹出密码输入对话框（密码不存储） |
+| GPG 未安装 | 引导用户安装 Gpg4win/GPG Suite/gnupg |
 
 ## 跨平台适配
 
