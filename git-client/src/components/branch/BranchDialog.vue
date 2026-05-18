@@ -15,7 +15,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, NCheckbox, useMessage } from 'naive-ui'
+import { NModal, NForm, NFormItem, NInput, NButton, NCheckbox } from 'naive-ui'
+import { toast } from 'vue-sonner';
 import { useBranchesStore } from '../../stores/branches'
 import { useRepoStore } from '../../stores/repo'
 
@@ -24,18 +25,17 @@ const name = ref('')
 const checkout = ref(true)
 const branchesStore = useBranchesStore()
 const repo = useRepoStore()
-const msgApi = useMessage()
 
 async function doCreate() {
   if (!repo.activeRepoPath || !name.value.trim()) return
   const branchName = name.value.trim()
   try {
     await branchesStore.createBranch(repo.activeRepoPath, branchName, checkout.value)
-    msgApi.success(`Branch ${branchName} created`)
+    toast.success(`Branch ${branchName} created`)
     show.value = false
     name.value = ''
   } catch (e) {
-    msgApi.error(String(e))
+    toast.error(String(e))
   }
 }
 </script>

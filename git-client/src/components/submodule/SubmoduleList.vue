@@ -26,11 +26,10 @@
 import { ref, onMounted } from 'vue'
 import { useSubmoduleStore } from '../../stores/submodule'
 import type { Submodule } from '../../types/git'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{ repoPath: string }>()
 const store = useSubmoduleStore()
-const message = useMessage()
 const loading = ref(false)
 
 const submodules = ref<Submodule[]>([])
@@ -46,12 +45,12 @@ async function load() {
 
 async function handleInit(sm: Submodule) {
   await store.initSubmodule(props.repoPath, sm.name)
-  message.success(`子模块 ${sm.name} 初始化完成`)
+  toast.success(`子模块 ${sm.name} 初始化完成`)
 }
 
 async function handleUpdate(sm: Submodule) {
   await store.updateSubmodule(props.repoPath, sm.name)
-  message.success(`子模块 ${sm.name} 更新完成`)
+  toast.success(`子模块 ${sm.name} 更新完成`)
 }
 
 onMounted(load)

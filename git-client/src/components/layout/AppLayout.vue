@@ -41,13 +41,12 @@ import { useRepoStore } from '../../stores/repo'
 import { useBranchesStore } from '../../stores/branches'
 import { useCommitsStore } from '../../stores/commits'
 import { useRemoteStore } from '../../stores/remote'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 
 const repo = useRepoStore()
 const branches = useBranchesStore()
 const commits = useCommitsStore()
 const remote = useRemoteStore()
-const msg = useMessage()
 
 const showCloneDialog = ref(false)
 
@@ -60,9 +59,9 @@ async function handleOpen() {
       branches.fetchBranches(selected),
       commits.fetchLogs(selected),
     ])
-    msg.success(`Opened: ${selected}`)
+    toast.success(`Opened: ${selected}`)
   } catch (e) {
-    msg.error(`Failed to open: ${e}`)
+    toast.error(`Failed to open: ${e}`)
   }
 }
 
@@ -72,67 +71,67 @@ function handleClone() {
 
 async function handleFetch() {
   if (!repo.activeRepoPath) {
-    msg.warning('No repository open')
+    toast.warning('No repository open')
     return
   }
   const remotes = remote.getRemotes(repo.activeRepoPath)
   if (remotes.length === 0) {
-    msg.warning('No remote configured')
+    toast.warning('No remote configured')
     return
   }
   try {
     await remote.fetchRemote(repo.activeRepoPath, remotes[0].name)
-    msg.success('Fetch completed')
+    toast.success('Fetch completed')
     await commits.fetchLogs(repo.activeRepoPath)
   } catch (e) {
-    msg.error(`Fetch failed: ${e}`)
+    toast.error(`Fetch failed: ${e}`)
   }
 }
 
 async function handlePull() {
   if (!repo.activeRepoPath) {
-    msg.warning('No repository open')
+    toast.warning('No repository open')
     return
   }
   const remotes = remote.getRemotes(repo.activeRepoPath)
   if (remotes.length === 0) {
-    msg.warning('No remote configured')
+    toast.warning('No remote configured')
     return
   }
   const currentBranchName = branches.currentBranch(repo.activeRepoPath)
   if (!currentBranchName) {
-    msg.warning('No branch selected')
+    toast.warning('No branch selected')
     return
   }
   try {
     await remote.pullRemote(repo.activeRepoPath, remotes[0].name, currentBranchName)
-    msg.success('Pull completed')
+    toast.success('Pull completed')
     await commits.fetchLogs(repo.activeRepoPath)
   } catch (e) {
-    msg.error(`Pull failed: ${e}`)
+    toast.error(`Pull failed: ${e}`)
   }
 }
 
 async function handlePush() {
   if (!repo.activeRepoPath) {
-    msg.warning('No repository open')
+    toast.warning('No repository open')
     return
   }
   const remotes = remote.getRemotes(repo.activeRepoPath)
   if (remotes.length === 0) {
-    msg.warning('No remote configured')
+    toast.warning('No remote configured')
     return
   }
   const currentBranchName = branches.currentBranch(repo.activeRepoPath)
   if (!currentBranchName) {
-    msg.warning('No branch selected')
+    toast.warning('No branch selected')
     return
   }
   try {
     await remote.pushRemote(repo.activeRepoPath, remotes[0].name, currentBranchName)
-    msg.success('Push completed')
+    toast.success('Push completed')
   } catch (e) {
-    msg.error(`Push failed: ${e}`)
+    toast.error(`Push failed: ${e}`)
   }
 }
 </script>

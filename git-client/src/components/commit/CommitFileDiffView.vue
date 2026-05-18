@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { NButton, NButtonGroup, NIcon, NSpin, useMessage } from 'naive-ui'
+import { NButton, NButtonGroup, NIcon, NSpin } from 'naive-ui'
 import { CloseOutline, ChevronUp, ChevronDown, DocumentText, GitCompare, FileTrayOutline, PersonOutline } from '@vicons/ionicons5'
 import * as monaco from 'monaco-editor'
 import { useDiffStore } from '../../stores/diff'
@@ -132,13 +132,13 @@ import { useRepoStore } from '../../stores/repo'
 import { useRightPanelStore } from '../../stores/rightPanel'
 import { useTheme } from '../../composables/useTheme'
 import { useBlameStore } from '../../stores/blame'
+import { toast } from 'vue-sonner'
 import BlamePanel from '../blame/BlamePanel.vue'
 
 const diffStore = useDiffStore()
 const repo = useRepoStore()
 const rightPanel = useRightPanelStore()
 const blameStore = useBlameStore()
-const msg = useMessage()
 const { theme } = useTheme()
 const mode = ref<'split' | 'unified'>('split')
 const loading = ref(false)
@@ -366,7 +366,7 @@ async function fetchAndUpdateContent() {
       updateEditors(content)
     }
   } catch (e) {
-    msg.error('Failed to load file content')
+    toast.error('Failed to load file content')
     console.error('fetchFileContent error:', e)
   } finally {
     loading.value = false

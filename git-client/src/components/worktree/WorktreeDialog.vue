@@ -26,7 +26,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useWorktreeStore } from '../../stores/worktree'
-import { NModal, NForm, NFormItem, NInput, NButton, NSpace, useMessage } from 'naive-ui'
+import { NModal, NForm, NFormItem, NInput, NButton, NSpace } from 'naive-ui'
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
   show: boolean
@@ -39,7 +40,6 @@ const emit = defineEmits<{
 }>()
 
 const store = useWorktreeStore()
-const message = useMessage()
 const submitting = ref(false)
 
 const showModel = computed({
@@ -54,18 +54,18 @@ const form = ref({
 
 async function handleSubmit() {
   if (!form.value.path) {
-    message.error('Please enter worktree path')
+    toast.error('Please enter worktree path')
     return
   }
   submitting.value = true
   try {
     await store.addWorktree(props.repoPath, form.value.path, form.value.branch || undefined)
-    message.success('Worktree added successfully')
+    toast.success('Worktree added successfully')
     form.value = { path: '', branch: '' }
     showModel.value = false
     emit('created')
   } catch (e: any) {
-    message.error(`Failed to add worktree: ${e}`)
+    toast.error(`Failed to add worktree: ${e}`)
   } finally {
     submitting.value = false
   }

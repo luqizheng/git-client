@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import { open } from '@tauri-apps/plugin-dialog'
 import AppLayout from './AppLayout.vue'
 import RepoPanel from '../repo/RepoPanel.vue'
@@ -16,7 +16,6 @@ const repo = useRepoStore()
 const branches = useBranchesStore()
 const commits = useCommitsStore()
 const diffStore = useDiffStore()
-const msg = useMessage()
 
 const hasSelectedFile = computed(() => {
   if (!repo.activeRepoPath) return false
@@ -32,9 +31,9 @@ async function handleOpen() {
       branches.fetchBranches(selected),
       commits.fetchLogs(selected),
     ])
-    msg.success(`Opened: ${selected}`)
+    toast.success(`Opened: ${selected}`)
   } catch (e) {
-    msg.error(`Failed to open: ${e}`)
+    toast.error(`Failed to open: ${e}`)
   }
 }
 

@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { useMessage } from 'naive-ui';
+import { toast } from 'vue-sonner';
 import GpgKeyItem from './GpgKeyItem.vue';
 import type { GpgKey } from '../../types/key';
 import { gpgKeyApi } from '../../utils/keys';
@@ -21,25 +21,23 @@ const emit = defineEmits<{
   refresh: [];
 }>();
 
-const message = useMessage();
-
 async function handleExport(key: GpgKey) {
   try {
     const content = await gpgKeyApi.exportPublicKey(key.id);
     await navigator.clipboard.writeText(content);
-    message.success('公钥已复制到剪贴板');
+    toast.success('公钥已复制到剪贴板');
   } catch (e) {
-    message.error(`导出失败: ${e}`);
+    toast.error(`导出失败: ${e}`);
   }
 }
 
 async function handleDelete(key: GpgKey) {
   try {
     await gpgKeyApi.delete(key.id);
-    message.success('密钥已删除');
+    toast.success('密钥已删除');
     emit('refresh');
   } catch (e) {
-    message.error(`删除失败: ${e}`);
+    toast.error(`删除失败: ${e}`);
   }
 }
 </script>

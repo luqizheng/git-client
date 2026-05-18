@@ -27,15 +27,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { NButton, useMessage } from 'naive-ui';
+import { NButton } from 'naive-ui';
 import { Add as PlusIcon, CloudUpload as UploadIcon } from '@vicons/ionicons5';
+import { toast } from 'vue-sonner';
 import SshKeyList from './SshKeyList.vue';
 import SshKeyGenerator from './SshKeyGenerator.vue';
 import SshKeyImport from './SshKeyImport.vue';
 import type { SshKey } from '../../types/key';
 import { sshKeyApi } from '../../utils/keys';
 
-const message = useMessage();
 const keys = ref<SshKey[]>([]);
 const showGenerator = ref(false);
 const showImporter = ref(false);
@@ -44,7 +44,7 @@ async function loadKeys() {
   try {
     keys.value = await sshKeyApi.list();
   } catch (e) {
-    message.error(`加载密钥失败: ${e}`);
+    toast.error(`加载密钥失败: ${e}`);
   }
 }
 

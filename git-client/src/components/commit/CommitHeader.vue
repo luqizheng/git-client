@@ -17,14 +17,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton, useMessage } from 'naive-ui'
+import { NButton } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import type { Commit } from '../../types/git'
 
 const props = defineProps<{
   commit: Commit
 }>()
-
-const msg = useMessage()
 
 const shortSha = computed(() => props.commit.id.slice(0, 7))
 const subject = computed(() => props.commit.message.split('\n')[0])
@@ -37,9 +36,9 @@ const formattedDate = computed(() => new Date(props.commit.time * 1000).toLocale
 async function copySha() {
   try {
     await navigator.clipboard.writeText(props.commit.id)
-    msg.success(`Copied: ${props.commit.id.slice(0, 7)}`)
+    toast.success(`Copied: ${props.commit.id.slice(0, 7)}`)
   } catch {
-    msg.warning('Copy failed')
+    toast.warning('Copy failed')
   }
 }
 </script>

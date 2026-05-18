@@ -35,13 +35,12 @@ import { ref, onMounted } from 'vue'
 import { useTagsStore } from '../../stores/tags'
 import type { Tag } from '../../types/git'
 import { Tag16Regular as TagIcon } from '@vicons/fluent'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import TagDialog from './TagDialog.vue'
 
 const props = defineProps<{ repoPath: string }>()
 
 const tagsStore = useTagsStore()
-const message = useMessage()
 const showDialog = ref(false)
 const loading = ref(false)
 
@@ -57,9 +56,9 @@ async function loadTags() {
 async function handleDelete(tag: Tag) {
   try {
     await tagsStore.deleteTag(props.repoPath, tag.name)
-    message.success(`标签 ${tag.name} 已删除`)
+    toast.success(`标签 ${tag.name} 已删除`)
   } catch (e: any) {
-    message.error(`删除失败: ${e}`)
+    toast.error(`删除失败: ${e}`)
   }
 }
 

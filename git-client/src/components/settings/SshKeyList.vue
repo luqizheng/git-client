@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useMessage } from 'naive-ui';
+import { toast } from 'vue-sonner';
 import SshKeyItem from './SshKeyItem.vue';
 import type { SshKey } from '../../types/key';
 import { sshKeyApi } from '../../utils/keys';
@@ -32,7 +32,6 @@ const emit = defineEmits<{
   refresh: [];
 }>();
 
-const message = useMessage();
 const loadedAgentKeys = ref<string[]>([]);
 
 async function loadAgentKeys() {
@@ -57,9 +56,9 @@ async function loadAgentKeys() {
 async function handleView(key: SshKey) {
   try {
     const content = await sshKeyApi.getPublicKey(key.public_key_path);
-    message.info(`公钥: ${content.substring(0, 50)}...`);
+    toast.info(`公钥: ${content.substring(0, 50)}...`);
   } catch (e) {
-    message.error(`获取公钥失败: ${e}`);
+    toast.error(`获取公钥失败: ${e}`);
   }
 }
 
@@ -67,39 +66,39 @@ async function handleCopy(key: SshKey) {
   try {
     const content = await sshKeyApi.getPublicKey(key.public_key_path);
     await navigator.clipboard.writeText(content);
-    message.success('公钥已复制到剪贴板');
+    toast.success('公钥已复制到剪贴板');
   } catch (e) {
-    message.error(`复制失败: ${e}`);
+    toast.error(`复制失败: ${e}`);
   }
 }
 
 async function handleDelete(key: SshKey) {
   try {
     await sshKeyApi.delete(key.id);
-    message.success('密钥已删除');
+    toast.success('密钥已删除');
     emit('refresh');
   } catch (e) {
-    message.error(`删除失败: ${e}`);
+    toast.error(`删除失败: ${e}`);
   }
 }
 
 async function handleAddToAgent(key: SshKey) {
   try {
     await sshKeyApi.addToAgent(key.private_key_path);
-    message.success('密钥已添加到 ssh-agent');
+    toast.success('密钥已添加到 ssh-agent');
     await loadAgentKeys();
   } catch (e) {
-    message.error(`添加失败: ${e}`);
+    toast.error(`添加失败: ${e}`);
   }
 }
 
 async function handleRemoveFromAgent(key: SshKey) {
   try {
     await sshKeyApi.removeFromAgent(key.public_key_path);
-    message.success('密钥已从 ssh-agent 移除');
+    toast.success('密钥已从 ssh-agent 移除');
     await loadAgentKeys();
   } catch (e) {
-    message.error(`移除失败: ${e}`);
+    toast.error(`移除失败: ${e}`);
   }
 }
 

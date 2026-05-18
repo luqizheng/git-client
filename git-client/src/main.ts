@@ -12,6 +12,7 @@ import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+import { Toaster } from "@/components/ui/sonner";
 
 
 monaco.typescript.typescriptDefaults.setEagerModelSync(true);
@@ -39,4 +40,5 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(naive);
 app.use(i18n);
+app.component("Toaster", Toaster);
 app.mount("#app");

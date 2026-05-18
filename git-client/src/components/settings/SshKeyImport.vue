@@ -20,8 +20,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { NModal, NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui';
+import { NModal, NForm, NFormItem, NInput, NButton } from 'naive-ui';
 import { open } from '@tauri-apps/plugin-dialog';
+import { toast } from 'vue-sonner';
 import { sshKeyApi } from '../../utils/keys';
 
 const props = defineProps<{
@@ -33,7 +34,6 @@ const emit = defineEmits<{
   success: [];
 }>();
 
-const message = useMessage();
 const loading = ref(false);
 const form = ref({
   name: '',
@@ -70,23 +70,23 @@ async function selectFile() {
 
 async function handleImport() {
   if (!form.value.name.trim()) {
-    message.warning('请输入密钥名称');
+    toast.warning('请输入密钥名称');
     return;
   }
   if (!form.value.sourcePath) {
-    message.warning('请选择私钥文件');
+    toast.warning('请选择私钥文件');
     return;
   }
 
   loading.value = true;
   try {
     await sshKeyApi.import(form.value.sourcePath, form.value.name);
-    message.success('密钥导入成功！');
+    toast.success('密钥导入成功！');
     showModal.value = false;
     form.value = { name: '', sourcePath: '' };
     emit('success');
   } catch (e) {
-    message.error(`导入失败: ${e}`);
+    toast.error(`导入失败: ${e}`);
   } finally {
     loading.value = false;
   }

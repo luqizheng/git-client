@@ -48,7 +48,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NButton, useMessage } from 'naive-ui'
+import { NButton } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import { useBranchesStore } from '../../stores/branches'
 import { useRepoStore } from '../../stores/repo'
 import BranchDialog from './BranchDialog.vue'
@@ -56,7 +57,6 @@ import type { Branch } from '../../types/git'
 
 const branchesStore = useBranchesStore()
 const repo = useRepoStore()
-const msgApi = useMessage()
 const showDialog = ref(false)
 const activeTab = ref<'local' | 'remote'>('local')
 
@@ -68,9 +68,9 @@ async function onSwitch(name: string) {
   if (!repo.activeRepoPath) return
   try {
     await branchesStore.switchBranch(repo.activeRepoPath, name)
-    msgApi.success(`Switched to ${name}`)
+    toast.success(`Switched to ${name}`)
   } catch (e) {
-    msgApi.error(String(e))
+    toast.error(String(e))
   }
 }
 

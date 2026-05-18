@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { computed, watch, onUnmounted } from 'vue'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import { useRightPanelStore } from '../../stores/rightPanel'
 import { useDiffStore } from '../../stores/diff'
 import { useRepoStore } from '../../stores/repo'
@@ -68,7 +68,6 @@ import ChangedFilesList from './ChangedFilesList.vue'
 const rightPanel = useRightPanelStore()
 const diffStore = useDiffStore()
 const repo = useRepoStore()
-const msg = useMessage()
 
 const detail = computed(() => rightPanel.commitDetail)
 const commit = computed(() => detail.value?.commit)
@@ -152,9 +151,9 @@ async function copySha() {
   if (!commit.value) return
   try {
     await navigator.clipboard.writeText(commit.value.id)
-    msg.success(`Copied: ${commit.value.id.slice(0, 7)}`)
+    toast.success(`Copied: ${commit.value.id.slice(0, 7)}`)
   } catch {
-    msg.warning('Copy failed')
+    toast.warning('Copy failed')
   }
 }
 

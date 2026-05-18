@@ -47,14 +47,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NButton, NModal, NForm, NFormItem, NInput, NProgress, useMessage } from 'naive-ui'
+import { NButton, NModal, NForm, NFormItem, NInput, NProgress } from 'naive-ui'
+import { toast } from 'vue-sonner';
 import { useRemoteStore } from '../../stores/remote'
 import { useRepoStore } from '../../stores/repo'
 import { useRemoteProgress } from '../../composables/useRemoteProgress'
 
 const remoteStore = useRemoteStore()
 const repo = useRepoStore()
-const msgApi = useMessage()
 const { progress } = useRemoteProgress()
 const showAdd = ref(false)
 const remoteName = ref('')
@@ -70,7 +70,7 @@ async function doAdd() {
     remoteName.value = ''
     remoteUrl.value = ''
   } catch (e) {
-    msgApi.error(String(e))
+    toast.error(String(e))
   }
 }
 

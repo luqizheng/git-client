@@ -36,7 +36,7 @@ import { useStagingStore } from '../../stores/staging'
 import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
 import { useDiffStore } from '../../stores/diff'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import { invoke } from '../../utils/ipc'
 import UnstagedFilesSection from './UnstagedFilesSection.vue'
 import StagedFilesSection from './StagedFilesSection.vue'
@@ -47,7 +47,6 @@ const staging = useStagingStore()
 const repo = useRepoStore()
 const commits = useCommitsStore()
 const diffStore = useDiffStore()
-const msg = useMessage()
 
 onMounted(async () => {
   await refreshStaging()
@@ -95,11 +94,11 @@ async function handleUnstageAll() {
 }
 
 function handleDiscard(_path: string) {
-  msg.warning('Discard is not yet supported')
+  toast.warning('Discard is not yet supported')
 }
 
 function handleDiscardAll() {
-  msg.warning('Discard is not yet supported')
+  toast.warning('Discard is not yet supported')
 }
 
 function handleSelectFile(path: string) {
@@ -111,7 +110,7 @@ async function handleCommit() {
   if (!repo.activeRepoPath) return
   const { summary, description } = rightPanel.commitMessage
   if (!summary.trim()) {
-    msg.warning('Please enter a commit summary')
+    toast.warning('Please enter a commit summary')
     return
   }
   try {
@@ -121,11 +120,11 @@ async function handleCommit() {
       amend: rightPanel.amendMode,
     })
     rightPanel.commitMessage = { summary: '', description: '' }
-    msg.success('Committed successfully')
+    toast.success('Committed successfully')
     await commits.fetchLogs(repo.activeRepoPath)
     await refreshStaging()
   } catch (e) {
-    msg.error(String(e))
+    toast.error(String(e))
   }
 }
 </script>

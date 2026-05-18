@@ -138,7 +138,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, nextTick, defineComponent, h, type Component } from 'vue'
-import { NButton, NIcon, NScrollbar, NDropdown, useMessage } from 'naive-ui'
+import { NButton, NIcon, NScrollbar, NDropdown } from 'naive-ui'
 import {
   ChevronBack,
   ChevronForward,
@@ -149,6 +149,7 @@ import {
   Archive,
   GitMerge,
 } from '@vicons/ionicons5'
+import { toast } from 'vue-sonner'
 import { useAppStore } from '../../stores/app'
 import { useBranchesStore } from '../../stores/branches'
 import { useRemoteStore } from '../../stores/remote'
@@ -194,7 +195,6 @@ const remoteStore = useRemoteStore()
 const tagsStore = useTagsStore()
 const submoduleStore = useSubmoduleStore()
 const repo = useRepoStore()
-const msg = useMessage()
 
 const sectionExpanded = reactive({
   local: true,
@@ -307,7 +307,7 @@ function onSubmoduleContext(e: MouseEvent, _sm: Submodule) {
 
 function onContextSelect(_key: string) {
   contextShow.value = false
-  msg.info('功能开发中')
+  toast.info('功能开发中')
 }
 
 async function onBranchClick(branch: Branch) {
@@ -316,7 +316,7 @@ async function onBranchClick(branch: Branch) {
   try {
     await branchesStore.switchBranch(repo.activeRepoPath, branch.name)
   } catch (e) {
-    msg.error(String(e))
+    toast.error(String(e))
   }
 }
 

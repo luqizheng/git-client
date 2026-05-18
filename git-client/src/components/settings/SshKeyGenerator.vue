@@ -22,7 +22,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { NModal, NForm, NFormItem, NInput, NSelect, NButton, useMessage } from 'naive-ui';
+import { NModal, NForm, NFormItem, NInput, NSelect, NButton } from 'naive-ui';
+import { toast } from 'vue-sonner';
 import { sshKeyApi } from '../../utils/keys';
 import { SshAlgorithm } from '../../types/key';
 
@@ -35,7 +36,6 @@ const emit = defineEmits<{
   success: [];
 }>();
 
-const message = useMessage();
 const loading = ref(false);
 const form = ref({
   name: '',
@@ -60,7 +60,7 @@ watch(showModal, (val) => {
 
 async function handleGenerate() {
   if (!form.value.name.trim()) {
-    message.warning('请输入密钥名称');
+    toast.warning('请输入密钥名称');
     return;
   }
 
@@ -71,12 +71,12 @@ async function handleGenerate() {
       form.value.algorithm,
       form.value.comment || undefined
     );
-    message.success('密钥生成成功！请记得备份私钥。');
+    toast.success('密钥生成成功！请记得备份私钥。');
     showModal.value = false;
     form.value = { name: '', algorithm: SshAlgorithm.Ed25519, comment: '' };
     emit('success');
   } catch (e) {
-    message.error(`生成失败: ${e}`);
+    toast.error(`生成失败: ${e}`);
   } finally {
     loading.value = false;
   }

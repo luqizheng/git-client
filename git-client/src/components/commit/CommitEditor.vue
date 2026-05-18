@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner'
 import { invoke } from '../../utils/ipc'
 import { useRepoStore } from '../../stores/repo'
 import { useCommitsStore } from '../../stores/commits'
@@ -54,7 +54,6 @@ const commits = useCommitsStore()
 const message = ref('')
 const amend = ref(false)
 const template = ref<string | undefined>(undefined)
-const msgApi = useMessage()
 
 const templateOptions = [
   { label: 'feat:', value: 'feat: ' },
@@ -82,10 +81,10 @@ async function doCommit() {
     message.value = ''
     amend.value = false
     template.value = undefined
-    msgApi.success('Committed')
+    toast.success('Committed')
     await commits.fetchLogs(repo.activeRepoPath)
   } catch (e) {
-    msgApi.error(String(e))
+    toast.error(String(e))
   }
 }
 </script>

@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import { useTagsStore } from '../../stores/tags'
-import { useMessage } from 'naive-ui'
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{ visible: boolean; repoPath: string }>()
 const emit = defineEmits<{ 'update:visible': [boolean]; created: [] }>()
@@ -32,7 +32,6 @@ const showModal = ref(props.visible)
 watch(() => props.visible, (v) => { showModal.value = v })
 
 const tagsStore = useTagsStore()
-const message = useMessage()
 
 const form = reactive({
   name: '',
@@ -47,12 +46,12 @@ function handleClose() {
 async function handleCreate() {
   try {
     await tagsStore.createTag(props.repoPath, form.name, form.target, form.message || undefined)
-    message.success(`标签 ${form.name} 创建成功`)
+    toast.success(`标签 ${form.name} 创建成功`)
     form.name = ''
     form.message = ''
     emit('created')
   } catch (e: any) {
-    message.error(`创建失败: ${e}`)
+    toast.error(`创建失败: ${e}`)
   }
 }
 </script>
