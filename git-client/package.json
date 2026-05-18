@@ -21,8 +21,12 @@
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "@vicons/ionicons5": "^0.13.0",
     "@vueuse/core": "^14.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^1.0.0",
     "naive-ui": "^2.44.1",
     "pinia": "^3.0.4",
+    "tailwind-merge": "^3.6.0",
     "vite-plugin-monaco-editor": "^1.1.0",
     "vue": "^3.5.13",
     "vue-i18n": "^11.4.2"
