@@ -52,16 +52,16 @@ function statusLabel(status: DiffStatus): string {
 function statusColor(status: DiffStatus): string {
   switch (status) {
     case 'Added':
-      return '#e2c08d'
+      return 'var(--chart-5)'
     case 'Modified':
-      return '#73c991'
+      return 'var(--secondary)'
     case 'Deleted':
-      return '#f14c4c'
+      return 'var(--destructive)'
     case 'Renamed':
     case 'Copied':
-      return '#dcdcaa'
+      return 'var(--accent)'
     default:
-      return '#888'
+      return 'var(--muted-foreground)'
   }
 }
 </script>
@@ -105,12 +105,12 @@ function statusColor(status: DiffStatus): string {
   top: 0;
   bottom: 0;
   width: 0;
-  background: #0e639c;
+  background: var(--primary);
   transition: width 0.1s ease;
 }
 
 .file-item:hover {
-  background: #3c3c3c;
+  background: var(--muted);
 }
 
 .file-item:hover::before {
@@ -119,7 +119,10 @@ function statusColor(status: DiffStatus): string {
 
 .file-item.selected {
   background: var(--primary);
-  opacity: 0.3;
+}
+
+.file-item.selected .file-status {
+  color: var(--primary-foreground);
 }
 
 .file-item.selected::before {
@@ -138,7 +141,7 @@ function statusColor(status: DiffStatus): string {
 .file-path {
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 12px;
-  color: #cccccc;
+  color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
