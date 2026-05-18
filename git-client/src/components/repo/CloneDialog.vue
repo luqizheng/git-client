@@ -1,31 +1,59 @@
 <template>
-  <n-modal v-model:show="show" preset="dialog" title="Clone Repository">
-    <n-form>
-      <n-form-item label="URL">
-        <n-input v-model:value="url" placeholder="https://github.com/user/repo.git" />
-      </n-form-item>
-      <n-form-item label="Local Path">
-        <n-input v-model:value="path" placeholder="/path/to/clone" />
-      </n-form-item>
-    </n-form>
-    <template #action>
-      <n-button @click="show = false">Cancel</n-button>
-      <n-button type="primary" :loading="loading" @click="doClone">Clone</n-button>
-    </template>
-  </n-modal>
+  <Dialog v-model:open="show">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Clone Repository</DialogTitle>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid gap-2">
+          <Label for="url">URL</Label>
+          <Input
+            id="url"
+            v-model="url"
+            placeholder="https://github.com/user/repo.git"
+          />
+        </div>
+        <div class="grid gap-2">
+          <Label for="path">Local Path</Label>
+          <Input
+            id="path"
+            v-model="path"
+            placeholder="/path/to/clone"
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" @click="show = false">Cancel</Button>
+        <Button :disabled="loading" @click="doClone">
+          <span v-if="loading">Cloning...</span>
+          <span v-else>Clone</span>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, useMessage } from 'naive-ui'
 import { useRepoStore } from '../../stores/repo'
+import { useToast } from '../../composables/useToast'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../ui/dialog'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
 
 const show = defineModel<boolean>('show', { default: false })
 const url = ref('')
 const path = ref('')
 const loading = ref(false)
 const repo = useRepoStore()
-const message = useMessage()
+const { success, error } = useToast()
 
 async function doClone() {
   if (!url.value || !path.value) return
@@ -33,9 +61,9 @@ async function doClone() {
   try {
     await repo.cloneRepo(url.value, path.value)
     show.value = false
-    message.success('Clone successful')
+    success('Clone successful')
   } catch (e) {
-    message.error(String(e))
+    error(String(e))
   } finally {
     loading.value = false
   }
