@@ -267,7 +267,6 @@ watch([() => filePath.value, () => commitSha.value], () => {
 
 watchEffect(() => {
   const content = pendingContent.value
-  console.log('[DiffView] watchEffect triggered, content:', !!content, 'oldEditor:', !!oldEditor, 'newEditor:', !!newEditor, 'oldEditorRef:', !!oldEditorRef.value, 'newEditorRef:', !!newEditorRef.value)
   if (content && oldEditorRef.value && newEditorRef.value) {
     if (!oldEditor) {
       console.log('[DiffView] Creating oldEditor in watchEffect')
@@ -284,26 +283,44 @@ watchEffect(() => {
 })
 
 function createEditorsIfNeeded() {
+  const content = pendingContent.value
   if (mode.value === 'split') {
     if (!oldEditor && oldEditorRef.value) {
-      oldEditor = createEditor(oldEditorRef.value, pendingContent.value?.old_content || '')
+      oldEditor = createEditor(oldEditorRef.value, content?.old_content || '')
     }
     if (!newEditor && newEditorRef.value) {
-      newEditor = createEditor(newEditorRef.value, pendingContent.value?.new_content || '')
+      newEditor = createEditor(newEditorRef.value, content?.new_content || '')
     }
     if (oldEditor && newEditor) {
       setupScrollSync()
-      updateDiffDecorations(oldEditor, newEditor, pendingContent.value?.hunks || [])
+      if (content) {
+        oldEditor.setValue(content.old_content || '')
+        newEditor.setValue(content.new_content || '')
+      }
+      updateDiffDecorations(oldEditor, newEditor, content?.hunks || [])
     }
   } else {
     if (!unifiedEditor && unifiedEditorRef.value) {
-      const unifiedDiff = generateUnifiedDiff(pendingContent.value?.hunks || [])
+      const unifiedDiff = generateUnifiedDiff(content?.hunks || [])
       unifiedEditor = createEditor(unifiedEditorRef.value, unifiedDiff)
+    } else if (unifiedEditor && content) {
+      const unifiedDiff = generateUnifiedDiff(content.hunks || [])
+      unifiedEditor.setValue(unifiedDiff)
     }
   }
 }
 
-watch(mode, () => {
+watch(mode, (newMode, oldMode) => {
+  console.log('[DiffView] mode changed:', oldMode, '->', newMode)
+  if (oldMode === 'split' && newMode === 'unified') {
+    oldEditor?.dispose()
+    newEditor?.dispose()
+    oldEditor = null
+    newEditor = null
+  } else if (oldMode === 'unified' && newMode === 'split') {
+    unifiedEditor?.dispose()
+    unifiedEditor = null
+  }
   nextTick(() => {
     createEditorsIfNeeded()
   })
