@@ -2,23 +2,25 @@
   <div class="h-screen flex flex-col" style="background: var(--bg-primary); color: var(--text-primary);">
     <Toolbar @open="handleOpen" @fetch="handleFetch" @pull="handlePull" @push="handlePush" @clone="handleClone" />
     <div class="main-container flex flex-1 overflow-hidden">
-      <n-split direction="horizontal" :default-size="0.15" :min="0.08" :max="0.35">
-        <template #1>
+      <ResizablePanelGroup direction="horizontal" class="w-full h-full">
+        <ResizablePanel :default-size="15" :min-size="8" :max-size="35">
           <Sidebar />
-        </template>
-        <template #2>
-          <n-split direction="horizontal" :default-size="0.55" :min="0.2" :max="0.85">
-            <template #1>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel>
+          <ResizablePanelGroup direction="horizontal" class="w-full h-full">
+            <ResizablePanel :default-size="60">
               <CenterArea class="h-full">
                 <slot />
               </CenterArea>
-            </template>
-            <template #2>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel :default-size="40">
               <RightPanel />
-            </template>
-          </n-split>
-        </template>
-      </n-split>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
     <StatusBar />
     <CloneDialog v-model:show="showCloneDialog" />
@@ -33,6 +35,7 @@ import StatusBar from './StatusBar.vue'
 import CenterArea from './CenterArea.vue'
 import RightPanel from './RightPanel.vue'
 import CloneDialog from '../repo/CloneDialog.vue'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useRepoStore } from '../../stores/repo'
 import { useBranchesStore } from '../../stores/branches'
