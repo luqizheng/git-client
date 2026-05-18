@@ -7,6 +7,7 @@ pub mod hook;
 pub mod merge;
 pub mod remote;
 pub mod repo;
+pub mod repo_key;
 pub mod reset;
 pub mod settings;
 pub mod ssh_key;

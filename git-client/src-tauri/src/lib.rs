@@ -131,6 +131,9 @@ pub fn run() {
             commands::gpg_key::export_gpg_public_key,
             commands::gpg_key::import_gpg_key,
             commands::gpg_key::delete_gpg_key,
+            commands::repo_key::get_repo_key_config,
+            commands::repo_key::set_repo_ssh_key,
+            commands::repo_key::set_repo_gpg_key,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
