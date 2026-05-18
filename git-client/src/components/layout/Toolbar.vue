@@ -41,17 +41,26 @@
       </template>
       {{ app.theme === 'dark' ? 'Dark' : 'Light' }}
     </n-button>
+    <n-divider vertical />
+    <n-button quaternary size="small" @click="showSettings = true" title="Settings">
+      <template #icon>
+        <n-icon :size="14"><Settings /></n-icon>
+      </template>
+    </n-button>
+    <settings-panel v-model="showSettings" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { NButton, NDivider, NIcon } from 'naive-ui'
-import { FolderOpen, Download, Refresh, ArrowDown, ArrowUp, Moon, Sunny } from '@vicons/ionicons5'
+import { FolderOpen, Download, Refresh, ArrowDown, ArrowUp, Moon, Sunny, Settings } from '@vicons/ionicons5'
 import { useAppStore } from '../../stores/app'
 import { useRepoStore } from '../../stores/repo'
 import { useRemoteStore } from '../../stores/remote'
 import { useTheme } from '../../composables/useTheme'
 import { computed } from 'vue'
+import SettingsPanel from '../settings/SettingsPanel.vue'
 
 defineEmits(['open', 'clone', 'fetch', 'pull', 'push'])
 
@@ -59,6 +68,7 @@ const app = useAppStore()
 const repo = useRepoStore()
 const remote = useRemoteStore()
 const { toggleTheme } = useTheme()
+const showSettings = ref(false)
 
 const isSyncing = computed(() => {
   if (!repo.activeRepoPath) return false
