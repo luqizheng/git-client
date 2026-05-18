@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+
+/* 保留原有变量 */
+@import './variables.css';
