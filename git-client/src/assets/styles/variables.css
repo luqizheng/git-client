@@ -1,4 +1,27 @@
 :root {
+  /* shadcn-vue 标准变量 - 暗色主题 */
+  --background: 0 0% 11%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 17%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 11%;
+  --popover-foreground: 0 0% 90%;
+  --primary: 212 100% 34%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 17%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 23%;
+  --muted-foreground: 215 14% 55%;
+  --accent: 212 100% 34%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62% 68%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 24%;
+  --input: 0 0% 24%;
+  --ring: 212 100% 34%;
+  --radius: 0.5rem;
+
+  /* 原有自定义变量 - 保留 */
   --bg-primary: #1b1b1b;
   --bg-secondary: #2b2b2b;
   --bg-tertiary: #111111;
@@ -12,6 +35,8 @@
   --accent-red: #e57373;
   --accent-yellow: #d29922;
   --accent-purple: #8957e5;
+
+  /* 分支颜色 */
   --branch-color-1: #5B8FF9;
   --branch-color-2: #5AD8A6;
   --branch-color-3: #F6BD16;
@@ -20,6 +45,8 @@
   --branch-color-6: #9270CA;
   --branch-color-7: #FF9845;
   --branch-color-8: #1E9493;
+
+  /* 滚动条 */
   --scrollbar-track: #1b1b1b;
   --scrollbar-thumb: #3c3c3c;
   --scrollbar-thumb-hover: #555555;
@@ -29,6 +56,7 @@
   color-scheme: dark;
 }
 
+/* 提交列表相关变量 */
 :root,
 [data-theme="dark"] {
   --commit-bg: transparent;
@@ -43,6 +71,28 @@
 }
 
 [data-theme="light"] {
+  /* shadcn-vue 亮色主题 */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 11%;
+  --primary: 212 100% 34%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 11%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 212 100% 34%;
+
+  /* 提交列表亮色变量 */
   --commit-bg: transparent;
   --commit-bg-hover: rgba(0, 0, 0, 0.04);
   --commit-bg-selected: rgba(59, 130, 246, 0.15);
