@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { FileDiff, FileContent } from '../types/git'
 import { invoke } from '../utils/ipc'
+import { MOCK_FILE_DIFFS, getMockFileContent } from '../mocks/diff'
+
+const isMockMode = () => !window.__TAURI__
 
 export const useDiffStore = defineStore('diff', () => {
   const diffStates = ref<Map<string, FileDiff[]>>(new Map())
@@ -27,7 +30,12 @@ export const useDiffStore = defineStore('diff', () => {
   async function fetchCommitDiff(repoPath: string, commitId: string) {
     loadingStates.value.set(repoPath, true)
     try {
-      const diffs = await invoke<FileDiff[]>('get_diff', { repoPath, commitId })
+      let diffs: FileDiff[]
+      if (isMockMode()) {
+        diffs = MOCK_FILE_DIFFS
+      } else {
+        diffs = await invoke<FileDiff[]>('get_diff', { repoPath, commitId })
+      }
       diffStates.value.set(repoPath, diffs)
     } catch (e) {
       console.error('fetchCommitDiff error:', e)
@@ -62,12 +70,19 @@ export const useDiffStore = defineStore('diff', () => {
 
   async function fetchFileContent(repoPath: string, commitId: string, filePath: string) {
     try {
-      const content = await invoke<FileContent>('get_file_content', {
-        repoPath,
-        commitId,
-        filePath,
-      })
-      fileContents.value.set(repoPath, content)
+      let content: FileContent | null
+      if (isMockMode()) {
+        content = getMockFileContent(filePath, commitId)
+      } else {
+        content = await invoke<FileContent>('get_file_content', {
+          repoPath,
+          commitId,
+          filePath,
+        })
+      }
+      if (content) {
+        fileContents.value.set(repoPath, content)
+      }
       return content
     } catch (e) {
       console.error('fetchFileContent error:', e)

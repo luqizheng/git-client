@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   X,
@@ -34,6 +34,8 @@ const unifiedEditorRef = ref<HTMLElement | null>(null)
 let oldEditor: monaco.editor.IStandaloneCodeEditor | null = null
 let newEditor: monaco.editor.IStandaloneCodeEditor | null = null
 let unifiedEditor: monaco.editor.IStandaloneCodeEditor | null = null
+
+const pendingContent = ref<import('../../types/git').FileContent | null>(null)
 
 const filePath = computed(() => {
   const selected = repo.activeRepoPath ? diffStore.getSelectedFile(repo.activeRepoPath) : null
@@ -197,6 +199,8 @@ function updateEditors(content?: import('../../types/git').FileContent) {
   const targetContent = content ?? fileContent.value
   if (!targetContent) return
 
+  pendingContent.value = targetContent
+
   if (oldEditor) {
     oldEditor.setValue(targetContent.old_content || '')
   }
@@ -257,50 +261,55 @@ async function fetchAndUpdateContent() {
   }
 }
 
-watch([filePath, commitSha], () => {
+watch([() => filePath.value, () => commitSha.value], () => {
   fetchAndUpdateContent()
 }, { immediate: true })
 
-watch(fileContent, (content) => {
+watchEffect(() => {
+  const content = pendingContent.value
+  console.log('[DiffView] watchEffect triggered, content:', !!content, 'oldEditor:', !!oldEditor, 'newEditor:', !!newEditor, 'oldEditorRef:', !!oldEditorRef.value, 'newEditorRef:', !!newEditorRef.value)
+  if (content && oldEditorRef.value && newEditorRef.value) {
+    if (!oldEditor) {
+      console.log('[DiffView] Creating oldEditor in watchEffect')
+      oldEditor = createEditor(oldEditorRef.value, content.old_content || '')
+    }
+    if (!newEditor) {
+      console.log('[DiffView] Creating newEditor in watchEffect')
+      newEditor = createEditor(newEditorRef.value, content.new_content || '')
+    }
+  }
   if (content) {
-    updateEditors(content)
+    updateEditors(content!)
   }
 })
 
-watch(mode, (newMode) => {
-  setTimeout(() => {
-    if (newMode === 'split') {
-      if (!oldEditor && oldEditorRef.value) {
-        oldEditor = createEditor(oldEditorRef.value, fileContent.value?.old_content || '')
-      }
-      if (!newEditor && newEditorRef.value) {
-        newEditor = createEditor(newEditorRef.value, fileContent.value?.new_content || '')
-      }
-      setupScrollSync()
-      updateDiffDecorations(oldEditor, newEditor, fileContent.value?.hunks || [])
-    } else {
-      if (!unifiedEditor && unifiedEditorRef.value) {
-        const unifiedDiff = generateUnifiedDiff(fileContent.value?.hunks || [])
-        unifiedEditor = createEditor(unifiedEditorRef.value, unifiedDiff)
-      }
+function createEditorsIfNeeded() {
+  if (mode.value === 'split') {
+    if (!oldEditor && oldEditorRef.value) {
+      oldEditor = createEditor(oldEditorRef.value, pendingContent.value?.old_content || '')
     }
-  }, 100)
+    if (!newEditor && newEditorRef.value) {
+      newEditor = createEditor(newEditorRef.value, pendingContent.value?.new_content || '')
+    }
+    if (oldEditor && newEditor) {
+      setupScrollSync()
+      updateDiffDecorations(oldEditor, newEditor, pendingContent.value?.hunks || [])
+    }
+  } else {
+    if (!unifiedEditor && unifiedEditorRef.value) {
+      const unifiedDiff = generateUnifiedDiff(pendingContent.value?.hunks || [])
+      unifiedEditor = createEditor(unifiedEditorRef.value, unifiedDiff)
+    }
+  }
+}
+
+watch(mode, () => {
+  nextTick(() => {
+    createEditorsIfNeeded()
+  })
 })
 
 onMounted(() => {
-  if (mode.value === 'split') {
-    if (oldEditorRef.value) {
-      oldEditor = createEditor(oldEditorRef.value, '')
-    }
-    if (newEditorRef.value) {
-      newEditor = createEditor(newEditorRef.value, '')
-    }
-    setupScrollSync()
-  } else {
-    if (unifiedEditorRef.value) {
-      unifiedEditor = createEditor(unifiedEditorRef.value, '')
-    }
-  }
   fetchAndUpdateContent()
 })
 
@@ -414,43 +423,41 @@ function handleCommitClick(commitId: string) {
         :commit-id="commitSha"
         @commit-click="handleCommitClick"
       />
-      <div class="flex-1 overflow-hidden">
-        <div v-if="loading" class="flex flex-col items-center justify-center h-full gap-4">
+      <div class="flex-1 overflow-hidden relative">
+        <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/80 z-10">
           <div class="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
           <span class="text-sm text-muted-foreground">Loading file content...</span>
         </div>
-        <template v-else-if="fileContent">
-          <template v-if="mode === 'split'">
-            <div class="flex h-full">
-              <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50 border-b border-border shrink-0">
-                  <FileText class="w-4 h-4 shrink-0" />
-                  <span v-if="fileContent.old_path" class="truncate">{{ fileContent.old_path }}</span>
-                  <span v-else class="italic opacity-80">(previous commit)</span>
-                </div>
-                <div ref="oldEditorRef" class="flex-1 min-h-0" />
-              </div>
-              <div class="w-px bg-border shrink-0" />
-              <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50 border-b border-border shrink-0">
-                  <FileText class="w-4 h-4 shrink-0" />
-                  <span class="truncate">{{ fileContent.new_path }}</span>
-                </div>
-                <div ref="newEditorRef" class="flex-1 min-h-0" />
-              </div>
-            </div>
-          </template>
-          <template v-else>
-            <div class="flex flex-col h-full">
+        <template v-if="mode === 'split'">
+          <div class="flex h-full">
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
               <div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50 border-b border-border shrink-0">
-                <GitCompare class="w-4 h-4 shrink-0" />
-                <span>Unified Diff</span>
+                <FileText class="w-4 h-4 shrink-0" />
+                <span v-if="fileContent?.old_path" class="truncate">{{ fileContent.old_path }}</span>
+                <span v-else class="italic opacity-80">(previous commit)</span>
               </div>
-              <div ref="unifiedEditorRef" class="flex-1 min-h-0" />
+              <div ref="oldEditorRef" class="flex-1 min-h-0" />
             </div>
-          </template>
+            <div class="w-px bg-border shrink-0" />
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+              <div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50 border-b border-border shrink-0">
+                <FileText class="w-4 h-4 shrink-0" />
+                <span class="truncate">{{ fileContent?.new_path }}</span>
+              </div>
+              <div ref="newEditorRef" class="flex-1 min-h-0" />
+            </div>
+          </div>
         </template>
-        <div v-else class="flex flex-col items-center justify-center h-full gap-2 p-8">
+        <template v-else>
+          <div class="flex flex-col h-full">
+            <div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted/50 border-b border-border shrink-0">
+              <GitCompare class="w-4 h-4 shrink-0" />
+              <span>Unified Diff</span>
+            </div>
+            <div ref="unifiedEditorRef" class="flex-1 min-h-0" />
+          </div>
+        </template>
+        <div v-if="!loading && !filePath" class="absolute inset-0 flex flex-col items-center justify-center gap-2 p-8 bg-background">
           <FileX2 class="w-12 h-12 text-muted-foreground/50" />
           <p class="text-base font-semibold text-foreground">No File Selected</p>
           <p class="text-sm text-muted-foreground text-center max-w-xs">Select a file from the commit details to view its content</p>
