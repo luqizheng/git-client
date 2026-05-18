@@ -5,7 +5,8 @@
     "clone": "Clone Repo",
     "fetch": "Fetch",
     "pull": "Pull",
-    "push": "Push"
+    "push": "Push",
+    "settings": "Settings"
   },
   "sidebar": {
     "branches": "Branches",
@@ -42,5 +43,70 @@
   "status": {
     "syncing": "Syncing...",
     "no_commits": "No commits"
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "general": "General",
+      "sshKeys": "SSH Keys",
+      "gpgKeys": "GPG Keys"
+    },
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "sshKeys": {
+    "title": "SSH Key Management",
+    "generate": "Generate New Key",
+    "import": "Import Key",
+    "noKeys": "No SSH keys",
+    "algorithm": {
+      "ed25519": "Ed25519 (Recommended)",
+      "rsa": "RSA 4096",
+      "ecdsa": "ECDSA"
+    },
+    "name": "Key Name",
+    "comment": "Comment (optional)",
+    "namePlaceholder": "e.g., work-key",
+    "commentPlaceholder": "e.g., user@example.com",
+    "actions": {
+      "viewPublic": "View Public Key",
+      "copy": "Copy",
+      "addToAgent": "Add to Agent",
+      "removeFromAgent": "Remove from Agent",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "generate": "Generate",
+      "selectFile": "Select File"
+    },
+    "messages": {
+      "generateSuccess": "Key generated successfully! Remember to backup your private key.",
+      "importSuccess": "Key imported successfully!",
+      "deleteConfirm": "Are you sure you want to delete key \"{name}\"? This cannot be undone.",
+      "addToAgentSuccess": "Key added to ssh-agent",
+      "removeFromAgentSuccess": "Key removed from ssh-agent",
+      "copied": "Public key copied to clipboard",
+      "generateFailed": "Generation failed",
+      "importFailed": "Import failed",
+      "deleteFailed": "Delete failed",
+      "loadFailed": "Failed to load keys",
+      "enterName": "Please enter key name",
+      "selectKeyFile": "Please select private key file"
+    }
+  },
+  "gpgKeys": {
+    "title": "GPG Key Management",
+    "noKeys": "No GPG keys",
+    "notInstalled": "GPG is not installed. Please install GPG tools first.",
+    "actions": {
+      "exportPublic": "Export Public Key",
+      "delete": "Delete"
+    },
+    "messages": {
+      "exportSuccess": "Public key copied to clipboard",
+      "exportFailed": "Export failed",
+      "deleteConfirm": "Are you sure you want to delete this GPG key?",
+      "deleteFailed": "Delete failed",
+      "loadFailed": "Cannot load GPG keys. GPG may not be installed."
+    }
   }
 }

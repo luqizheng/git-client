@@ -5,7 +5,8 @@
     "clone": "克隆仓库",
     "fetch": "拉取",
     "pull": "拉取合并",
-    "push": "推送"
+    "push": "推送",
+    "settings": "设置"
   },
   "sidebar": {
     "branches": "分支",
@@ -42,5 +43,70 @@
   "status": {
     "syncing": "同步中...",
     "no_commits": "无提交"
+  },
+  "settings": {
+    "title": "设置",
+    "tabs": {
+      "general": "通用",
+      "sshKeys": "SSH 密钥",
+      "gpgKeys": "GPG 密钥"
+    },
+    "theme": "主题",
+    "language": "语言"
+  },
+  "sshKeys": {
+    "title": "SSH 密钥管理",
+    "generate": "生成新密钥",
+    "import": "导入密钥",
+    "noKeys": "暂无 SSH 密钥",
+    "algorithm": {
+      "ed25519": "Ed25519 (推荐)",
+      "rsa": "RSA 4096",
+      "ecdsa": "ECDSA"
+    },
+    "name": "密钥名称",
+    "comment": "注释 (可选)",
+    "namePlaceholder": "例如: work-key",
+    "commentPlaceholder": "例如: user@example.com",
+    "actions": {
+      "viewPublic": "查看公钥",
+      "copy": "复制",
+      "addToAgent": "添加到 Agent",
+      "removeFromAgent": "从 Agent 移除",
+      "delete": "删除",
+      "cancel": "取消",
+      "generate": "生成",
+      "selectFile": "选择文件"
+    },
+    "messages": {
+      "generateSuccess": "密钥生成成功！请记得备份私钥。",
+      "importSuccess": "密钥导入成功！",
+      "deleteConfirm": "确定要删除密钥 \"{name}\" 吗？此操作不可撤销。",
+      "addToAgentSuccess": "密钥已添加到 ssh-agent",
+      "removeFromAgentSuccess": "密钥已从 ssh-agent 移除",
+      "copied": "公钥已复制到剪贴板",
+      "generateFailed": "生成失败",
+      "importFailed": "导入失败",
+      "deleteFailed": "删除失败",
+      "loadFailed": "加载密钥失败",
+      "enterName": "请输入密钥名称",
+      "selectKeyFile": "请选择私钥文件"
+    }
+  },
+  "gpgKeys": {
+    "title": "GPG 密钥管理",
+    "noKeys": "暂无 GPG 密钥",
+    "notInstalled": "GPG 未安装，请先安装 GPG 工具",
+    "actions": {
+      "exportPublic": "导出公钥",
+      "delete": "删除"
+    },
+    "messages": {
+      "exportSuccess": "公钥已复制到剪贴板",
+      "exportFailed": "导出失败",
+      "deleteConfirm": "确定要删除此 GPG 密钥吗？",
+      "deleteFailed": "删除失败",
+      "loadFailed": "无法加载 GPG 密钥，可能未安装 GPG"
+    }
   }
 }
