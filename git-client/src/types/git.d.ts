@@ -139,3 +139,26 @@ export interface Submodule {
   sha: string
   is_initialized: boolean
 }
+
+export interface BlameLine {
+  line_number: number
+  commit_id: string
+  author: string
+  author_email: string
+  timestamp: number
+  summary: string
+  is_boundary: boolean
+}
+
+export interface BlameResult {
+  file_path: string
+  lines: BlameLine[]
+}
+
+export interface Worktree {
+  id: string
+  path: string
+  branch: string
+  commit: string
+  is_prunable: boolean
+}

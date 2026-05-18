@@ -13,19 +13,19 @@
       Clone
     </n-button>
     <n-divider vertical />
-    <n-button quaternary size="small" @click="$emit('fetch')" title="Fetch from Remote">
+    <n-button quaternary size="small" :loading="isSyncing" :disabled="isSyncing" @click="$emit('fetch')" title="Fetch from Remote">
       <template #icon>
         <n-icon :size="14"><Refresh /></n-icon>
       </template>
       Fetch
     </n-button>
-    <n-button quaternary size="small" @click="$emit('pull')" title="Pull from Remote">
+    <n-button quaternary size="small" :loading="isSyncing" :disabled="isSyncing" @click="$emit('pull')" title="Pull from Remote">
       <template #icon>
         <n-icon :size="14"><ArrowDown /></n-icon>
       </template>
       Pull
     </n-button>
-    <n-button quaternary size="small" @click="$emit('push')" title="Push to Remote">
+    <n-button quaternary size="small" :loading="isSyncing" :disabled="isSyncing" @click="$emit('push')" title="Push to Remote">
       <template #icon>
         <n-icon :size="14"><ArrowUp /></n-icon>
       </template>
@@ -49,11 +49,19 @@ import { NButton, NDivider, NIcon } from 'naive-ui'
 import { FolderOpen, Download, Refresh, ArrowDown, ArrowUp, Moon, Sunny } from '@vicons/ionicons5'
 import { useAppStore } from '../../stores/app'
 import { useRepoStore } from '../../stores/repo'
+import { useRemoteStore } from '../../stores/remote'
 import { useTheme } from '../../composables/useTheme'
+import { computed } from 'vue'
 
 defineEmits(['open', 'clone', 'fetch', 'pull', 'push'])
 
 const app = useAppStore()
 const repo = useRepoStore()
+const remote = useRemoteStore()
 const { toggleTheme } = useTheme()
+
+const isSyncing = computed(() => {
+  if (!repo.activeRepoPath) return false
+  return remote.isSyncing(repo.activeRepoPath)
+})
 </script>

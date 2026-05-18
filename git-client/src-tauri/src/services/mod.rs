@@ -1,3 +1,4 @@
+pub mod blame_service;
 pub mod branch_service;
 pub mod commit_service;
 pub mod diff_service;

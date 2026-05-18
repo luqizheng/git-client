@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import Toolbar from './Toolbar.vue'
 import RepoTabs from './RepoTabs.vue'
 import Sidebar from './Sidebar.vue'
@@ -60,9 +60,7 @@ const commits = useCommitsStore()
 const app = useAppStore()
 const msg = useMessage()
 
-const sidebarCollapsed = ref(false)
-
-watch(() => app.sidebarCollapsed, (v) => { sidebarCollapsed.value = v })
+const sidebarCollapsed = computed(() => app.sidebarCollapsed)
 
 const sidebarDefaultSize = computed(() => {
   if (sidebarCollapsed.value) return 0.04

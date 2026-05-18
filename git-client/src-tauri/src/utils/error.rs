@@ -19,6 +19,8 @@ pub enum AppError {
     RemoteNotFound(String),
     #[error("Search error: {0}")]
     Search(String),
+    #[error("{0}")]
+    Generic(String),
 }
 
 impl AppError {

@@ -118,6 +118,7 @@ pub fn run() {
             commands::hook::list_hooks,
             commands::hook::get_hook_content,
             commands::hook::set_hook_content,
+            commands::blame::blame_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

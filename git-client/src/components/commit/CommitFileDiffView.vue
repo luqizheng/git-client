@@ -43,6 +43,20 @@
           </n-button>
         </n-button-group>
         <div class="separator" />
+        <div class="separator" />
+        <n-button
+          :type="blameStore.isVisible ? 'primary' : 'default'"
+          quaternary
+          size="small"
+          @click="toggleBlame"
+          title="Toggle Blame"
+        >
+          <template #icon>
+            <n-icon><PersonOutline /></n-icon>
+          </template>
+          Blame
+        </n-button>
+        <div class="separator" />
         <n-button
           quaternary
           circle
@@ -56,7 +70,15 @@
         </n-button>
       </div>
     </div>
-    <div class="diff-content">
+    <div class="diff-body">
+      <BlamePanel
+        v-if="repo.activeRepoPath && filePath"
+        :repo-path="repo.activeRepoPath"
+        :file-path="filePath"
+        :commit-id="commitSha"
+        @commit-click="handleCommitClick"
+      />
+      <div class="diff-content">
       <div v-if="loading" class="loading-state">
         <n-spin size="medium" />
         <span class="loading-text">Loading file content...</span>
@@ -95,6 +117,7 @@
         <p class="empty-title">No File Selected</p>
         <p class="empty-description">Select a file from the commit details to view its content</p>
       </div>
+      </div>
     </div>
   </div>
 </template>
@@ -102,16 +125,19 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { NButton, NButtonGroup, NIcon, NSpin, useMessage } from 'naive-ui'
-import { CloseOutline, ChevronUp, ChevronDown, DocumentText, GitCompare, FileTrayOutline } from '@vicons/ionicons5'
+import { CloseOutline, ChevronUp, ChevronDown, DocumentText, GitCompare, FileTrayOutline, PersonOutline } from '@vicons/ionicons5'
 import * as monaco from 'monaco-editor'
 import { useDiffStore } from '../../stores/diff'
 import { useRepoStore } from '../../stores/repo'
 import { useRightPanelStore } from '../../stores/rightPanel'
 import { useTheme } from '../../composables/useTheme'
+import { useBlameStore } from '../../stores/blame'
+import BlamePanel from '../blame/BlamePanel.vue'
 
 const diffStore = useDiffStore()
 const repo = useRepoStore()
 const rightPanel = useRightPanelStore()
+const blameStore = useBlameStore()
 const msg = useMessage()
 const { theme } = useTheme()
 const mode = ref<'split' | 'unified'>('split')
@@ -165,8 +191,6 @@ const language = computed(() => {
     toml: 'toml',
     lock: 'ini',
     cs: 'csharp',
-    csharp: 'csharp',
-    java: 'java',
     ps1: 'powershell',
     psm1: 'powershell',
   }
@@ -417,6 +441,17 @@ function closeDiffView() {
     diffStore.selectFile(repo.activeRepoPath, null)
   }
 }
+
+function toggleBlame() {
+  blameStore.toggleVisibility()
+  if (blameStore.isVisible && repo.activeRepoPath && filePath.value) {
+    blameStore.fetchBlame(repo.activeRepoPath, filePath.value, commitSha.value)
+  }
+}
+
+function handleCommitClick(commitId: string) {
+  console.log('Navigate to commit:', commitId)
+}
 </script>
 
 <style scoped>
@@ -467,6 +502,12 @@ function closeDiffView() {
   height: 20px;
   background: var(--border-color, #3c3c3c);
   margin: 0 4px;
+}
+
+.diff-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .diff-content {
