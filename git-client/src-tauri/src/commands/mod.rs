@@ -8,6 +8,7 @@ pub mod remote;
 pub mod repo;
 pub mod reset;
 pub mod settings;
+pub mod ssh_key;
 pub mod stash;
 pub mod submodule;
 pub mod tag;

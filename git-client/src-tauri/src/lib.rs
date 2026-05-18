@@ -119,6 +119,14 @@ pub fn run() {
             commands::hook::get_hook_content,
             commands::hook::set_hook_content,
             commands::blame::blame_file,
+            commands::ssh_key::list_ssh_keys,
+            commands::ssh_key::generate_ssh_key,
+            commands::ssh_key::import_ssh_key,
+            commands::ssh_key::delete_ssh_key,
+            commands::ssh_key::get_ssh_public_key,
+            commands::ssh_key::add_key_to_agent,
+            commands::ssh_key::remove_key_from_agent,
+            commands::ssh_key::is_key_in_agent,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
