@@ -185,7 +185,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-primary);
+  background: var(--background);
 }
 
 .detail-header {
@@ -227,7 +227,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 .commit-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--foreground);
   margin: 0;
   line-height: 1.4;
 }
@@ -237,7 +237,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--bg-secondary);
+  background: var(--muted);
 }
 
 .avatar {
@@ -264,7 +264,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 
 .commit-time {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   margin-left: auto;
   white-space: nowrap;
 }
@@ -272,11 +272,11 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 .commit-body {
   padding: 8px 12px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .sha-row {
@@ -289,7 +289,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 }
 
 .sha-row:hover {
-  background: var(--bg-hover);
+  background: var(--accent);
 }
 
 .sha-label {
@@ -303,7 +303,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 .sha-value {
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 12px;
-  color: var(--accent-blue);
+  color: var(--secondary);
 }
 
 .copy-icon {
@@ -315,7 +315,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
 
 .divider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--border);
 }
 
 .files-section {
@@ -329,10 +329,10 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
   padding: 6px 12px;
   font-size: 11px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: var(--bg-secondary);
+  background: var(--muted);
 }
 
 .files-list {
@@ -347,7 +347,7 @@ watch(() => rightPanel.selectedCommitSha, (sha) => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   font-size: 12px;
 }
 

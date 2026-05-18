@@ -77,10 +77,10 @@ function handleZoomChange(val: string) {
   display: flex;
   align-items: center;
   padding: 0 8px;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
+  background: var(--muted);
+  border-top: 1px solid var(--border);
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   user-select: none;
 }
 
@@ -115,7 +115,8 @@ function handleZoomChange(val: string) {
   display: flex;
   align-items: center;
   gap: 2px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
+  opacity: 0.7;
 }
 
 .status-ahead-behind {
@@ -135,7 +136,7 @@ function handleZoomChange(val: string) {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--accent-yellow);
+  color: var(--accent);
 }
 
 .spin {
@@ -151,6 +152,7 @@ function handleZoomChange(val: string) {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
+  opacity: 0.7;
 }
 </style>

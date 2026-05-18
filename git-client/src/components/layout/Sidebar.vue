@@ -352,8 +352,8 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
+  background: var(--sidebar);
+  border-right: 1px solid var(--sidebar-border);
   overflow: hidden;
 }
 
@@ -377,7 +377,7 @@ onMounted(async () => {
 }
 
 .sidebar-root .ref-section {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .sidebar-root .section-header {
@@ -392,7 +392,7 @@ onMounted(async () => {
 }
 
 .sidebar-root .section-header:hover {
-  background: var(--bg-hover);
+  background: var(--sidebar-accent);
 }
 
 .sidebar-root .section-header-left {
@@ -402,7 +402,8 @@ onMounted(async () => {
 }
 
 .sidebar-root .section-icon {
-  color: var(--text-muted);
+  color: var(--sidebar-foreground);
+  opacity: 0.6;
 }
 
 .sidebar-root .section-title {
@@ -410,7 +411,8 @@ onMounted(async () => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--text-secondary);
+  color: var(--sidebar-foreground);
+  opacity: 0.8;
 }
 
 .sidebar-root .section-indicator {
@@ -434,7 +436,7 @@ onMounted(async () => {
 }
 
 .sidebar-root .ref-item:hover {
-  background: var(--bg-hover);
+  background: var(--sidebar-accent);
 }
 
 .sidebar-root .ref-dot {
@@ -445,50 +447,52 @@ onMounted(async () => {
 }
 
 .sidebar-root .dot-current {
-  background: var(--accent-green, #81c784);
+  background: var(--sidebar-primary);
 }
 
 .sidebar-root .dot-other {
-  border: 1.5px solid var(--text-muted);
+  border: 1.5px solid var(--sidebar-foreground);
+  opacity: 0.4;
   background: transparent;
 }
 
 .sidebar-root .dot-remote {
-  border: 1.5px solid var(--accent-purple, #ba68c8);
+  border: 1.5px solid var(--chart-4);
   background: transparent;
 }
 
 .sidebar-root .dot-tag {
-  border: 1.5px solid var(--accent-yellow, #fff176);
+  border: 1.5px solid var(--accent);
   background: transparent;
 }
 
 .sidebar-root .dot-stash {
-  border: 1.5px solid var(--accent-blue, #4fc3f7);
+  border: 1.5px solid var(--secondary);
   background: transparent;
 }
 
 .sidebar-root .dot-submodule {
-  border: 1.5px solid var(--accent-red, #e57373);
+  border: 1.5px solid var(--destructive);
   background: transparent;
 }
 
 .sidebar-root .ref-name {
   font-size: 12px;
-  color: var(--text-primary);
+  color: var(--sidebar-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sidebar-root .ref-name-current {
-  color: var(--accent-green, #81c784);
+  color: var(--sidebar-primary);
   font-weight: 600;
 }
 
 .sidebar-root .ref-upstream {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--sidebar-foreground);
+  opacity: 0.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -497,7 +501,8 @@ onMounted(async () => {
 
 .sidebar-root .ref-empty {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--sidebar-foreground);
+  opacity: 0.4;
   padding: 4px 20px;
 }
 
@@ -516,17 +521,18 @@ onMounted(async () => {
 }
 
 .sidebar-root .remote-group-header:hover {
-  background: var(--bg-hover);
+  background: var(--sidebar-accent);
 }
 
 .sidebar-root .remote-expand-icon {
-  color: var(--text-muted);
+  color: var(--sidebar-foreground);
+  opacity: 0.5;
   flex-shrink: 0;
 }
 
 .sidebar-root .remote-group-name {
   font-size: 12px;
-  color: var(--accent-purple, #ba68c8);
+  color: var(--chart-4);
   font-weight: 500;
 }
 

@@ -317,8 +317,8 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 }
 
 .ref-branch {
-  background: var(--accent-blue);
-  color: #fff;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
 }
 
 .ref-remote {
@@ -334,7 +334,7 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 .wip-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   font-style: italic;
 }
 
@@ -345,7 +345,7 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 
 .commit-message {
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -365,7 +365,7 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 
 .commit-time {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   flex-shrink: 0;
   text-align: right;
   min-width: 50px;

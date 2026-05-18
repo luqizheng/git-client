@@ -71,16 +71,16 @@ function statusColor(status: DiffStatus): string {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #2d2d2d;
+  background: var(--card);
 }
 
 .changed-files-header {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #6e6e6e;
+  color: var(--muted-foreground);
   padding: 8px 12px;
-  border-bottom: 1px solid #3c3c3c;
+  border-bottom: 1px solid var(--border);
 }
 
 .changed-files-scroll {
@@ -118,7 +118,8 @@ function statusColor(status: DiffStatus): string {
 }
 
 .file-item.selected {
-  background: #094771;
+  background: var(--primary);
+  opacity: 0.3;
 }
 
 .file-item.selected::before {
@@ -145,12 +146,12 @@ function statusColor(status: DiffStatus): string {
 }
 
 .file-item.selected .file-path {
-  color: #ffffff;
+  color: var(--primary-foreground);
 }
 
 .no-files {
   font-size: 12px;
-  color: #6e6e6e;
+  color: var(--muted-foreground);
   padding: 12px;
 }
 </style>

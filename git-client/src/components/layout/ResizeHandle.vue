@@ -103,7 +103,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   width: 1px;
-  background: var(--border-color, #3c3c3c);
+  background: var(--border);
 }
 .resize-handle:hover .handle-line,
 .resize-handle.active .handle-line {

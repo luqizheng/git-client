@@ -149,14 +149,14 @@ function handlePullSelect(key: string) {
   display: flex;
   align-items: center;
   padding: 0 8px;
-  background: var(--bg-secondary, #1e1e1e);
-  border-bottom: 1px solid var(--border-color, #333);
+  background: var(--sidebar);
+  border-bottom: 1px solid var(--border);
   gap: 2px;
   flex-shrink: 0;
 }
 
 .toolbar-btn {
-  color: var(--text-primary, #ccc) !important;
+  color: var(--sidebar-foreground) !important;
 }
 
 .toolbar-btn:hover:not(:disabled) {

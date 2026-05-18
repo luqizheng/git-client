@@ -3,8 +3,7 @@ import App from "./App.vue";
 import { createPinia } from "pinia";
 import i18n from "./i18n";
 import "./assets/styles/main.css";
-import "./assets/styles/themes/dark.css";
-import "./assets/styles/themes/light.css";
+
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";

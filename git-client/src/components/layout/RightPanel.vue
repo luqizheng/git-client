@@ -17,7 +17,7 @@ const rightPanel = useRightPanelStore()
 
 <style scoped>
 .right-panel {
-  background: var(--bg-primary);
-  border-left: 1px solid var(--border-color);
+  background: var(--background);
+  border-left: 1px solid var(--border);
 }
 </style>

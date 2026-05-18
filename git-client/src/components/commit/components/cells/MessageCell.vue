@@ -13,7 +13,7 @@ const parts = computed(() => highlightText(getFirstLine(props.message), props.qu
 <template>
   <span class="message-cell truncate text-sm leading-[40px]">
     <template v-for="(part, i) in parts" :key="i">
-      <mark v-if="part.isHighlight" class="highlight bg-yellow-500/30 text-yellow-300 rounded px-0.5">{{ part.text }}</mark>
+      <mark v-if="part.isHighlight" class="highlight bg-accent/30 text-accent rounded px-0.5">{{ part.text }}</mark>
       <span v-else>{{ part.text }}</span>
     </template>
   </span>

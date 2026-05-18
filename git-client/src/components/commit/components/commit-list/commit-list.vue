@@ -80,19 +80,19 @@ function onDropdownSelect(key: string) {
 </script>
 
 <template>
-  <div class="commit-list flex flex-col h-full w-full bg-[var(--commit-bg,transparent)]">
-    <div class="toolbar flex items-center gap-2 px-3 py-2 border-b border-[var(--commit-border,#3c3c3c)] shrink-0">
-      <div class="search-box flex items-center bg-[var(--commit-bg-hover,rgba(255,255,255,0.05))] rounded px-2 py-1 flex-1 max-w-80">
-        <svg class="w-4 h-4 text-[var(--commit-text-secondary)] mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="commit-list flex flex-col h-full w-full bg-card">
+    <div class="toolbar flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
+      <div class="search-box flex items-center bg-muted rounded px-2 py-1 flex-1 max-w-80">
+        <svg class="w-4 h-4 text-muted-foreground mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
           v-model="filterText"
           type="text"
           placeholder="Search commits..."
-          class="bg-transparent border-none outline-none text-sm text-[var(--commit-text)] w-full placeholder:text-[var(--commit-text-secondary)]"
+          class="bg-transparent border-none outline-none text-sm text-foreground w-full placeholder:text-muted-foreground"
         />
-        <span v-if="filterText" class="text-xs text-[var(--commit-text-secondary)] ml-1">{{ filteredCommits.length }}</span>
+        <span v-if="filterText" class="text-xs text-muted-foreground ml-1">{{ filteredCommits.length }}</span>
       </div>
     </div>
 

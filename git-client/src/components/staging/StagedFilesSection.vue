@@ -65,7 +65,7 @@ function statusColor(status: DiffStatus): string {
 
 <style scoped>
 .staged-section {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .section-header {
@@ -75,7 +75,7 @@ function statusColor(status: DiffStatus): string {
   height: 30px;
   padding: 0 10px;
   cursor: pointer;
-  background: var(--bg-secondary);
+  background: var(--muted);
   user-select: none;
 }
 
@@ -97,7 +97,7 @@ function statusColor(status: DiffStatus): string {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: var(--accent-green);
+  color: var(--primary);
 }
 
 .header-actions {
@@ -117,7 +117,7 @@ function statusColor(status: DiffStatus): string {
   align-items: center;
   justify-content: center;
   border-radius: 3px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
 }
 
 .action-btn:hover {
@@ -139,7 +139,7 @@ function statusColor(status: DiffStatus): string {
 }
 
 .file-item:hover {
-  background: var(--bg-hover);
+  background: var(--accent);
 }
 
 .file-status {
@@ -184,7 +184,7 @@ function statusColor(status: DiffStatus): string {
   align-items: center;
   justify-content: center;
   border-radius: 3px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
 
 .file-action-btn:hover {

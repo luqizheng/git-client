@@ -69,7 +69,7 @@ function statusColor(status: DiffStatus): string {
 
 <style scoped>
 .unstaged-section {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .section-header {
@@ -84,7 +84,7 @@ function statusColor(status: DiffStatus): string {
 }
 
 .section-header:hover {
-  background: var(--bg-hover);
+  background: var(--accent);
 }
 
 .header-left {
@@ -101,7 +101,7 @@ function statusColor(status: DiffStatus): string {
 .section-title {
   font-size: 12px;
   font-weight: 500;
-  color: var(--accent-yellow);
+  color: var(--accent);
 }
 
 .header-actions {
@@ -125,8 +125,8 @@ function statusColor(status: DiffStatus): string {
 }
 
 .action-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: var(--accent);
+  color: var(--foreground);
 }
 
 .discard-all-btn:hover {
@@ -134,7 +134,7 @@ function statusColor(status: DiffStatus): string {
 }
 
 .stage-all-btn:hover {
-  color: var(--accent-green);
+  color: var(--primary);
 }
 
 .file-item {
@@ -147,7 +147,7 @@ function statusColor(status: DiffStatus): string {
 }
 
 .file-item:hover {
-  background: var(--bg-hover);
+  background: var(--accent);
 }
 
 .file-status {
@@ -161,7 +161,7 @@ function statusColor(status: DiffStatus): string {
 
 .file-path {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,7 +192,7 @@ function statusColor(status: DiffStatus): string {
   align-items: center;
   justify-content: center;
   border-radius: 3px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
 }
 
 .file-action-btn:hover {
@@ -200,16 +200,16 @@ function statusColor(status: DiffStatus): string {
 }
 
 .discard-btn:hover {
-  color: var(--accent-red);
+  color: var(--destructive);
 }
 
 .stage-btn:hover {
-  color: var(--accent-green);
+  color: var(--primary);
 }
 
 .empty-hint {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--muted-foreground);
   padding: 8px 12px;
 }
 </style>

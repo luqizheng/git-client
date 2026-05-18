@@ -87,9 +87,9 @@ const canCommit = computed(() => props.summary.trim().length > 0 && props.hasSta
   width: 100%;
   padding: 4px 8px;
   font-size: 12px;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
   border-radius: 3px;
   outline: none;
   resize: vertical;
@@ -101,7 +101,7 @@ const canCommit = computed(() => props.summary.trim().length > 0 && props.hasSta
 }
 
 .description-input:focus {
-  border-color: var(--accent-blue);
+  border-color: var(--secondary);
 }
 
 .description-input::placeholder {
@@ -141,7 +141,7 @@ const canCommit = computed(() => props.summary.trim().length > 0 && props.hasSta
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   cursor: pointer;
   user-select: none;
 }

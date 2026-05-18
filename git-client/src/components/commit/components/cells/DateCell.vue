@@ -8,5 +8,5 @@ const display = computed(() => formatRelativeTime(props.timestamp))
 </script>
 
 <template>
-  <span class="date-cell text-xs text-[var(--commit-text-secondary)] whitespace-nowrap">{{ display }}</span>
+  <span class="date-cell text-xs text-muted-foreground whitespace-nowrap">{{ display }}</span>
 </template>
