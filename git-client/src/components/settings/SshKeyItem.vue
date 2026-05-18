@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { NIcon, NButton, NTag, NPopconfirm } from 'naive-ui';
-import { KeyRound as KeyIcon } from '@vicons/ionicons5';
+import { KeyOutline as KeyIcon } from '@vicons/ionicons5';
 import type { SshKey } from '../../types/key';
 import { SshAlgorithm } from '../../types/key';
 
