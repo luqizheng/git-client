@@ -2,6 +2,7 @@ pub mod blame;
 pub mod branch;
 pub mod commit;
 pub mod diff;
+pub mod gpg_key;
 pub mod hook;
 pub mod merge;
 pub mod remote;

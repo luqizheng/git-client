@@ -127,6 +127,10 @@ pub fn run() {
             commands::ssh_key::add_key_to_agent,
             commands::ssh_key::remove_key_from_agent,
             commands::ssh_key::is_key_in_agent,
+            commands::gpg_key::list_gpg_keys,
+            commands::gpg_key::export_gpg_public_key,
+            commands::gpg_key::import_gpg_key,
+            commands::gpg_key::delete_gpg_key,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
