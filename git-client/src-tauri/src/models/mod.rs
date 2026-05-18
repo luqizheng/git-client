@@ -2,6 +2,7 @@ pub mod blame;
 pub mod branch;
 pub mod commit;
 pub mod diff;
+pub mod key;
 pub mod remote;
 pub mod repo;
 pub mod stash;
