@@ -3,9 +3,9 @@
     <div class="p-2 border-b border-gray-700 flex items-center gap-2">
       <span class="text-yellow-400 text-sm font-bold">{{ conflicts.length }} Conflicts</span>
       <div class="flex-1" />
-      <n-button size="small" type="primary" :disabled="unresolvedCount > 0" @click="$emit('complete')">
+      <Button size="sm" :disabled="unresolvedCount > 0" @click="$emit('complete')">
         Complete Merge
-      </n-button>
+      </Button>
     </div>
     <div class="flex-1 overflow-y-auto">
       <div v-for="(conflict, idx) in conflicts" :key="conflict.path"
@@ -17,9 +17,9 @@
           </span>
           <span class="ml-1 text-sm text-gray-300">{{ conflict.path }}</span>
           <div class="flex-1" />
-          <n-button size="tiny" @click="chooseOurs(idx)">Ours</n-button>
-          <n-button size="tiny" @click="chooseTheirs(idx)">Theirs</n-button>
-          <n-button size="tiny" @click="chooseBase(idx)">Base</n-button>
+          <Button size="sm" variant="outline" @click="chooseOurs(idx)">Ours</Button>
+          <Button size="sm" variant="outline" @click="chooseTheirs(idx)">Theirs</Button>
+          <Button size="sm" variant="outline" @click="chooseBase(idx)">Base</Button>
         </div>
       </div>
     </div>
@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NButton } from 'naive-ui'
+import { Button } from '@/components/ui/button'
 import type { ConflictFile } from '../../types/git'
 
 const props = defineProps<{

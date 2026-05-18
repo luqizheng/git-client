@@ -1,22 +1,35 @@
 <template>
-  <n-modal v-model:show="show" preset="dialog" title="Create Branch">
-    <n-form>
-      <n-form-item label="Branch Name">
-        <n-input v-model:value="name" placeholder="feature/new-feature" />
-      </n-form-item>
-      <n-checkbox v-model:checked="checkout">Checkout after creation</n-checkbox>
-    </n-form>
-    <template #action>
-      <n-button @click="show = false">Cancel</n-button>
-      <n-button type="primary" :disabled="!name.trim()" @click="doCreate">Create</n-button>
-    </template>
-  </n-modal>
+  <Dialog :open="show" @update:open="show = $event">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Create Branch</DialogTitle>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">Branch Name</Label>
+          <Input v-model="name" placeholder="feature/new-feature" class="col-span-3" />
+        </div>
+        <div class="flex items-center gap-2 ml-auto">
+          <Checkbox v-model:checked="checkout" id="checkout" />
+          <Label for="checkout">Checkout after creation</Label>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" @click="show = false">Cancel</Button>
+        <Button :disabled="!name.trim()" @click="doCreate">Create</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NButton, NCheckbox } from 'naive-ui'
-import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'vue-sonner'
 import { useBranchesStore } from '../../stores/branches'
 import { useRepoStore } from '../../stores/repo'
 

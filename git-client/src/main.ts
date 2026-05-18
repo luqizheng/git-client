@@ -1,7 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import { createPinia } from "pinia";
-import naive from "./plugins/naive";
 import i18n from "./i18n";
 import "./assets/styles/main.css";
 import "./assets/styles/themes/dark.css";
@@ -38,7 +37,6 @@ window.MonacoEnvironment = {
 
 const app = createApp(App);
 app.use(createPinia());
-app.use(naive);
 app.use(i18n);
 app.component("Toaster", Toaster);
 app.mount("#app");

@@ -1,26 +1,39 @@
 <template>
-  <n-modal v-model:show="showModal" preset="card" title="导入 SSH 密钥" style="width: 500px">
-    <n-form label-placement="left" label-width="100">
-      <n-form-item label="密钥名称">
-        <n-input v-model:value="form.name" placeholder="例如: imported-key" />
-      </n-form-item>
-      <n-form-item label="私钥文件">
-        <n-input v-model:value="form.sourcePath" placeholder="/path/to/private/key" readonly />
-        <n-button class="mt-2" @click="selectFile">选择文件</n-button>
-      </n-form-item>
-    </n-form>
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <n-button @click="showModal = false">取消</n-button>
-        <n-button type="primary" :loading="loading" @click="handleImport">导入</n-button>
+  <Dialog :open="showModal" @update:open="showModal = $event">
+    <DialogContent class="sm:max-w-[500px]">
+      <DialogHeader>
+        <DialogTitle>导入 SSH 密钥</DialogTitle>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">密钥名称</Label>
+          <Input v-model="form.name" placeholder="例如: imported-key" class="col-span-3" />
+        </div>
+        <div class="grid grid-cols-4 items-start gap-4">
+          <Label class="text-right pt-2">私钥文件</Label>
+          <div class="col-span-3 space-y-2">
+            <Input v-model="form.sourcePath" placeholder="/path/to/private/key" readonly />
+            <Button variant="outline" @click="selectFile">选择文件</Button>
+          </div>
+        </div>
       </div>
-    </template>
-  </n-modal>
+      <DialogFooter>
+        <Button variant="outline" @click="showModal = false">取消</Button>
+        <Button :disabled="loading" @click="handleImport">
+          <span v-if="loading" class="mr-2">...</span>
+          导入
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { NModal, NForm, NFormItem, NInput, NButton } from 'naive-ui';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { open } from '@tauri-apps/plugin-dialog';
 import { toast } from 'vue-sonner';
 import { sshKeyApi } from '../../utils/keys';

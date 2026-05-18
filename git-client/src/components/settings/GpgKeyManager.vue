@@ -2,9 +2,9 @@
   <div class="space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="text-lg font-medium">GPG 密钥</h3>
-      <n-alert v-if="!isGpgAvailable" type="warning">
+      <div v-if="!isGpgAvailable" class="text-yellow-500 text-sm">
         GPG 未安装，请先安装 GPG 工具
-      </n-alert>
+      </div>
     </div>
 
     <gpg-key-list :keys="keys" @refresh="loadKeys" />
@@ -13,7 +13,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { NAlert } from 'naive-ui';
 import { toast } from 'vue-sonner';
 import GpgKeyList from './GpgKeyList.vue';
 import type { GpgKey } from '../../types/key';

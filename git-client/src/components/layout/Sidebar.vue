@@ -1,21 +1,17 @@
 <template>
   <div class="sidebar-root">
     <div v-if="app.sidebarCollapsed" class="collapsed-bar">
-      <n-button quaternary size="tiny" @click="app.toggleSidebar">
-        <template #icon>
-          <n-icon :size="14"><ChevronForward /></n-icon>
-        </template>
-      </n-button>
+      <Button variant="ghost" size="icon" class="h-6 w-6" @click="app.toggleSidebar">
+        <ChevronForward class="w-4 h-4" />
+      </Button>
     </div>
     <template v-else>
       <div class="sidebar-toggle">
-        <n-button quaternary size="tiny" @click="app.toggleSidebar">
-          <template #icon>
-            <n-icon :size="14"><ChevronBack /></n-icon>
-          </template>
-        </n-button>
+        <Button variant="ghost" size="icon" class="h-6 w-6" @click="app.toggleSidebar">
+          <ChevronBack class="w-4 h-4" />
+        </Button>
       </div>
-      <n-scrollbar class="sidebar-scroll">
+      <div class="sidebar-scroll overflow-auto">
         <RefPanelSection
           title="Local"
           :icon="GitBranch"
@@ -47,9 +43,7 @@
               class="remote-group-header"
               @click="toggleRemoteExpanded(remote.name)"
             >
-              <n-icon :size="10" class="remote-expand-icon">
-                <component :is="remoteExpandedMap[remote.name] ? ChevronDown : ChevronForward" />
-              </n-icon>
+              <component :is="remoteExpandedMap[remote.name] ? ChevronDown : ChevronForward" class="w-3 h-3 text-muted-foreground" />
               <span class="remote-group-name">{{ remote.name }}</span>
             </div>
             <div v-if="remoteExpandedMap[remote.name]" class="remote-branches">
@@ -121,24 +115,31 @@
           </div>
           <div v-if="submoduleStore.submodules.length === 0" class="ref-empty">No submodules</div>
         </RefPanelSection>
-      </n-scrollbar>
+      </div>
     </template>
 
-    <n-dropdown
-      :x="contextX"
-      :y="contextY"
-      :show="contextShow"
-      :options="contextOptions"
-      placement="bottom-start"
-      @select="onContextSelect"
-      @clickoutside="contextShow = false"
-    />
+    <DropdownMenu :open="contextShow" @update:open="contextShow = $event">
+      <DropdownMenuTrigger as-child>
+        <div :style="{ position: 'fixed', left: contextX + 'px', top: contextY + 'px' }" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem v-for="opt in contextOptions" :key="opt.key" @click="onContextSelect(opt.key)">
+          {{ opt.label }}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, nextTick, defineComponent, h, type Component } from 'vue'
-import { NButton, NIcon, NScrollbar, NDropdown } from 'naive-ui'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   ChevronBack,
   ChevronForward,
@@ -174,7 +175,7 @@ const RefPanelSection = defineComponent({
         onClick: () => emit('toggle'),
       }, [
         h('div', { class: 'section-header-left' }, [
-          h(NIcon, { size: 12, class: 'section-icon' }, { default: () => h(props.icon) }),
+          h(props.icon, { class: 'w-3 h-3 section-icon' }),
           h('span', { class: 'section-title' }, props.title),
         ]),
         h('span', { class: 'section-indicator' }, props.expanded ? '▾' : '▸'),

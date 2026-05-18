@@ -7,7 +7,7 @@
         :key="'staged-' + file.path"
         class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
       >
-        <n-button size="tiny" quaternary @click.stop="unstage(file.path)">−</n-button>
+        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="unstage(file.path)">−</Button>
         <span class="ml-1 text-green-400">{{ statusIcon(file.status) }}</span>
         <span class="ml-1 text-gray-300 truncate">{{ file.path }}</span>
       </div>
@@ -19,7 +19,7 @@
         :key="'unstaged-' + file.path"
         class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
       >
-        <n-button size="tiny" quaternary @click.stop="stage(file.path)">+</n-button>
+        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="stage(file.path)">+</Button>
         <span class="ml-1 text-yellow-400">{{ statusIcon(file.status) }}</span>
         <span class="ml-1 text-gray-300 truncate">{{ file.path }}</span>
       </div>
@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton } from 'naive-ui'
+import { Button } from '@/components/ui/button'
 import { useStagingStore } from '../../stores/staging'
 import { useRepoStore } from '../../stores/repo'
 import { statusIcon } from '../../utils/diff'

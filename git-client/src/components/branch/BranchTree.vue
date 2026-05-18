@@ -30,7 +30,7 @@
         <span class="text-gray-300 truncate">{{ branch.name }}</span>
         <span v-if="branch.upstream" class="ml-1 text-gray-600">→ {{ branch.upstream }}</span>
       </div>
-      <n-button size="tiny" quaternary class="mt-1" @click="showDialog = true">+ New Branch</n-button>
+      <Button size="sm" variant="ghost" class="mt-1 h-6 text-xs" @click="showDialog = true">+ New Branch</Button>
     </div>
 
     <div v-else>
@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NButton } from 'naive-ui'
+import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 import { useBranchesStore } from '../../stores/branches'
 import { useRepoStore } from '../../stores/repo'

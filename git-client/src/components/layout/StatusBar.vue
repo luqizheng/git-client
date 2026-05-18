@@ -2,34 +2,35 @@
   <div class="status-bar">
     <div class="status-bar-left">
       <span v-if="repo.activeRepo" class="status-branch">
-        <n-icon :size="13"><GitBranch /></n-icon>
+        <GitBranch class="w-3.5 h-3.5" />
         {{ branches.currentBranch(repo.activeRepoPath!) || 'detached' }}
       </span>
       <span v-if="repo.activeRepo" class="status-sha">
-        <n-icon :size="12"><Code /></n-icon>
+        <Code class="w-3 h-3" />
         {{ repo.activeRepo.state.head_commit_id?.slice(0, 7) || 'no commits' }}
       </span>
       <span class="status-ahead-behind">
-        <span class="ahead"><n-icon :size="12"><ArrowUp /></n-icon>0</span>
-        <span class="behind"><n-icon :size="12"><ArrowDown /></n-icon>0</span>
+        <span class="ahead"><ArrowUp class="w-3 h-3" />0</span>
+        <span class="behind"><ArrowDown class="w-3 h-3" />0</span>
       </span>
     </div>
     <div class="status-bar-center">
       <span v-if="isSyncing" class="status-syncing">
-        <n-icon :size="13" class="spin"><Refresh /></n-icon>
+        <Refresh class="w-3.5 h-3.5 spin" />
         Syncing...
       </span>
     </div>
     <div class="status-bar-right">
-      <n-select
-        v-model:value="zoomLevel"
-        :options="zoomOptions"
-        size="tiny"
-        class="zoom-select"
-        @update:value="handleZoomChange"
-      />
+      <Select v-model="zoomLevel" @update:model-value="handleZoomChange as any">
+        <SelectTrigger class="w-20 h-5 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="opt in zoomOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</SelectItem>
+        </SelectContent>
+      </Select>
       <span v-if="repo.activeRepoPath" class="status-path">
-        <n-icon :size="12"><Folder /></n-icon>
+        <Folder class="w-3 h-3" />
         {{ repo.activeRepoPath }}
       </span>
     </div>
@@ -38,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NIcon, NSelect } from 'naive-ui'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { GitBranch, Code, Refresh, Folder, ArrowUp, ArrowDown } from '@vicons/ionicons5'
 import { useRepoStore } from '../../stores/repo'
 import { useBranchesStore } from '../../stores/branches'
@@ -144,19 +145,6 @@ function handleZoomChange(val: string) {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-.zoom-select {
-  width: 80px;
-}
-
-.zoom-select :deep(.n-base-selection) {
-  --n-height: 18px !important;
-  font-size: 11px;
-}
-
-.zoom-select :deep(.n-base-selection-input) {
-  font-size: 11px;
 }
 
 .status-path {

@@ -1,50 +1,44 @@
 <template>
   <div class="flex items-center justify-between p-3 border-b border-gray-700 hover:bg-gray-800/50">
     <div class="flex items-center gap-3">
-      <n-icon :component="KeyIcon" size="20" />
+      <KeyIcon class="w-5 h-5 text-muted-foreground" />
       <div>
         <div class="font-medium">{{ sshKey.name }}</div>
         <div class="text-xs text-gray-400">
           {{ algorithmLabel }} • {{ sshKey.fingerprint.substring(0, 16) }}...
-          <n-tag v-if="isInAgent" size="tiny" type="success">Agent</n-tag>
+          <Badge v-if="isInAgent" variant="default" class="ml-1 text-xs">Agent</Badge>
         </div>
         <div class="text-xs text-gray-500">创建于 {{ formatDate(sshKey.created_at) }}</div>
       </div>
     </div>
     <div class="flex gap-2">
-      <n-button size="small" @click="$emit('view', sshKey)">查看公钥</n-button>
-      <n-button size="small" @click="$emit('copy', sshKey)">复制</n-button>
-      <n-button
+      <Button size="sm" variant="outline" @click="$emit('view', sshKey)">查看公钥</Button>
+      <Button size="sm" variant="outline" @click="$emit('copy', sshKey)">复制</Button>
+      <Button
         v-if="!isInAgent"
-        size="small"
-        type="primary"
-        ghost
+        size="sm"
+        variant="default"
         @click="$emit('addToAgent', sshKey)"
       >
         添加到 Agent
-      </n-button>
-      <n-button
+      </Button>
+      <Button
         v-else
-        size="small"
-        type="warning"
-        ghost
+        size="sm"
+        variant="outline"
         @click="$emit('removeFromAgent', sshKey)"
       >
         移除
-      </n-button>
-      <n-popconfirm @positive-click="$emit('delete', sshKey)">
-        <template #trigger>
-          <n-button size="small" type="error" ghost>删除</n-button>
-        </template>
-        确定要删除密钥 "{{ sshKey.name }}" 吗？此操作不可撤销。
-      </n-popconfirm>
+      </Button>
+      <Button size="sm" variant="destructive" @click="confirmDelete">删除</Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NIcon, NButton, NTag, NPopconfirm } from 'naive-ui';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { KeyOutline as KeyIcon } from '@vicons/ionicons5';
 import type { SshKey } from '../../types/key';
 import { SshAlgorithm } from '../../types/key';
@@ -54,7 +48,7 @@ const props = defineProps<{
   isInAgent: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   view: [key: SshKey];
   copy: [key: SshKey];
   delete: [key: SshKey];
@@ -77,5 +71,11 @@ const algorithmLabel = computed(() => {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
+}
+
+function confirmDelete() {
+  if (confirm(`确定要删除密钥 "${props.sshKey.name}" 吗？此操作不可撤销。`)) {
+    emit('delete', props.sshKey);
+  }
 }
 </script>

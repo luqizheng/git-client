@@ -5,16 +5,13 @@
         <span class="text-gray-400">{{ progress.type === 'fetch' ? 'Fetching' : 'Pushing' }}</span>
         <span class="text-gray-500">{{ progress.bytes }}</span>
       </div>
-      <n-progress
-        type="line"
-        :percentage="Math.round(progress.progress)"
-        :show-indicator="false"
-        :height="4"
-        :border-radius="2"
-        :fill-border-radius="2"
-        :color="progress.type === 'fetch' ? '#3b82f6' : '#10b981'"
-        :rail-color="'#374151'"
-      />
+      <div class="h-1 bg-gray-700 rounded overflow-hidden">
+        <div
+          class="h-full rounded transition-all duration-200"
+          :class="progress.type === 'fetch' ? 'bg-blue-500' : 'bg-green-500'"
+          :style="{ width: `${Math.round(progress.progress)}%` }"
+        />
+      </div>
       <div class="text-gray-600 mt-0.5">{{ progress.phase }}</div>
     </div>
 
@@ -26,29 +23,39 @@
       <span class="ml-1 text-gray-600 truncate">{{ remote.url }}</span>
     </div>
     <div v-if="remotes.length === 0" class="text-gray-600 px-2 py-0.5">No remotes</div>
-    <n-button size="tiny" quaternary class="mt-1" @click="showAdd = true">+ Add Remote</n-button>
+    <Button size="sm" variant="ghost" class="mt-1 h-6 text-xs" @click="showAdd = true">+ Add Remote</Button>
 
-    <n-modal v-model:show="showAdd" preset="dialog" title="Add Remote">
-      <n-form>
-        <n-form-item label="Name">
-          <n-input v-model:value="remoteName" placeholder="origin" />
-        </n-form-item>
-        <n-form-item label="URL">
-          <n-input v-model:value="remoteUrl" placeholder="https://github.com/user/repo.git" />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-button @click="showAdd = false">Cancel</n-button>
-        <n-button type="primary" @click="doAdd">Add</n-button>
-      </template>
-    </n-modal>
+    <Dialog :open="showAdd" @update:open="showAdd = $event">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add Remote</DialogTitle>
+        </DialogHeader>
+        <div class="grid gap-4 py-4">
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">Name</Label>
+            <Input v-model="remoteName" placeholder="origin" class="col-span-3" />
+          </div>
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">URL</Label>
+            <Input v-model="remoteUrl" placeholder="https://github.com/user/repo.git" class="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showAdd = false">Cancel</Button>
+          <Button @click="doAdd">Add</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { NButton, NModal, NForm, NFormItem, NInput, NProgress } from 'naive-ui'
-import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'vue-sonner'
 import { useRemoteStore } from '../../stores/remote'
 import { useRepoStore } from '../../stores/repo'
 import { useRemoteProgress } from '../../composables/useRemoteProgress'

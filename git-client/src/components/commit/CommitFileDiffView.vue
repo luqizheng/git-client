@@ -5,69 +5,65 @@
         <span class="file-path">{{ filePath }}</span>
       </div>
       <div class="view-controls">
-        <n-button-group size="small">
-          <n-button
-            :type="mode === 'split' ? 'primary' : 'default'"
+        <div class="flex gap-1">
+          <Button
+            size="sm"
+            :variant="mode === 'split' ? 'default' : 'outline'"
             @click="mode = 'split'"
             title="Split View"
           >
             Split
-          </n-button>
-          <n-button
-            :type="mode === 'unified' ? 'primary' : 'default'"
+          </Button>
+          <Button
+            size="sm"
+            :variant="mode === 'unified' ? 'default' : 'outline'"
             @click="mode = 'unified'"
             title="Unified View"
           >
             Unified
-          </n-button>
-        </n-button-group>
+          </Button>
+        </div>
         <div class="separator" />
-        <n-button-group size="small">
-          <n-button
-            quaternary
+        <div class="flex gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            class="h-8 w-8"
             @click="goPrev"
             title="Previous Change (Alt+Up)"
           >
-            <template #icon>
-              <n-icon><ChevronUp /></n-icon>
-            </template>
-          </n-button>
-          <n-button
-            quaternary
+            <ChevronUp class="w-4 h-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            class="h-8 w-8"
             @click="goNext"
             title="Next Change (Alt+Down)"
           >
-            <template #icon>
-              <n-icon><ChevronDown /></n-icon>
-            </template>
-          </n-button>
-        </n-button-group>
+            <ChevronDown class="w-4 h-4" />
+          </Button>
+        </div>
         <div class="separator" />
-        <div class="separator" />
-        <n-button
-          :type="blameStore.isVisible ? 'primary' : 'default'"
-          quaternary
-          size="small"
+        <Button
+          :variant="blameStore.isVisible ? 'default' : 'outline'"
+          size="sm"
           @click="toggleBlame"
           title="Toggle Blame"
         >
-          <template #icon>
-            <n-icon><PersonOutline /></n-icon>
-          </template>
+          <PersonOutline class="w-4 h-4 mr-1" />
           Blame
-        </n-button>
+        </Button>
         <div class="separator" />
-        <n-button
-          quaternary
-          circle
-          size="small"
+        <Button
+          size="icon"
+          variant="ghost"
+          class="h-8 w-8"
           @click="closeDiffView"
           title="Close (Esc)"
         >
-          <template #icon>
-            <n-icon><CloseOutline /></n-icon>
-          </template>
-        </n-button>
+          <CloseOutline class="w-4 h-4" />
+        </Button>
       </div>
     </div>
     <div class="diff-body">
@@ -80,14 +76,14 @@
       />
       <div class="diff-content">
       <div v-if="loading" class="loading-state">
-        <n-spin size="medium" />
+        <div class="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
         <span class="loading-text">Loading file content...</span>
       </div>
       <div v-else-if="fileContent" class="split-container">
         <template v-if="mode === 'split'">
           <div class="panel old-panel">
             <div class="panel-header">
-              <n-icon size="14" class="header-icon"><DocumentText /></n-icon>
+              <DocumentText class="w-4 h-4 header-icon" />
               <span v-if="fileContent.old_path" class="header-text">{{ fileContent.old_path }}</span>
               <span v-else class="header-text muted">(previous commit)</span>
             </div>
@@ -96,7 +92,7 @@
           <div class="panel-divider" />
           <div class="panel new-panel">
             <div class="panel-header">
-              <n-icon size="14" class="header-icon"><DocumentText /></n-icon>
+              <DocumentText class="w-4 h-4 header-icon" />
               <span class="header-text">{{ fileContent.new_path }}</span>
             </div>
             <div ref="newEditorRef" class="editor-container"></div>
@@ -105,7 +101,7 @@
         <template v-else>
           <div class="unified-container">
             <div class="panel-header">
-              <n-icon size="14" class="header-icon"><GitCompare /></n-icon>
+              <GitCompare class="w-4 h-4 header-icon" />
               <span class="header-text">Unified Diff</span>
             </div>
             <div ref="unifiedEditorRef" class="editor-container"></div>
@@ -113,7 +109,7 @@
         </template>
       </div>
       <div v-else class="empty-state">
-        <n-icon size="48" class="empty-icon"><FileTrayOutline /></n-icon>
+        <FileTrayOutline class="w-12 h-12 empty-icon" />
         <p class="empty-title">No File Selected</p>
         <p class="empty-description">Select a file from the commit details to view its content</p>
       </div>
@@ -124,7 +120,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { NButton, NButtonGroup, NIcon, NSpin } from 'naive-ui'
+import { Button } from '@/components/ui/button'
 import { CloseOutline, ChevronUp, ChevronDown, DocumentText, GitCompare, FileTrayOutline, PersonOutline } from '@vicons/ionicons5'
 import * as monaco from 'monaco-editor'
 import { useDiffStore } from '../../stores/diff'

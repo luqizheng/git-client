@@ -2,15 +2,13 @@
   <div class="blame-panel" :class="{ 'is-visible': blameStore.isVisible }">
     <div class="blame-header">
       <span class="header-title">Blame</span>
-      <n-button quaternary size="tiny" @click="blameStore.hide">
-        <template #icon>
-          <n-icon><CloseOutline /></n-icon>
-        </template>
-      </n-button>
+      <Button variant="ghost" size="icon" class="h-6 w-6" @click="blameStore.hide">
+        <CloseOutline class="w-4 h-4" />
+      </Button>
     </div>
 
     <div v-if="blameStore.isLoading" class="blame-loading">
-      <n-spin size="small" />
+      <div class="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
       <span>Loading blame...</span>
     </div>
 
@@ -31,7 +29,7 @@
     </div>
 
     <div v-else class="blame-empty">
-      <n-icon size="32" class="empty-icon"><InformationCircleOutline /></n-icon>
+      <InformationCircleOutline class="w-8 h-8 empty-icon" />
       <span>Select a file to view blame</span>
     </div>
   </div>
@@ -39,7 +37,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton, NIcon, NSpin } from 'naive-ui'
+import { Button } from '@/components/ui/button'
 import { CloseOutline, InformationCircleOutline } from '@vicons/ionicons5'
 import { useBlameStore } from '../../stores/blame'
 import type { BlameLine } from '../../types/git'

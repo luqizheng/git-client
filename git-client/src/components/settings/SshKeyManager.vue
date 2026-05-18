@@ -3,18 +3,14 @@
     <div class="flex justify-between items-center">
       <h3 class="text-lg font-medium">SSH 密钥</h3>
       <div class="flex gap-2">
-        <n-button type="primary" @click="showGenerator = true">
-          <template #icon>
-            <PlusIcon />
-          </template>
+        <Button @click="showGenerator = true">
+          <PlusIcon class="w-4 h-4 mr-1" />
           生成新密钥
-        </n-button>
-        <n-button @click="showImporter = true">
-          <template #icon>
-            <UploadIcon />
-          </template>
+        </Button>
+        <Button variant="outline" @click="showImporter = true">
+          <UploadIcon class="w-4 h-4 mr-1" />
           导入密钥
-        </n-button>
+        </Button>
       </div>
     </div>
 
@@ -27,7 +23,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { NButton } from 'naive-ui';
+import { Button } from '@/components/ui/button';
 import { Add as PlusIcon, CloudUpload as UploadIcon } from '@vicons/ionicons5';
 import { toast } from 'vue-sonner';
 import SshKeyList from './SshKeyList.vue';

@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { h, computed } from 'vue'
-import { NDropdown } from 'naive-ui'
-import type { DropdownOption } from 'naive-ui'
+import { computed } from 'vue'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import CommitGraph from '../../../graph/CommitGraph.vue'
 import type { GraphCommit } from '../../utils/graphRenderer'
 import { useCommitList } from '../../composables/useCommitList'
@@ -65,49 +73,9 @@ function onContextMenu(e: MouseEvent, commitId: string) {
   }
 }
 
-function onDropdownSelect(_key: string) {
+function onDropdownSelect(key: string) {
   hideContextMenu()
-}
-
-const menuOptions = computed<DropdownOption[]>(() => {
-  if (!contextMenu.value.commit) return []
-  return [
-    { key: 'cherry-pick', label: 'Cherry-pick', icon: renderIcon('cherry') },
-    { key: 'divider-1', type: 'divider' },
-    { key: 'rebase', label: 'Rebase', icon: renderIcon('rebase') },
-    {
-      key: 'reset',
-      label: 'Reset',
-      children: [
-        { key: 'reset-soft', label: 'Soft' },
-        { key: 'reset-mixed', label: 'Mixed' },
-        { key: 'reset-hard', label: 'Hard', props: { style: 'color: var(--accent-red, #e57373)' } },
-      ],
-    },
-    { key: 'divider-2', type: 'divider' },
-    { key: 'create-branch', label: 'Create Branch', icon: renderIcon('branch') },
-    { key: 'create-tag', label: 'Create Tag', icon: renderIcon('tag') },
-    { key: 'divider-3', type: 'divider' },
-    { key: 'copy-sha', label: 'Copy SHA', icon: renderIcon('copy') },
-  ]
-})
-
-const SVG_PATHS: Record<string, string> = {
-  cherry: 'M12 2a7 7 0 00-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 002 2h4a2 2 0 002-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 00-7-7zM9 21h6',
-  rebase: 'M4 12h16m-4-4l4 4-4 4',
-  branch: 'M6 3v12m0 0a3 3 0 100 6 3 3 0 000-6zm12-6a3 3 0 100 6 3 3 0 000-6zM6 9h12',
-  tag: 'M20.59 13.41l-7.17-7.17a2 2 0 00-1.41-.59H5a2 2 0 00-2 2v6.83a2 2 0 00.59 1.41l7.17 7.17a2 2 0 002.83 0l7-7a2 2 0 000-2.83zM8 11a1 1 0 110-2 1 1 0 010 2z',
-  copy: 'M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z',
-}
-
-function renderIcon(name: string) {
-  return () => h('svg', {
-    class: 'w-4 h-4',
-    fill: 'none',
-    stroke: 'currentColor',
-    viewBox: '0 0 24 24',
-    innerHTML: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${SVG_PATHS[name] ?? ''}"/>`,
-  })
+  console.log('Selected:', key)
 }
 </script>
 
@@ -139,16 +107,38 @@ function renderIcon(name: string) {
       @context-menu="onContextMenu"
     />
 
-    <NDropdown
-      :show="contextMenu.visible"
-      :x="contextMenu.x"
-      :y="contextMenu.y"
-      :options="menuOptions"
-      trigger="manual"
-      to="body"
-      animated
-      @select="onDropdownSelect"
-      @clickoutside="hideContextMenu"
-    />
+    <DropdownMenu :open="contextMenu.visible" @update:open="contextMenu.visible = $event">
+      <DropdownMenuTrigger as-child>
+        <div :style="{ position: 'fixed', left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem @click="onDropdownSelect('cherry-pick')">
+          Cherry-pick
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem @click="onDropdownSelect('rebase')">
+          Rebase
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>Reset</DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem @click="onDropdownSelect('reset-soft')">Soft</DropdownMenuItem>
+            <DropdownMenuItem @click="onDropdownSelect('reset-mixed')">Mixed</DropdownMenuItem>
+            <DropdownMenuItem @click="onDropdownSelect('reset-hard')" class="text-destructive">Hard</DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem @click="onDropdownSelect('create-branch')">
+          Create Branch
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('create-tag')">
+          Create Tag
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem @click="onDropdownSelect('copy-sha')">
+          Copy SHA
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   </div>
 </template>

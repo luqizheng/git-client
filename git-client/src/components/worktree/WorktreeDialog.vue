@@ -1,33 +1,38 @@
 <template>
-  <n-modal
-    v-model:show="showModel"
-    title="Add Worktree"
-    preset="card"
-    style="width: 400px"
-    :mask-closable="false"
-  >
-    <n-form :model="form" label-placement="left" label-width="80">
-      <n-form-item label="Path">
-        <n-input v-model:value="form.path" placeholder="Enter worktree path" />
-      </n-form-item>
-      <n-form-item label="Branch">
-        <n-input v-model:value="form.branch" placeholder="Optional: branch name" />
-      </n-form-item>
-    </n-form>
-    <template #footer>
-      <n-space justify="end">
-        <n-button @click="showModel = false">Cancel</n-button>
-        <n-button type="primary" @click="handleSubmit" :loading="submitting">Add</n-button>
-      </n-space>
-    </template>
-  </n-modal>
+  <Dialog :open="showModel" @update:open="showModel = $event">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Add Worktree</DialogTitle>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">Path</Label>
+          <Input v-model="form.path" placeholder="Enter worktree path" class="col-span-3" />
+        </div>
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">Branch</Label>
+          <Input v-model="form.branch" placeholder="Optional: branch name" class="col-span-3" />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" @click="showModel = false">Cancel</Button>
+        <Button :disabled="submitting" @click="handleSubmit">
+          <span v-if="submitting" class="mr-2">...</span>
+          Add
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useWorktreeStore } from '../../stores/worktree'
-import { NModal, NForm, NFormItem, NInput, NButton, NSpace } from 'naive-ui'
-import { toast } from 'vue-sonner';
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
   show: boolean

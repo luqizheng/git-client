@@ -1,28 +1,50 @@
 <template>
-  <n-modal v-model:show="showModal" preset="card" title="生成新 SSH 密钥" style="width: 500px">
-    <n-form label-placement="left" label-width="100">
-      <n-form-item label="密钥名称">
-        <n-input v-model:value="form.name" placeholder="例如: work-key" />
-      </n-form-item>
-      <n-form-item label="算法">
-        <n-select v-model:value="form.algorithm" :options="algorithmOptions" />
-      </n-form-item>
-      <n-form-item label="注释 (可选)">
-        <n-input v-model:value="form.comment" placeholder="例如: user@example.com" />
-      </n-form-item>
-    </n-form>
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <n-button @click="showModal = false">取消</n-button>
-        <n-button type="primary" :loading="loading" @click="handleGenerate">生成</n-button>
+  <Dialog :open="showModal" @update:open="showModal = $event">
+    <DialogContent class="sm:max-w-[500px]">
+      <DialogHeader>
+        <DialogTitle>生成新 SSH 密钥</DialogTitle>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">密钥名称</Label>
+          <Input v-model="form.name" placeholder="例如: work-key" class="col-span-3" />
+        </div>
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">算法</Label>
+          <Select v-model="form.algorithm" class="col-span-3">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem :value="SshAlgorithm.Ed25519">Ed25519 (推荐)</SelectItem>
+              <SelectItem :value="SshAlgorithm.Rsa">RSA 4096</SelectItem>
+              <SelectItem :value="SshAlgorithm.Ecdsa">ECDSA</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label class="text-right">注释 (可选)</Label>
+          <Input v-model="form.comment" placeholder="例如: user@example.com" class="col-span-3" />
+        </div>
       </div>
-    </template>
-  </n-modal>
+      <DialogFooter>
+        <Button variant="outline" @click="showModal = false">取消</Button>
+        <Button :disabled="loading" @click="handleGenerate">
+          <span v-if="loading" class="mr-2">...</span>
+          生成
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { NModal, NForm, NFormItem, NInput, NSelect, NButton } from 'naive-ui';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'vue-sonner';
 import { sshKeyApi } from '../../utils/keys';
 import { SshAlgorithm } from '../../types/key';
@@ -44,11 +66,6 @@ const form = ref({
 });
 
 const showModal = ref(false);
-const algorithmOptions = [
-  { label: 'Ed25519 (推荐)', value: SshAlgorithm.Ed25519 },
-  { label: 'RSA 4096', value: SshAlgorithm.Rsa },
-  { label: 'ECDSA', value: SshAlgorithm.Ecdsa },
-];
 
 watch(() => props.modelValue, (val) => {
   showModal.value = val;

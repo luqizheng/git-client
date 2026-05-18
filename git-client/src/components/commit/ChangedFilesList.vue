@@ -3,7 +3,7 @@
     <div class="changed-files-header">
       Changed Files ({{ files.length }})
     </div>
-    <n-scrollbar v-if="files.length > 0" class="changed-files-scroll">
+    <div v-if="files.length > 0" class="changed-files-scroll overflow-auto">
       <div
         v-for="file in files"
         :key="file.path"
@@ -16,13 +16,12 @@
         </span>
         <span class="file-path">{{ file.path }}</span>
       </div>
-    </n-scrollbar>
+    </div>
     <div v-else class="no-files">No changed files</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NScrollbar } from 'naive-ui'
 import type { FileDiff, DiffStatus } from '../../types/git'
 
 defineProps<{

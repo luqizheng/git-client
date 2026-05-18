@@ -1,84 +1,86 @@
 <template>
   <div class="toolbar">
-    <n-dropdown :options="repoOptions" @select="handleRepoSwitch" placement="bottom-start">
-      <n-button quaternary size="tiny" class="toolbar-btn repo-switch-btn">
-        <template #icon>
-          <n-icon :size="16"><FolderOpen /></n-icon>
-        </template>
-        {{ currentRepoName }}
-        <n-icon :size="12" class="dropdown-arrow"><ChevronDown /></n-icon>
-      </n-button>
-    </n-dropdown>
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <Button variant="ghost" size="sm" class="toolbar-btn repo-switch-btn">
+          <FolderOpen class="w-4 h-4 mr-1" />
+          {{ currentRepoName }}
+          <ChevronDown class="w-3 h-3 ml-1 opacity-60" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem v-for="r in repoList" :key="r.key" @click="handleRepoSwitch(r.key)">
+          {{ r.label }}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator v-if="repoList.length > 0" />
+        <DropdownMenuItem @click="handleRepoSwitch('__open__')">Open Repository...</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
 
-    <n-divider vertical class="toolbar-divider" />
+    <div class="w-px h-5 bg-border mx-1" />
 
-    <n-button quaternary size="tiny" disabled class="toolbar-btn" title="Undo">
-      <template #icon>
-        <n-icon :size="16"><ArrowUndoOutline /></n-icon>
-      </template>
-    </n-button>
-    <n-button quaternary size="tiny" disabled class="toolbar-btn" title="Redo">
-      <template #icon>
-        <n-icon :size="16"><ArrowRedoOutline /></n-icon>
-      </template>
-    </n-button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" disabled title="Undo">
+      <ArrowUndoOutline class="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" disabled title="Redo">
+      <ArrowRedoOutline class="w-4 h-4" />
+    </Button>
 
-    <n-divider vertical class="toolbar-divider" />
+    <div class="w-px h-5 bg-border mx-1" />
 
-    <n-dropdown :options="pullOptions" @select="handlePullSelect" placement="bottom-start">
-      <n-button quaternary size="tiny" :loading="isSyncing" :disabled="isSyncing" class="toolbar-btn" title="Pull">
-        <template #icon>
-          <n-icon :size="16"><ArrowDown /></n-icon>
-        </template>
-        <n-icon :size="10" class="dropdown-arrow"><ChevronDown /></n-icon>
-      </n-button>
-    </n-dropdown>
-    <n-button quaternary size="tiny" :loading="isSyncing" :disabled="isSyncing" class="toolbar-btn" title="Push" @click="$emit('push')">
-      <template #icon>
-        <n-icon :size="16"><ArrowUp /></n-icon>
-      </template>
-    </n-button>
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <Button variant="ghost" size="sm" :disabled="isSyncing" class="toolbar-btn">
+          <ArrowDown class="w-4 h-4 mr-1" />
+          <ChevronDown class="w-3 h-3 opacity-60" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem @click="handlePullSelect('fetch-all')">Fetch All</DropdownMenuItem>
+        <DropdownMenuItem @click="handlePullSelect('pull-ff')">Pull (fast-forward if possible)</DropdownMenuItem>
+        <DropdownMenuItem @click="handlePullSelect('pull-ff-only')">Pull (fast-forward only)</DropdownMenuItem>
+        <DropdownMenuItem @click="handlePullSelect('pull-rebase')">Pull (rebase)</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <Button variant="ghost" size="icon" :disabled="isSyncing" class="toolbar-btn h-7 w-7" title="Push" @click="$emit('push')">
+      <ArrowUp class="w-4 h-4" />
+    </Button>
 
-    <n-divider vertical class="toolbar-divider" />
+    <div class="w-px h-5 bg-border mx-1" />
 
-    <n-button quaternary size="tiny" class="toolbar-btn" title="Branch">
-      <template #icon>
-        <n-icon :size="16"><GitBranch /></n-icon>
-      </template>
-    </n-button>
-    <n-button quaternary size="tiny" class="toolbar-btn" title="Stash">
-      <template #icon>
-        <n-icon :size="16"><Archive /></n-icon>
-      </template>
-    </n-button>
-    <n-button quaternary size="tiny" class="toolbar-btn" title="Pop Stash">
-      <template #icon>
-        <n-icon :size="16"><ArchiveOutline /></n-icon>
-      </template>
-    </n-button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" title="Branch">
+      <GitBranch class="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" title="Stash">
+      <Archive class="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" title="Pop Stash">
+      <ArchiveOutline class="w-4 h-4" />
+    </Button>
 
     <div class="flex-1" />
 
-    <n-button quaternary size="tiny" class="toolbar-btn" :title="app.theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'" @click="toggleTheme">
-      <template #icon>
-        <n-icon :size="16">
-          <Moon v-if="app.theme === 'dark'" />
-          <Sunny v-else />
-        </n-icon>
-      </template>
-    </n-button>
-    <n-button quaternary size="tiny" class="toolbar-btn" title="Settings" @click="showSettings = true">
-      <template #icon>
-        <n-icon :size="16"><Settings /></n-icon>
-      </template>
-    </n-button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" :title="app.theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'" @click="toggleTheme">
+      <Moon v-if="app.theme === 'dark'" class="w-4 h-4" />
+      <Sunny v-else class="w-4 h-4" />
+    </Button>
+    <Button variant="ghost" size="icon" class="toolbar-btn h-7 w-7" title="Settings" @click="showSettings = true">
+      <Settings class="w-4 h-4" />
+    </Button>
     <settings-panel v-model="showSettings" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NButton, NDivider, NIcon, NDropdown } from 'naive-ui'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   FolderOpen, ArrowDown, ArrowUp, Moon, Sunny, Settings,
   GitBranch, Archive, ChevronDown,
@@ -111,24 +113,13 @@ const currentRepoName = computed(() => {
   return repo.repoName(repo.activeRepoPath)
 })
 
-const repoOptions = computed(() => {
+const repoList = computed(() => {
   const repos: { key: string; label: string }[] = []
   repo.openRepos.forEach((_, path) => {
     repos.push({ key: path, label: repo.repoName(path) })
   })
-  if (repos.length > 0) {
-    repos.push({ key: '__separator__', label: '───' })
-  }
-  repos.push({ key: '__open__', label: 'Open Repository...' })
   return repos
 })
-
-const pullOptions = [
-  { key: 'fetch-all', label: 'Fetch All' },
-  { key: 'pull-ff', label: 'Pull (fast-forward if possible)' },
-  { key: 'pull-ff-only', label: 'Pull (fast-forward only)' },
-  { key: 'pull-rebase', label: 'Pull (rebase)' },
-]
 
 async function handleRepoSwitch(key: string) {
   if (key === '__open__') {
@@ -166,8 +157,6 @@ function handlePullSelect(key: string) {
 
 .toolbar-btn {
   color: var(--text-primary, #ccc) !important;
-  --n-height: 28px !important;
-  --n-padding: 0 6px !important;
 }
 
 .toolbar-btn:hover:not(:disabled) {
@@ -178,19 +167,8 @@ function handlePullSelect(key: string) {
   opacity: 0.35 !important;
 }
 
-.toolbar-divider {
-  height: 20px;
-  margin: 0 4px;
-  border-color: var(--border-color, #444);
-}
-
 .repo-switch-btn {
   max-width: 200px;
   font-size: 12px;
-}
-
-.dropdown-arrow {
-  margin-left: 2px;
-  opacity: 0.6;
 }
 </style>
