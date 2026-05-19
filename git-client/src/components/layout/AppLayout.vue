@@ -1,6 +1,7 @@
 <template>
   <div class="h-screen flex flex-col" style="background: var(--bg-primary); color: var(--text-primary);">
     <Toolbar @open="handleOpen" @fetch="handleFetch" @pull="handlePull" @push="handlePush" @clone="handleClone" />
+    <RepoTabs />
     <div class="main-container flex flex-1 overflow-hidden">
       <ResizablePanelGroup direction="horizontal" class="w-full h-full">
         <ResizablePanel :default-size="15" :min-size="8" :max-size="35">
@@ -30,6 +31,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Toolbar from './Toolbar.vue'
+import RepoTabs from './RepoTabs.vue'
 import Sidebar from './Sidebar.vue'
 import StatusBar from './StatusBar.vue'
 import CenterArea from './CenterArea.vue'

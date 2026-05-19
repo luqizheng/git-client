@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, nextTick, defineComponent, h, type Component } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick, defineComponent, h, type Component } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -332,18 +332,29 @@ async function loadStashes() {
 
 onMounted(async () => {
   if (repo.activeRepoPath) {
-    await Promise.all([
-      branchesStore.fetchBranches(repo.activeRepoPath),
-      remoteStore.fetchRemotes(repo.activeRepoPath),
-      tagsStore.listTags(repo.activeRepoPath),
-      submoduleStore.listSubmodules(repo.activeRepoPath),
-      loadStashes(),
-    ])
-    for (const r of remotes.value) {
-      remoteExpandedMap[r.name] = true
-    }
+    await loadSidebarData()
   }
 })
+
+watch(() => repo.activeRepoPath, async (newPath) => {
+  if (newPath) {
+    await loadSidebarData()
+  }
+})
+
+async function loadSidebarData() {
+  if (!repo.activeRepoPath) return
+  await Promise.all([
+    branchesStore.fetchBranches(repo.activeRepoPath),
+    remoteStore.fetchRemotes(repo.activeRepoPath),
+    tagsStore.listTags(repo.activeRepoPath),
+    submoduleStore.listSubmodules(repo.activeRepoPath),
+    loadStashes(),
+  ])
+  for (const r of remotes.value) {
+    remoteExpandedMap[r.name] = true
+  }
+}
 </script>
 
 <style>

@@ -1,5 +1,9 @@
 {
   "app": { "title": "Git Client" },
+  "tabs": {
+    "newRepo": "Open Repository",
+    "closeTab": "Close Tab"
+  },
   "toolbar": {
     "open": "Open Repo",
     "clone": "Clone Repo",
