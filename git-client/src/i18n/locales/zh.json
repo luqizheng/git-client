@@ -1,5 +1,9 @@
 {
   "app": { "title": "Git客户端" },
+  "tabs": {
+    "newRepo": "打开仓库",
+    "closeTab": "关闭标签"
+  },
   "toolbar": {
     "open": "打开仓库",
     "clone": "克隆仓库",

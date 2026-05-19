@@ -254,9 +254,8 @@ async function fetchAndUpdateContent() {
       updateEditors(content)
     }
   } catch (e) {
-    toast.error('Failed to load file content')
-    console.error('fetchFileContent error:', e)
-  } finally {
+      toast.error('Failed to load file content')
+    } finally {
     loading.value = false
   }
 }
@@ -269,11 +268,9 @@ watchEffect(() => {
   const content = pendingContent.value
   if (content && oldEditorRef.value && newEditorRef.value) {
     if (!oldEditor) {
-      console.log('[DiffView] Creating oldEditor in watchEffect')
       oldEditor = createEditor(oldEditorRef.value, content.old_content || '')
     }
     if (!newEditor) {
-      console.log('[DiffView] Creating newEditor in watchEffect')
       newEditor = createEditor(newEditorRef.value, content.new_content || '')
     }
   }
@@ -310,9 +307,20 @@ function createEditorsIfNeeded() {
   }
 }
 
+function clearDecorations() {
+  if (oldEditor && oldEditorDecorations.length > 0) {
+    oldEditor.deltaDecorations(oldEditorDecorations, [])
+    oldEditorDecorations = []
+  }
+  if (newEditor && newEditorDecorations.length > 0) {
+    newEditor.deltaDecorations(newEditorDecorations, [])
+    newEditorDecorations = []
+  }
+}
+
 watch(mode, (newMode, oldMode) => {
-  console.log('[DiffView] mode changed:', oldMode, '->', newMode)
   if (oldMode === 'split' && newMode === 'unified') {
+    clearDecorations()
     oldEditor?.dispose()
     newEditor?.dispose()
     oldEditor = null
@@ -331,6 +339,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearDecorations()
   oldEditor?.dispose()
   newEditor?.dispose()
   unifiedEditor?.dispose()
@@ -360,7 +369,7 @@ function toggleBlame() {
 }
 
 function handleCommitClick(commitId: string) {
-  console.log('Navigate to commit:', commitId)
+  blameStore.fetchBlame(repo.activeRepoPath!, filePath.value, commitId)
 }
 </script>
 

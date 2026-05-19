@@ -1,5 +1,5 @@
 <template>
-  <div v-if="commit" class="commit-header p-3 border-b border-gray-700" style="background: #252526;">
+  <div v-if="commit" class="commit-header p-3 border-b border-border" style="background: var(--background);">
     <div class="flex items-center gap-2 mb-2">
       <span class="font-mono text-blue-400 text-xs cursor-pointer hover:underline" @click="copySha">{{ shortSha }}</span>
       <Button size="icon" variant="ghost" class="h-6 w-6" @click="copySha">
