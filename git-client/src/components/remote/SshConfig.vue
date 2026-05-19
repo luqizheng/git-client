@@ -1,6 +1,6 @@
 <template>
   <div class="p-2 text-xs">
-    <div class="text-gray-400 mb-1">SSH Key Configuration</div>
+    <div class="text-muted-foreground mb-1">SSH Key Configuration</div>
     <div class="space-y-2">
       <div class="grid grid-cols-4 items-center gap-2">
         <Label class="text-right">SSH Key Path</Label>

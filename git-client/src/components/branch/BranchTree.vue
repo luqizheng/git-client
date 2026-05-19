@@ -3,14 +3,14 @@
     <div class="flex items-center gap-1 mb-1">
       <button
         class="flex-1 px-2 py-0.5 text-xs rounded transition-colors"
-        :class="activeTab === 'local' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'"
+        :class="activeTab === 'local' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'"
         @click="activeTab = 'local'"
       >
         Local
       </button>
       <button
         class="flex-1 px-2 py-0.5 text-xs rounded transition-colors"
-        :class="activeTab === 'remote' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'"
+        :class="activeTab === 'remote' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'"
         @click="activeTab = 'remote'"
       >
         Remote
@@ -19,25 +19,25 @@
 
     <div v-if="activeTab === 'local'">
       <div v-for="branch in localBranches" :key="branch.name"
-        class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
-        :class="{ 'bg-gray-700': branch.is_head }"
+        class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
+        :class="{ 'bg-muted': branch.is_head }"
         @click="onSwitch(branch.name)"
         @contextmenu.prevent="onContext($event, branch)"
       >
-        <span class="mr-1" :class="branch.is_head ? 'text-green-400' : 'text-blue-400'">
-          {{ branch.is_head ? '●' : '○' }}
+        <span class="mr-1" :class="branch.is_head ? 'text-accent-green' : 'text-primary'">
+          {{ branch.is_head ? '�? : '�? }}
         </span>
-        <span class="text-gray-300 truncate">{{ branch.name }}</span>
-        <span v-if="branch.upstream" class="ml-1 text-gray-600">→ {{ branch.upstream }}</span>
+        <span class="text-foreground truncate">{{ branch.name }}</span>
+        <span v-if="branch.upstream" class="ml-1 text-muted-foreground">�?{{ branch.upstream }}</span>
       </div>
       <Button size="sm" variant="ghost" class="mt-1 h-6 text-xs" @click="showDialog = true">+ New Branch</Button>
     </div>
 
     <div v-else>
       <div v-for="branch in remoteBranches" :key="branch.name"
-        class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer text-gray-500"
+        class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer text-muted-foreground"
       >
-        <span class="mr-1">◇</span>
+        <span class="mr-1">�?/span>
         <span class="truncate">{{ branch.name }}</span>
       </div>
     </div>

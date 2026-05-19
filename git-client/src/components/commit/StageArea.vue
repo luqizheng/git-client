@@ -1,27 +1,27 @@
 <template>
   <div class="text-xs">
-    <div class="p-2 border-b border-gray-700">
-      <div class="text-gray-400 mb-1">Staged Changes ({{ stagedFiles.length }})</div>
+    <div class="p-2 border-b border-border">
+      <div class="text-muted-foreground mb-1">Staged Changes ({{ stagedFiles.length }})</div>
       <div
         v-for="file in stagedFiles"
         :key="'staged-' + file.path"
-        class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
+        class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
       >
-        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="unstage(file.path)">âˆ’</Button>
-        <span class="ml-1 text-green-400">{{ statusIcon(file.status) }}</span>
-        <span class="ml-1 text-gray-300 truncate">{{ file.path }}</span>
+        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="unstage(file.path)">âˆ?/Button>
+        <span class="ml-1 text-accent-green">{{ statusIcon(file.status) }}</span>
+        <span class="ml-1 text-foreground truncate">{{ file.path }}</span>
       </div>
     </div>
     <div class="p-2">
-      <div class="text-gray-400 mb-1">Changes ({{ unstagedFiles.length }})</div>
+      <div class="text-muted-foreground mb-1">Changes ({{ unstagedFiles.length }})</div>
       <div
         v-for="file in unstagedFiles"
         :key="'unstaged-' + file.path"
-        class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
+        class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
       >
         <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="stage(file.path)">+</Button>
-        <span class="ml-1 text-yellow-400">{{ statusIcon(file.status) }}</span>
-        <span class="ml-1 text-gray-300 truncate">{{ file.path }}</span>
+        <span class="ml-1 text-accent-yellow">{{ statusIcon(file.status) }}</span>
+        <span class="ml-1 text-foreground truncate">{{ file.path }}</span>
       </div>
     </div>
   </div>

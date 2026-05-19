@@ -1,14 +1,14 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-b border-gray-700 hover:bg-gray-800/50">
+  <div class="flex items-center justify-between p-3 border-b border-border hover:bg-accent/50">
     <div class="flex items-center gap-3">
       <KeyIcon class="w-5 h-5 text-muted-foreground" />
       <div>
         <div class="font-medium">{{ sshKey.name }}</div>
-        <div class="text-xs text-gray-400">
-          {{ algorithmLabel }} • {{ sshKey.fingerprint.substring(0, 16) }}...
+        <div class="text-xs text-muted-foreground">
+          {{ algorithmLabel }} �?{{ sshKey.fingerprint.substring(0, 16) }}...
           <Badge v-if="isInAgent" variant="default" class="ml-1 text-xs">Agent</Badge>
         </div>
-        <div class="text-xs text-gray-500">创建于 {{ formatDate(sshKey.created_at) }}</div>
+        <div class="text-xs text-muted-foreground">创建�?{{ formatDate(sshKey.created_at) }}</div>
       </div>
     </div>
     <div class="flex gap-2">
@@ -20,7 +20,7 @@
         variant="default"
         @click="$emit('addToAgent', sshKey)"
       >
-        添加到 Agent
+        添加�?Agent
       </Button>
       <Button
         v-else
@@ -74,7 +74,7 @@ function formatDate(dateStr: string) {
 }
 
 function confirmDelete() {
-  if (confirm(`确定要删除密钥 "${props.sshKey.name}" 吗？此操作不可撤销。`)) {
+  if (confirm(`确定要删除密�?"${props.sshKey.name}" 吗？此操作不可撤销。`)) {
     emit('delete', props.sshKey);
   }
 }

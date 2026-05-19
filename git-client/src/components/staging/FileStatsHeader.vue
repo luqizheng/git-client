@@ -1,7 +1,7 @@
 <template>
   <div class="file-stats-header px-3 py-2.5 flex items-center justify-between" style="background: #2d2d2d;">
-    <span class="text-xs text-gray-400">
-      {{ totalChanges }} file changes on <span class="text-green-400 font-medium">{{ branchName }}</span>
+    <span class="text-xs text-muted-foreground">
+      {{ totalChanges }} file changes on <span class="text-accent-green font-medium">{{ branchName }}</span>
     </span>
   </div>
 </template>

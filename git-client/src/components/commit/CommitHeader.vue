@@ -1,17 +1,17 @@
 <template>
   <div v-if="commit" class="commit-header p-3 border-b border-border" style="background: var(--background);">
     <div class="flex items-center gap-2 mb-2">
-      <span class="font-mono text-blue-400 text-xs cursor-pointer hover:underline" @click="copySha">{{ shortSha }}</span>
+      <span class="font-mono text-primary text-xs cursor-pointer hover:underline" @click="copySha">{{ shortSha }}</span>
       <Button size="icon" variant="ghost" class="h-6 w-6" @click="copySha">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
       </Button>
     </div>
-    <div class="text-gray-100 text-sm font-medium mb-1">{{ subject }}</div>
-    <div v-if="body" class="text-gray-400 text-xs whitespace-pre-wrap mb-2">{{ body }}</div>
-    <div class="text-gray-500 text-xs">{{ commit.author }} &lt;{{ commit.author_email }}&gt;</div>
-    <div class="text-gray-500 text-xs">{{ formattedDate }}</div>
+    <div class="text-foreground text-sm font-medium mb-1">{{ subject }}</div>
+    <div v-if="body" class="text-muted-foreground text-xs whitespace-pre-wrap mb-2">{{ body }}</div>
+    <div class="text-muted-foreground text-xs">{{ commit.author }} &lt;{{ commit.author_email }}&gt;</div>
+    <div class="text-muted-foreground text-xs">{{ formattedDate }}</div>
   </div>
 </template>
 

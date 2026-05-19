@@ -1,28 +1,28 @@
 <template>
   <div class="text-xs">
-    <div v-if="progress.isActive" class="px-2 py-1 mb-1 bg-gray-800 rounded">
+    <div v-if="progress.isActive" class="px-2 py-1 mb-1 bg-muted rounded">
       <div class="flex items-center justify-between mb-0.5">
-        <span class="text-gray-400">{{ progress.type === 'fetch' ? 'Fetching' : 'Pushing' }}</span>
-        <span class="text-gray-500">{{ progress.bytes }}</span>
+        <span class="text-muted-foreground">{{ progress.type === 'fetch' ? 'Fetching' : 'Pushing' }}</span>
+        <span class="text-muted-foreground">{{ progress.bytes }}</span>
       </div>
-      <div class="h-1 bg-gray-700 rounded overflow-hidden">
+      <div class="h-1 bg-muted rounded overflow-hidden">
         <div
           class="h-full rounded transition-all duration-200"
-          :class="progress.type === 'fetch' ? 'bg-blue-500' : 'bg-green-500'"
+          :class="progress.type === 'fetch' ? 'bg-primary' : 'bg-accent-green'"
           :style="{ width: `${Math.round(progress.progress)}%` }"
         />
       </div>
-      <div class="text-gray-600 mt-0.5">{{ progress.phase }}</div>
+      <div class="text-muted-foreground mt-0.5">{{ progress.phase }}</div>
     </div>
 
     <div v-for="remote in remotes" :key="remote.name"
-      class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
+      class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
     >
-      <span class="text-purple-400 mr-1">◈</span>
-      <span class="text-gray-300">{{ remote.name }}</span>
-      <span class="ml-1 text-gray-600 truncate">{{ remote.url }}</span>
+      <span class="text-purple-400 mr-1">�?/span>
+      <span class="text-foreground">{{ remote.name }}</span>
+      <span class="ml-1 text-muted-foreground truncate">{{ remote.url }}</span>
     </div>
-    <div v-if="remotes.length === 0" class="text-gray-600 px-2 py-0.5">No remotes</div>
+    <div v-if="remotes.length === 0" class="text-muted-foreground px-2 py-0.5">No remotes</div>
     <Button size="sm" variant="ghost" class="mt-1 h-6 text-xs" @click="showAdd = true">+ Add Remote</Button>
 
     <Dialog :open="showAdd" @update:open="showAdd = $event">

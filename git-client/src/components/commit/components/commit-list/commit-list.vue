@@ -11,8 +11,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import CommitGraph from '../../../graph/CommitGraph.vue'
+import CommitListHeader from '../../CommitListHeader.vue'
 import type { GraphCommit } from '../../utils/graphRenderer'
 import { useCommitList } from '../../composables/useCommitList'
+import { useColumnConfig } from '../../composables/useColumnConfig'
 import { useRightPanelStore } from '../../../../stores/rightPanel'
 import { useStagingStore } from '../../../../stores/staging'
 import { useRepoStore } from '../../../../stores/repo'
@@ -20,6 +22,8 @@ import { useRepoStore } from '../../../../stores/repo'
 const rightPanelStore = useRightPanelStore()
 const stagingStore = useStagingStore()
 const repoStore = useRepoStore()
+
+const { columnStyles } = useColumnConfig()
 
 const {
   filterText,
@@ -96,12 +100,15 @@ function onDropdownSelect(key: string) {
       </div>
     </div>
 
+    <CommitListHeader />
+
     <CommitGraph
       :commits="graphCommits"
       :selected-commit-id="selectedCommitId"
       :has-wip="hasWip"
       :wip-unstaged-count="wipUnstagedCount"
       :wip-staged-count="wipStagedCount"
+      :column-styles="columnStyles"
       @commit-click="onCommitClick"
       @wip-click="onWipClick"
       @context-menu="onContextMenu"

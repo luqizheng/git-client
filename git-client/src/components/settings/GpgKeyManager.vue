@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="text-lg font-medium">GPG 密钥</h3>
-      <div v-if="!isGpgAvailable" class="text-yellow-500 text-sm">
+      <div v-if="!isGpgAvailable" class="text-accent-yellow text-sm">
         GPG 未安装，请先安装 GPG 工具
       </div>
     </div>

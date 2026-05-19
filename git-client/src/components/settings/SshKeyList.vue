@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <div v-if="keys.length === 0" class="text-center py-8 text-gray-400">
+    <div v-if="keys.length === 0" class="text-center py-8 text-muted-foreground">
       暂无 SSH 密钥
     </div>
     <ssh-key-item
@@ -66,7 +66,7 @@ async function handleCopy(key: SshKey) {
   try {
     const content = await sshKeyApi.getPublicKey(key.public_key_path);
     await navigator.clipboard.writeText(content);
-    toast.success('公钥已复制到剪贴板');
+    toast.success('公钥已复制到剪贴�?);
   } catch (e) {
     toast.error(`复制失败: ${e}`);
   }
@@ -75,7 +75,7 @@ async function handleCopy(key: SshKey) {
 async function handleDelete(key: SshKey) {
   try {
     await sshKeyApi.delete(key.id);
-    toast.success('密钥已删除');
+    toast.success('密钥已删�?);
     emit('refresh');
   } catch (e) {
     toast.error(`删除失败: ${e}`);

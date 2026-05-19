@@ -1,5 +1,5 @@
 <template>
-  <div class="p-2 border-t border-gray-700">
+  <div class="p-2 border-t border-border">
     <div class="flex gap-1 mb-1">
       <Select v-model="template" @update:model-value="applyTemplate">
         <SelectTrigger class="w-32 h-7 text-xs">

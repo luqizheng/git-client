@@ -10,14 +10,14 @@
       <div
         v-for="wt in worktrees"
         :key="wt.path"
-        class="flex items-center px-2 py-0.5 hover:bg-gray-700 cursor-pointer"
-        :class="{ 'bg-gray-700': wt.is_main }"
+        class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
+        :class="{ 'bg-muted': wt.is_main }"
       >
-        <span class="mr-1" :class="wt.is_main ? 'text-green-400' : 'text-blue-400'">
-          {{ wt.is_main ? '‚óè' : '‚óã' }}
+        <span class="mr-1" :class="wt.is_main ? 'text-accent-green' : 'text-primary'">
+          {{ wt.is_main ? '‚ó? : '‚ó? }}
         </span>
-        <span class="text-gray-300 truncate">{{ getWorktreeName(wt.path) }}</span>
-        <span v-if="wt.branch" class="ml-1 text-gray-600">({{ wt.branch }})</span>
+        <span class="text-foreground truncate">{{ getWorktreeName(wt.path) }}</span>
+        <span v-if="wt.branch" class="ml-1 text-muted-foreground">({{ wt.branch }})</span>
       </div>
     </div>
 

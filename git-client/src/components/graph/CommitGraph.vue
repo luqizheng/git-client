@@ -88,17 +88,25 @@
       >
         <div class="row-graph-placeholder" />
         <div class="row-info">
-          <div class="ref-tags">
-            <span
-              v-for="ref in item.row.commit.refs"
-              :key="ref.name"
-              class="ref-tag"
-              :class="getRefClass(ref)"
-            >{{ getRefDisplayName(ref) }}</span>
+          <div class="row-refs" :style="columnStyles?.refs">
+            <div class="ref-tags">
+              <span
+                v-for="ref in item.row.commit.refs"
+                :key="ref.name"
+                class="ref-tag"
+                :class="getRefClass(ref)"
+              >{{ getRefDisplayName(ref) }}</span>
+            </div>
           </div>
-          <span class="commit-message">{{ getFirstLine(item.row.commit.message) }}</span>
-          <span class="commit-author">{{ item.row.commit.author }}</span>
-          <span class="commit-time">{{ formatRelativeTime(item.row.commit.time) }}</span>
+          <div class="row-message" :style="columnStyles?.message">
+            <span class="commit-message">{{ getFirstLine(item.row.commit.message) }}</span>
+          </div>
+          <div class="row-author" :style="columnStyles?.author">
+            <span class="commit-author">{{ item.row.commit.author }}</span>
+          </div>
+          <div class="row-date" :style="columnStyles?.date">
+            <span class="commit-time">{{ formatRelativeTime(item.row.commit.time) }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -119,6 +127,7 @@ const props = defineProps<{
   hasWip: boolean
   wipUnstagedCount: number
   wipStagedCount: number
+  columnStyles?: Record<string, string>
 }>()
 
 defineEmits<{
@@ -290,15 +299,51 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-right: 12px;
+  gap: 0;
+  padding-right: 0;
   overflow: hidden;
+}
+
+.row-refs {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.row-message {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  flex: 1;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.row-author {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+}
+
+.row-date {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  min-width: 60px;
+  justify-content: flex-end;
 }
 
 .ref-tags {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .ref-tag {
@@ -349,25 +394,21 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 .commit-author {
   font-size: 11px;
   color: var(--text-secondary);
-  flex-shrink: 0;
-  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 100%;
 }
 
 .commit-time {
   font-size: 11px;
   color: var(--muted-foreground);
-  flex-shrink: 0;
-  text-align: right;
-  min-width: 50px;
+  white-space: nowrap;
 }
 </style>

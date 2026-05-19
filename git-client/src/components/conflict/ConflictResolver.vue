@@ -1,7 +1,7 @@
 <template>
   <div v-if="conflicts.length > 0" class="flex flex-col h-full">
-    <div class="p-2 border-b border-gray-700 flex items-center gap-2">
-      <span class="text-yellow-400 text-sm font-bold">{{ conflicts.length }} Conflicts</span>
+    <div class="p-2 border-b border-border flex items-center gap-2">
+      <span class="text-accent-yellow text-sm font-bold">{{ conflicts.length }} Conflicts</span>
       <div class="flex-1" />
       <Button size="sm" :disabled="unresolvedCount > 0" @click="$emit('complete')">
         Complete Merge
@@ -9,13 +9,13 @@
     </div>
     <div class="flex-1 overflow-y-auto">
       <div v-for="(conflict, idx) in conflicts" :key="conflict.path"
-        class="border-b border-gray-700 p-2"
+        class="border-b border-border p-2"
       >
         <div class="flex items-center mb-1">
-          <span :class="resolved[idx] ? 'text-green-400' : 'text-red-400'">
-            {{ resolved[idx] ? '✓' : '✗' }}
+          <span :class="resolved[idx] ? 'text-accent-green' : 'text-accent-red'">
+            {{ resolved[idx] ? '�? : '�? }}
           </span>
-          <span class="ml-1 text-sm text-gray-300">{{ conflict.path }}</span>
+          <span class="ml-1 text-sm text-foreground">{{ conflict.path }}</span>
           <div class="flex-1" />
           <Button size="sm" variant="outline" @click="chooseOurs(idx)">Ours</Button>
           <Button size="sm" variant="outline" @click="chooseTheirs(idx)">Theirs</Button>
