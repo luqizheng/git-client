@@ -134,6 +134,11 @@ pub fn run() {
             commands::repo_key::get_repo_key_config,
             commands::repo_key::set_repo_ssh_key,
             commands::repo_key::set_repo_gpg_key,
+            commands::undo::get_reflog,
+            commands::undo::undo,
+            commands::undo::redo,
+            commands::undo::discard_file,
+            commands::undo::discard_all,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
