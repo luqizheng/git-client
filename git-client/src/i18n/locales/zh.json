@@ -51,19 +51,90 @@
   "settings": {
     "title": "设置",
     "tabs": {
-      "general": "通用设置",
+      "general": "通用",
+      "gitConfig": "Git 配置",
       "sshKeys": "SSH 密钥",
-      "gpgKeys": "GPG 密钥"
+      "gpgKeys": "GPG 密钥",
+      "proxy": "代理",
+      "editor": "编辑器",
+      "shortcuts": "快捷键",
+      "hooks": "钩子"
     },
     "theme": "主题",
+    "themeDesc": "选择您喜欢的颜色主题",
     "language": "语言",
+    "languageDesc": "选择界面语言",
     "themes": {
+      "system": "跟随系统",
       "dark": "深色",
       "light": "浅色"
     },
     "languages": {
       "zh": "中文",
       "en": "English"
+    },
+    "behavior": {
+      "title": "行为",
+      "startup": "启动时",
+      "startupDesc": "启动时显示的内容",
+      "startupWelcome": "欢迎界面",
+      "startupLastRepo": "打开上次仓库",
+      "startupNothing": "无",
+      "autoFetch": "自动拉取",
+      "autoFetchDesc": "自动从远程拉取",
+      "autoFetchDisabled": "禁用"
+    },
+    "confirm": {
+      "title": "确认提示",
+      "forcePush": "强制推送前确认",
+      "discard": "丢弃更改前确认",
+      "reset": "重置前确认"
+    },
+    "gitConfig": {
+      "scopeGlobal": "全局",
+      "scopeLocal": "本地",
+      "userName": "用户名",
+      "userNamePlaceholder": "您的名字",
+      "userEmail": "用户邮箱",
+      "userEmailPlaceholder": "your@email.com",
+      "defaultBranch": "默认分支",
+      "autocrlf": "自动转换换行符",
+      "autocrlfTrue": "是 (检出 CRLF，提交 LF)",
+      "autocrlfFalse": "否 (不转换)",
+      "autocrlfInput": "输入 (仅检出 LF)",
+      "pullRebase": "拉取时变基",
+      "credentialHelper": "凭证助手",
+      "credentialHelperDesc": "安全存储凭证",
+      "none": "无",
+      "saved": "Git 配置已保存"
+    },
+    "proxy": {
+      "enable": "启用代理",
+      "enableDesc": "使用代理服务器进行远程操作",
+      "http": "HTTP 代理",
+      "https": "HTTPS 代理",
+      "noProxy": "不使用代理",
+      "auth": "认证",
+      "username": "用户名",
+      "password": "密码"
+    },
+    "editor": {
+      "commitMsg": "提交信息编辑器",
+      "diffTool": "Diff 工具",
+      "mergeTool": "合并工具",
+      "diffViewer": "Diff 查看器",
+      "fontSize": "字体大小",
+      "tabSize": "Tab 大小",
+      "wordWrap": "自动换行",
+      "wordWrapDesc": "在 diff 视图中换行长行",
+      "none": "无"
+    },
+    "hooks": {
+      "noHooks": "未配置钩子",
+      "noHooksDesc": "Git 钩子是在 Git 操作期间自动运行的脚本",
+      "edit": "编辑",
+      "content": "钩子内容",
+      "placeholder": "#!/bin/sh\n\n# 在此编写钩子脚本"
     }
   },
   "sshKeys": {
@@ -147,6 +218,10 @@
     "confirm": "确认",
     "delete": "删除",
     "save": "保存",
-    "loading": "加载中..."
+    "reset": "重置",
+    "refresh": "刷新",
+    "loading": "加载中...",
+    "saving": "保存中...",
+    "saved": "已保存"
   }
 }

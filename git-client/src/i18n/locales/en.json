@@ -51,19 +51,90 @@
   "settings": {
     "title": "Settings",
     "tabs": {
-      "general": "General Settings",
+      "general": "General",
+      "gitConfig": "Git Config",
       "sshKeys": "SSH Keys",
-      "gpgKeys": "GPG Keys"
+      "gpgKeys": "GPG Keys",
+      "proxy": "Proxy",
+      "editor": "Editor",
+      "shortcuts": "Shortcuts",
+      "hooks": "Hooks"
     },
     "theme": "Theme",
+    "themeDesc": "Choose your preferred color theme",
     "language": "Language",
+    "languageDesc": "Select interface language",
     "themes": {
+      "system": "System",
       "dark": "Dark",
       "light": "Light"
     },
     "languages": {
       "zh": "中文",
       "en": "English"
+    },
+    "behavior": {
+      "title": "Behavior",
+      "startup": "Startup Action",
+      "startupDesc": "What to show on startup",
+      "startupWelcome": "Welcome Screen",
+      "startupLastRepo": "Open Last Repo",
+      "startupNothing": "Nothing",
+      "autoFetch": "Auto Fetch",
+      "autoFetchDesc": "Automatically fetch from remotes",
+      "autoFetchDisabled": "Disabled"
+    },
+    "confirm": {
+      "title": "Confirmations",
+      "forcePush": "Confirm Force Push",
+      "discard": "Confirm Discard Changes",
+      "reset": "Confirm Reset"
+    },
+    "gitConfig": {
+      "scopeGlobal": "Global",
+      "scopeLocal": "Local",
+      "userName": "User Name",
+      "userNamePlaceholder": "Your Name",
+      "userEmail": "User Email",
+      "userEmailPlaceholder": "your@email.com",
+      "defaultBranch": "Default Branch",
+      "autocrlf": "Auto CRLF",
+      "autocrlfTrue": "True (checkout CRLF, commit LF)",
+      "autocrlfFalse": "False (no conversion)",
+      "autocrlfInput": "Input (checkout LF only)",
+      "pullRebase": "Pull Rebase",
+      "credentialHelper": "Credential Helper",
+      "credentialHelperDesc": "Store credentials securely",
+      "none": "None",
+      "saved": "Git config saved"
+    },
+    "proxy": {
+      "enable": "Enable Proxy",
+      "enableDesc": "Use a proxy server for remote operations",
+      "http": "HTTP Proxy",
+      "https": "HTTPS Proxy",
+      "noProxy": "No Proxy",
+      "auth": "Authentication",
+      "username": "Username",
+      "password": "Password"
+    },
+    "editor": {
+      "commitMsg": "Commit Message Editor",
+      "diffTool": "Diff Tool",
+      "mergeTool": "Merge Tool",
+      "diffViewer": "Diff Viewer",
+      "fontSize": "Font Size",
+      "tabSize": "Tab Size",
+      "wordWrap": "Word Wrap",
+      "wordWrapDesc": "Wrap long lines in diff view",
+      "none": "None"
+    },
+    "hooks": {
+      "noHooks": "No hooks configured",
+      "noHooksDesc": "Git hooks are scripts that run automatically during Git operations",
+      "edit": "Edit",
+      "content": "Hook Content",
+      "placeholder": "#!/bin/sh\n\n# Your hook script here"
     }
   },
   "sshKeys": {
@@ -147,6 +218,10 @@
     "confirm": "Confirm",
     "delete": "Delete",
     "save": "Save",
-    "loading": "Loading..."
+    "reset": "Reset",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "saved": "Saved"
   }
 }

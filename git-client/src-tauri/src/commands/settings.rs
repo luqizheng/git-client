@@ -11,6 +11,11 @@ pub struct AppSettings {
     pub recent_repos: Vec<String>,
     pub sidebar_width: u32,
     pub sidebar_collapsed: bool,
+    pub startup_action: String,
+    pub auto_fetch_interval: u32,
+    pub confirm_force_push: bool,
+    pub confirm_discard: bool,
+    pub confirm_reset: bool,
 }
 
 impl Default for AppSettings {
@@ -21,6 +26,11 @@ impl Default for AppSettings {
             recent_repos: Vec::new(),
             sidebar_width: 240,
             sidebar_collapsed: false,
+            startup_action: "welcome".to_string(),
+            auto_fetch_interval: 60,
+            confirm_force_push: true,
+            confirm_discard: true,
+            confirm_reset: true,
         }
     }
 }
@@ -32,11 +42,15 @@ pub struct GitConfig {
 }
 
 #[tauri::command]
-pub async fn get_git_config(repo_path: Option<String>) -> Result<GitConfig, AppError> {
+pub async fn get_git_config(repo_path: Option<String>, scope: Option<String>) -> Result<GitConfig, AppError> {
     tokio::task::spawn_blocking(move || {
-        let config = if let Some(path) = repo_path {
-            let repo = git2::Repository::open(&path)?;
-            repo.config()?
+        let config = if scope.as_deref() == Some("local") {
+            if let Some(path) = repo_path {
+                let repo = git2::Repository::open(&path)?;
+                repo.config()?
+            } else {
+                git2::Config::open_default()?
+            }
         } else {
             git2::Config::open_default()?
         };
@@ -53,11 +67,16 @@ pub async fn get_git_config(repo_path: Option<String>) -> Result<GitConfig, AppE
 pub async fn set_git_config(
     repo_path: Option<String>,
     config: GitConfig,
+    scope: Option<String>,
 ) -> Result<(), AppError> {
     tokio::task::spawn_blocking(move || {
-        let mut git_config = if let Some(path) = repo_path {
-            let repo = git2::Repository::open(&path)?;
-            repo.config()?
+        let mut git_config = if scope.as_deref() == Some("local") {
+            if let Some(path) = repo_path {
+                let repo = git2::Repository::open(&path)?;
+                repo.config()?
+            } else {
+                git2::Config::open_default()?
+            }
         } else {
             git2::Config::open_default()?
         };
