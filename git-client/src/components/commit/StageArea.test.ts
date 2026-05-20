@@ -93,7 +93,8 @@ describe('StageArea', () => {
     ;(useStagingStore as vi.Mock).mockReturnValue(mockStaging)
 
     const wrapper = mount(StageArea)
-    const plusButton = wrapper.find('.unstaged-0 button')
+    const buttons = wrapper.findAll('button')
+    const plusButton = buttons[0]
     await plusButton.trigger('click')
 
     expect(mockStaging.stageFiles).toHaveBeenCalledWith('/test/repo', ['src/file.ts'])
@@ -112,7 +113,7 @@ describe('StageArea', () => {
     ;(useStagingStore as vi.Mock).mockReturnValue(mockStaging)
 
     const wrapper = mount(StageArea)
-    const minusButton = wrapper.find('.staged-0 button')
+    const minusButton = wrapper.find('button')
     await minusButton.trigger('click')
 
     expect(mockStaging.unstageFiles).toHaveBeenCalledWith('/test/repo', ['src/file.ts'])
