@@ -242,16 +242,21 @@ async function handleRefresh() {
   opacity: 0.35 !important;
 }
 
-.repo-switch-btn {
+.repo-switch-btn, .branch-switch-btn {
   max-width: 160px;
   font-size: 11px !important;
-  padding: 0 6px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  background: var(--muted) !important;
+}
+
+.repo-switch-btn {
+  max-width: 160px;
 }
 
 .branch-switch-btn {
   max-width: 140px;
-  font-size: 11px !important;
-  padding: 0 6px !important;
 }
 
 .bar-separator {
