@@ -337,7 +337,7 @@ async function onDropdownSelect(key: string) {
               <TableCell
                 v-if="index === 0"
                 :rowspan="filteredCommits.length"
-                style="vertical-align:top"
+                
               >
 
                 <GraphyCell :commits="filteredCommits" />
