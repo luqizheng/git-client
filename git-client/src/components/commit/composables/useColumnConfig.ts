@@ -11,6 +11,7 @@ export interface ColumnConfig {
 }
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
+  { id: 'graphy', label: 'Graph', visible: true, width: 60, minWidth: 40, hideable: true },
   { id: 'refs', label: 'Tag/Branch', visible: true, width: 100, minWidth: 60, hideable: true },
   { id: 'message', label: 'Commit Message', visible: true, width: 300, minWidth: 200, hideable: false },
   { id: 'author', label: 'Author', visible: true, width: 100, minWidth: 60, hideable: true },

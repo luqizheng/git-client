@@ -16,7 +16,8 @@ describe('useColumnConfig', () => {
 
   it('should return default columns', () => {
     const { columns } = useColumnConfig()
-    expect(columns.value).toHaveLength(4)
+    expect(columns.value).toHaveLength(5)
+    expect(columns.value.find(c => c.id === 'graphy')?.label).toBe('Graph')
     expect(columns.value.find(c => c.id === 'message')?.hideable).toBe(false)
   })
 

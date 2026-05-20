@@ -1,5 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onUnmounted } from 'vue'
+
+const ACTION_TYPES = {
+  CHERRY_PICK: 'cherry-pick',
+  REBASE: 'rebase',
+  RESET_SOFT: 'reset-soft',
+  RESET_MIXED: 'reset-mixed',
+  RESET_HARD: 'reset-hard',
+  REVERT: 'revert',
+  CREATE_BRANCH: 'create-branch',
+  CREATE_TAG: 'create-tag',
+  COPY_SHA: 'copy-sha',
+} as const
+
+onUnmounted(() => {
+  contextMenu.value.visible = false
+})
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +37,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useCommitList } from '../../composables/useCommitList'
 import { useColumnConfig } from '../../composables/useColumnConfig'
+import GraphyCell from '../cells/GraphyCell.vue'
 import { useRightPanelStore } from '../../../../stores/rightPanel'
 import { useStagingStore } from '../../../../stores/staging'
 import { useRepoStore } from '../../../../stores/repo'
@@ -70,7 +87,7 @@ const wipStagedCount = computed(() => {
 
 function onCommitClick(commitId: string) {
   const commit = filteredCommits.value.find(c => c.id === commitId)
-  if (commit) handleClick(commit)
+  commit && handleClick(commit)
 }
 
 function onWipClick() {
@@ -109,36 +126,36 @@ async function onDropdownSelect(key: string) {
 
   try {
     switch (key) {
-      case 'cherry-pick':
+      case ACTION_TYPES.CHERRY_PICK:
         await invoke<void>('cherry_pick', { repoPath: repoStore.activeRepoPath, commitId: commit.id })
         toast.success(`Cherry-picked ${commit.id.slice(0, 7)}`)
         break
-      case 'rebase':
+      case ACTION_TYPES.REBASE:
         toast.info('Interactive rebase coming in Phase 2c')
         return
-      case 'reset-soft':
+      case ACTION_TYPES.RESET_SOFT:
         await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'soft' })
         toast.success('Soft reset successful')
         break
-      case 'reset-mixed':
+      case ACTION_TYPES.RESET_MIXED:
         await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'mixed' })
         toast.success('Mixed reset successful')
         break
-      case 'reset-hard':
+      case ACTION_TYPES.RESET_HARD:
         await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'hard' })
         toast.success('Hard reset successful')
         break
-      case 'revert':
+      case ACTION_TYPES.REVERT:
         await invoke<void>('revert_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id })
         toast.success('Revert successful')
         break
-      case 'create-branch':
+      case ACTION_TYPES.CREATE_BRANCH:
         toast.info('Create branch dialog coming soon')
         return
-      case 'create-tag':
+      case ACTION_TYPES.CREATE_TAG:
         toast.info('Create tag dialog coming soon')
         return
-      case 'copy-sha':
+      case ACTION_TYPES.COPY_SHA:
         await navigator.clipboard.writeText(commit.id)
         toast.success('SHA copied')
         return
@@ -220,14 +237,26 @@ async function onDropdownSelect(key: string) {
               class="h-10 hover:bg-accent/50 cursor-pointer transition-colors"
               @click="onWipClick"
             >
-              <TableCell class="text-sm" />
-              <TableCell>
-                <span class="font-medium text-yellow-600">WIP</span>
+              <TableCell v-for="col in visibleColumns" :key="col.id">
+                <template v-if="col.id === 'graphy'">
+                  <div class="flex items-center justify-center h-full">
+                    <svg width="40" height="24" viewBox="0 0 40 24">
+                      <circle cx="20" cy="12" r="6" class="fill-yellow-500 stroke-yellow-600 stroke-1" />
+                      <line x1="20" y1="18" x2="20" y2="24" class="stroke-border stroke-1" />
+                    </svg>
+                  </div>
+                </template>
+                <template v-else-if="col.id === 'message'">
+                  <span class="font-medium text-yellow-600">WIP</span>
+                </template>
+                <template v-else-if="col.id === 'author'">
+                  <span class="text-sm text-muted-foreground">{{ wipStagedCount }} staged, {{ wipUnstagedCount }} unstaged</span>
+                </template>
+                <template v-else-if="col.id === 'sha'">
+                  <span class="text-sm text-muted-foreground">Staging</span>
+                </template>
+                <template v-else-if="col.id === 'refs'" />
               </TableCell>
-              <TableCell>
-                <span class="text-sm text-muted-foreground">{{ wipStagedCount }} staged, {{ wipUnstagedCount }} unstaged</span>
-              </TableCell>
-              <TableCell class="text-sm text-muted-foreground">Staging</TableCell>
               <TableCell class="text-sm text-muted-foreground">Just now</TableCell>
             </TableRow>
 
@@ -238,26 +267,31 @@ async function onDropdownSelect(key: string) {
               @click="onCommitClick(commit.id)"
               @contextmenu.prevent="onContextMenu($event, commit.id)"
             >
-              <TableCell class="text-sm" :style="columnStyles['refs']">
-                <span
-                  v-for="ref in commit.refs"
-                  :key="ref.name"
-                  :class="clsx(
-                    'inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-0.5',
-                    ref.ref_type === 'tag' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
-                  )"
-                >
-                  {{ ref.name }}
-                </span>
-              </TableCell>
-              <TableCell class="font-medium text-sm whitespace-pre-wrap break-words leading-snug" :style="columnStyles['message']">
-                {{ commit.message }}
-              </TableCell>
-              <TableCell class="text-sm text-muted-foreground truncate" :style="columnStyles['author']">
-                {{ commit.author }}
-              </TableCell>
-              <TableCell class="text-sm font-mono text-muted-foreground" :style="columnStyles['sha']">
-                {{ formatSha(commit.id) }}
+              <TableCell v-for="col in visibleColumns" :key="col.id" :style="columnStyles[col.id]">
+                <template v-if="col.id === 'graphy'">
+                  <GraphyCell :commit="commit" />
+                </template>
+                <template v-else-if="col.id === 'refs'">
+                  <span
+                    v-for="ref in commit.refs"
+                    :key="ref.name"
+                    :class="clsx(
+                      'inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-0.5',
+                      ref.ref_type === 'tag' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
+                    )"
+                  >
+                    {{ ref.name }}
+                  </span>
+                </template>
+                <template v-else-if="col.id === 'message'" class="font-medium text-sm whitespace-pre-wrap break-words leading-snug">
+                  {{ commit.message }}
+                </template>
+                <template v-else-if="col.id === 'author'" class="text-sm text-muted-foreground truncate">
+                  {{ commit.author }}
+                </template>
+                <template v-else-if="col.id === 'sha'" class="text-sm font-mono text-muted-foreground">
+                  {{ formatSha(commit.id) }}
+                </template>
               </TableCell>
               <TableCell class="text-sm text-muted-foreground">
                 {{ formatTime(commit.time) }}
@@ -273,23 +307,23 @@ async function onDropdownSelect(key: string) {
         <div :style="{ position: 'fixed', left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem @click="onDropdownSelect('cherry-pick')">Cherry-pick</DropdownMenuItem>
-        <DropdownMenuItem @click="onDropdownSelect('revert')">Revert</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.CHERRY_PICK)">Cherry-pick</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.REVERT)">Revert</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('rebase')">Rebase</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.REBASE)">Rebase</DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Reset</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuItem @click="onDropdownSelect('reset-soft')">Soft</DropdownMenuItem>
-            <DropdownMenuItem @click="onDropdownSelect('reset-mixed')">Mixed</DropdownMenuItem>
-            <DropdownMenuItem @click="onDropdownSelect('reset-hard')" class="text-destructive">Hard</DropdownMenuItem>
+            <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.RESET_SOFT)">Soft</DropdownMenuItem>
+            <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.RESET_MIXED)">Mixed</DropdownMenuItem>
+            <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.RESET_HARD)" class="text-destructive">Hard</DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('create-branch')">Create Branch</DropdownMenuItem>
-        <DropdownMenuItem @click="onDropdownSelect('create-tag')">Create Tag</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.CREATE_BRANCH)">Create Branch</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.CREATE_TAG)">Create Tag</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('copy-sha')">Copy SHA</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.COPY_SHA)">Copy SHA</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   </div>
