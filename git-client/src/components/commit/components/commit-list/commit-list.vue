@@ -261,15 +261,23 @@ async function onDropdownSelect(key: string) {
             </TableRow>
 
             <TableRow
-              v-for="commit in filteredCommits"
+              v-for="(commit, index) in filteredCommits"
               :key="commit.id"
               :class="clsx('hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
               @click="onCommitClick(commit.id)"
               @contextmenu.prevent="onContextMenu($event, commit.id)"
             >
-              <TableCell v-for="col in visibleColumns" :key="col.id" :style="columnStyles[col.id]">
-                <template v-if="col.id === 'graphy'">
-                  <GraphyCell :commit="commit" />
+            
+              <TableCell 
+                v-for="col in visibleColumns" 
+                :key="col.id" 
+                :style="columnStyles[col.id]"
+                :class="clsx(col.id === 'graphy' && 'p-0 m-0')"
+                :rowspan="col.id === 'graphy' && index === 0 ? filteredCommits.length : undefined"
+                
+              >
+                <template v-if="col.id === 'graphy' && index === 0">
+                  <GraphyCell :commits="filteredCommits" />
                 </template>
                 <template v-else-if="col.id === 'refs'">
                   <span
