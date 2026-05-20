@@ -87,7 +87,10 @@ export function useColumnConfig() {
   const columnStyles = computed(() => {
     const styles: Record<string, string> = {}
     for (const col of columns.value) {
-      styles[col.id] = `width: ${col.width}px; min-width: ${col.minWidth}px; flex-shrink: 0;`
+      if (col.id === 'graphy')
+        styles[col.id] = `min-width: ${col.minWidth}px; flex-shrink: 0; vertical-align: top; width: auto;`
+      else
+        styles[col.id] = `width: ${col.width}px; min-width: ${col.minWidth}px; flex-shrink: 0;`
     }
     return styles
   })
