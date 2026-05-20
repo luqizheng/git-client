@@ -41,7 +41,6 @@ export const BRANCH_COLORS = [
 
 function allocateColumns(commits: Commit[]): GraphNode[] {
   const nodes: GraphNode[] = []
-  const activeColumns: Map<number, { color: string; commitId: string }> = new Map()
   let nextColumn = 0
 
   for (let i = 0; i < commits.length; i++) {
@@ -51,21 +50,12 @@ function allocateColumns(commits: Commit[]): GraphNode[] {
       .map(pid => nodes.find(n => n.commitId === pid))
       .filter((n): n is GraphNode => n !== undefined)
 
-    const usedColumns = new Set<number>(parentNodes.map(p => p.column))
-
-    for (const [col] of activeColumns) {
-      if (!usedColumns.has(col) && !parentNodes.some(p => p.column === col)) {
-        activeColumns.delete(col)
-      }
-    }
-
     let column: number
     let color: string
 
     if (parentNodes.length > 0) {
-      const firstParent = parentNodes[0]
-      column = firstParent.column
-      color = firstParent.color
+      column = parentNodes[0].column
+      color = parentNodes[0].color
     } else {
       column = nextColumn++
       color = BRANCH_COLORS[column % BRANCH_COLORS.length]
@@ -78,8 +68,6 @@ function allocateColumns(commits: Commit[]): GraphNode[] {
       color,
       hasRefs: !!(commit.refs && commit.refs.length > 0),
     })
-
-    activeColumns.set(column, { color, commitId: commit.id })
   }
 
   return nodes
