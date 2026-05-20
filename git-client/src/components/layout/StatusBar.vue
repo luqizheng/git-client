@@ -107,7 +107,7 @@ function handleZoomChange(val: string) {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: var(--accent-blue);
+  color: var(--primary);
   font-weight: 500;
 }
 

@@ -106,6 +106,7 @@ async function handleAdd() {
   max-width: 180px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
   transition: background 0.15s, border-color 0.15s;
   white-space: nowrap;
   position: relative;
