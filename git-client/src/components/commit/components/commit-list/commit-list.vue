@@ -18,10 +18,14 @@ import { useColumnConfig } from '../../composables/useColumnConfig'
 import { useRightPanelStore } from '../../../../stores/rightPanel'
 import { useStagingStore } from '../../../../stores/staging'
 import { useRepoStore } from '../../../../stores/repo'
+import { useCommitsStore } from '../../../../stores/commits'
+import { invoke } from '../../../../utils/ipc'
+import { toast } from 'vue-sonner'
 
 const rightPanelStore = useRightPanelStore()
 const stagingStore = useStagingStore()
 const repoStore = useRepoStore()
+const commitsStore = useCommitsStore()
 
 const { columnStyles } = useColumnConfig()
 
@@ -77,9 +81,53 @@ function onContextMenu(e: MouseEvent, commitId: string) {
   }
 }
 
-function onDropdownSelect(key: string) {
+async function onDropdownSelect(key: string) {
+  const commit = contextMenu.value.commit
   hideContextMenu()
-  console.log('Selected:', key)
+  if (!commit || !repoStore.activeRepoPath) return
+
+  try {
+    switch (key) {
+      case 'cherry-pick':
+        await invoke<void>('cherry_pick', { repoPath: repoStore.activeRepoPath, commitId: commit.id })
+        toast.success(`Cherry-picked ${commit.id.slice(0, 7)}`)
+        break
+      case 'rebase':
+        toast.info('Interactive rebase coming in Phase 2c')
+        return
+      case 'reset-soft':
+        await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'soft' })
+        toast.success('Soft reset successful')
+        break
+      case 'reset-mixed':
+        await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'mixed' })
+        toast.success('Mixed reset successful')
+        break
+      case 'reset-hard':
+        await invoke<void>('reset_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id, mode: 'hard' })
+        toast.success('Hard reset successful')
+        break
+      case 'revert':
+        await invoke<void>('revert_commit', { repoPath: repoStore.activeRepoPath, commitId: commit.id })
+        toast.success('Revert successful')
+        break
+      case 'create-branch':
+        toast.info('Create branch dialog coming soon')
+        return
+      case 'create-tag':
+        toast.info('Create tag dialog coming soon')
+        return
+      case 'copy-sha':
+        await navigator.clipboard.writeText(commit.id)
+        toast.success('SHA copied')
+        return
+      default:
+        return
+    }
+    await commitsStore.fetchLogs(repoStore.activeRepoPath)
+  } catch (e) {
+    toast.error(String(e))
+  }
 }
 </script>
 
@@ -121,6 +169,9 @@ function onDropdownSelect(key: string) {
       <DropdownMenuContent>
         <DropdownMenuItem @click="onDropdownSelect('cherry-pick')">
           Cherry-pick
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('revert')">
+          Revert
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem @click="onDropdownSelect('rebase')">
