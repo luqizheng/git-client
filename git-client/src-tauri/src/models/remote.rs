@@ -12,6 +12,9 @@ pub struct ConflictFile {
     pub path: String,
     pub ours_modified: bool,
     pub theirs_modified: bool,
+    pub ours_content: Option<String>,
+    pub theirs_content: Option<String>,
+    pub base_content: Option<String>,
 }
 
 #[cfg(test)]
@@ -36,6 +39,9 @@ mod tests {
             path: "src/main.rs".to_string(),
             ours_modified: true,
             theirs_modified: true,
+            ours_content: Some("ours content".to_string()),
+            theirs_content: Some("theirs content".to_string()),
+            base_content: Some("base content".to_string()),
         };
         let json = serde_json::to_string(&cf).unwrap();
         let parsed: ConflictFile = serde_json::from_str(&json).unwrap();
