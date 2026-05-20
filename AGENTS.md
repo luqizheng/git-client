@@ -14,15 +14,19 @@
 | 前端框架 | Vue 3 | ^3.5 | Composition API |
 | 语言 (前端) | TypeScript | ^6.0 | 类型安全 |
 | 语言 (后端) | Rust | 2021 edition | 高性能原生后端 |
-| UI 库 | Naive UI | ^2.44 | Vue 3 组件库 |
+| UI 库 | shadcn-vue | ^2.7 | Vue 3 组件库 |
 | CSS 方案 | UnoCSS | ^66.6 | presetUno + presetAttributify |
+| Tailwind CSS | Tailwind CSS | ^4.3 | 原子化 CSS 框架 |
+| 图标库 | lucide-vue-next | ^1.0 | 现代图标库 |
 | 状态管理 | Pinia | ^3.0 | Vue 官方状态管理 |
 | 国际化 | vue-i18n | ^11.4 | 多语言支持 (中/英) |
-| 代码编辑 | Monaco Editor | - | 内嵌代码/diff 查看 |
+| 代码编辑 | Monaco Editor | ^0.55 | 内嵌代码/diff 查看 |
+| 虚拟列表 | @tanstack/vue-virtual | ^3.13 | 高性能虚拟滚动 |
 | Git 核心 | git2 | 0.19 | libgit2 Rust 绑定 |
 | 异步运行时 | Tokio | 1 (full) | Rust 异步 |
 | 文件监听 | notify | 7 | 工作区变更监听 |
 | 凭证管理 | keyring | 3 | 系统密钥链存储 |
+| 错误处理 | thiserror | 2 | Rust 错误类型定义 |
 | 日志 | tracing | 0.1 | 结构化日志 |
 | 构建工具 | Vite | ^8.0 | 前端构建 |
 | 测试 (前端) | Vitest | ^4.1 | 单元测试 |
