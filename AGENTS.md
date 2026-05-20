@@ -46,26 +46,62 @@
 │   ├── vitest.config.ts          # 测试配置 (happy-dom)
 │   ├── uno.config.ts             # UnoCSS 预设配置
 │   ├── tsconfig.json             # TypeScript 配置
+│   ├── components.json           # shadcn-vue 组件配置
+│   ├── postcss.config.js         # PostCSS 配置
+│   ├── .github/workflows/        # CI (GitHub Actions)
+│   ├── docs/                     # 项目文档 (specs, plans)
 │   ├── src/                      # Vue 前端源码
 │   │   ├── assets/styles/        # 主题 (dark/light + CSS 变量)
 │   │   ├── components/
+│   │   │   ├── blame/            # BlamePanel
 │   │   │   ├── branch/           # BranchDialog, BranchTree
-│   │   │   ├── commit/           # CommitEditor, CommitPanel, StageArea
+│   │   │   ├── commit/           # CommitEditor, StageArea, CommitDetailPanel
+│   │   │   │   ├── components/   # cells (Author/Date/Hash/Message/BranchTag),
+│   │   │   │   │                 # commit-list
+│   │   │   │   ├── composables/  # useColumnConfig, useCommitList,
+│   │   │   │   │                 # useFilter, useInfiniteScroll
+│   │   │   │   └── utils/        # commitHelpers, graphRenderer
+│   │   │   ├── compare/          # BranchCompareDialog
+│   │   │   ├── config/           # ConfigDialog
 │   │   │   ├── conflict/         # ConflictResolver, ThreeWayDiff
-│   │   │   ├── diff/             # DiffView, FileTree, MonacoDiff
-│   │   │   ├── graph/            # CommitCanvas, CommitDetail, GraphView
-│   │   │   ├── layout/           # AppLayout, Sidebar, StatusBar, Toolbar
+│   │   │   ├── gitflow/          # GitFlowDialog
+│   │   │   ├── graph/            # CommitGraph
+│   │   │   ├── hook/             # HookDialog
+│   │   │   ├── layout/           # AppLayout, AppContent, Sidebar, StatusBar,
+│   │   │   │                     # RepoTabs, RightPanel, CenterArea,
+│   │   │   │                     # TabActionBar, ResizeHandle
+│   │   │   ├── rebase/           # RebaseDialog
 │   │   │   ├── remote/           # RemotePanel, SshConfig
-│   │   │   └── repo/             # CloneDialog, RepoList, RepoPanel
+│   │   │   ├── repo/             # CloneDialog, RepoList, RepoPanel
+│   │   │   ├── revert/           # RevertDialog
+│   │   │   ├── search/           # AdvancedSearchDialog
+│   │   │   ├── settings/         # SettingsPanel, SshKeyManager,
+│   │   │   │                     # GpgKeyManager, SshKeyGenerator/Import/List
+│   │   │   ├── staging/          # StagingPanel, StagedFilesSection,
+│   │   │   │                     # UnstagedFilesSection, CommitEditorSection
+│   │   │   ├── submodule/        # SubmoduleList
+│   │   │   ├── tag/              # TagDialog, TagList
+│   │   │   ├── ui/               # 基础 UI 组件库 (shadcn-vue 风格)
+│   │   │   │                     # badge, button, checkbox, collapsible,
+│   │   │   │                     # dialog, dropdown-menu, input, label,
+│   │   │   │                     # menubar, resizable, select, separator,
+│   │   │   │                     # sheet, sidebar, skeleton, sonner,
+│   │   │   │                     # textarea, tooltip
+│   │   │   └── worktree/         # WorktreeDialog, WorktreeList
 │   │   ├── composables/          # useGit, useGitEvent, useI18n,
 │   │   │                         # useKeyboard, useRemoteProgress,
-│   │   │                         # useTheme, useWorkdirWatcher
-│   │   ├── i18n/locales/         # en.json, zh.json
+│   │   │                         # useTheme, useWorkdirWatcher,
+│   │   │                         # useBreakpoint, useResizable, useToast
+│   │   ├── i18n/                 # index.ts + locales/ (en.json, zh.json)
+│   │   ├── lib/                  # utils.ts (通用工具)
+│   │   ├── mocks/                # commits.ts, diff.ts (测试 mock)
 │   │   ├── plugins/              # naive.ts (Naive UI 按需注册)
-│   │   ├── stores/               # Pinia: app, branches, commits,
-│   │   │                         # diff, remote, repo, staging
-│   │   ├── types/                # git.d.ts, ipc.d.ts
-│   │   ├── utils/                # event.ts, graphLayout.ts, ipc.ts
+│   │   ├── stores/               # Pinia: app, blame, branches, commits,
+│   │   │                         # diff, remote, repo, rightPanel,
+│   │   │                         # staging, submodule, tags, worktree
+│   │   ├── types/                # git.d.ts, ipc.d.ts, key.ts
+│   │   ├── utils/                # event.ts, ipc.ts, diff.ts,
+│   │   │                         # gitgraphAdapter.ts, keys.ts
 │   │   ├── App.vue
 │   │   └── main.ts
 │   └── src-tauri/                # Rust 后端
@@ -73,14 +109,24 @@
 │       ├── tauri.conf.json       # Tauri 配置 (窗口 1200x800, 最小 800x600)
 │       ├── capabilities/         # Tauri 权限声明
 │       └── src/
-│           ├── commands/         # Tauri IPC 命令 (branch, commit, diff,
-│           │                     # remote, repo, settings, stash)
-│           ├── models/           # 数据模型 (branch, commit, diff,
-│           │                     # remote, repo, stash)
-│           ├── services/         # 业务逻辑 (branch_service, commit_service,
-│           │                     # diff_service, merge_service,
-│           │                     # remote_service, repo_service, stash_service)
-│           ├── utils/            # credential, error, retry
+│           ├── commands/         # Tauri IPC 命令: blame, branch, commit,
+│           │                     # diff, gpg_key, hook, merge, remote,
+│           │                     # repo, repo_key, reset, settings,
+│           │                     # ssh_key, stash, submodule, tag,
+│           │                     # watch, worktree
+│           ├── models/           # 数据模型: blame, branch, commit, diff,
+│           │                     # key, remote, repo, stash, submodule,
+│           │                     # tag, worktree
+│           ├── services/         # 业务逻辑: blame_service,
+│           │                     # branch_service, commit_service,
+│           │                     # diff_service, git_flow_service,
+│           │                     # gpg_key_service, hook_service,
+│           │                     # merge_service, remote_service,
+│           │                     # repo_service, reset_service,
+│           │                     # ssh_key_service, stash_service,
+│           │                     # submodule_service, tag_service,
+│           │                     # worktree_service
+│           ├── utils/            # credential, error, retry, ssh_agent
 │           ├── lib.rs            # 模块注册 + AppState (Arc<Mutex<RepoManager>>)
 │           └── main.rs           # 入口
 └── .worktrees/                   # Git worktree 功能分支
