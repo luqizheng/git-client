@@ -23,6 +23,10 @@
         <Checkbox id="amend" v-model:checked="amend" />
         <label for="amend" class="text-sm cursor-pointer">Amend</label>
       </div>
+      <div class="flex items-center gap-1">
+        <Checkbox id="gpg-sign" v-model:checked="gpgSign" />
+        <label for="gpg-sign" class="text-sm cursor-pointer">GPG Sign</label>
+      </div>
       <div class="flex-1" />
       <Button size="sm" :disabled="!message.trim()" @click="doCommit">
         Commit
@@ -53,6 +57,7 @@ const repo = useRepoStore()
 const commits = useCommitsStore()
 const message = ref('')
 const amend = ref(false)
+const gpgSign = ref(false)
 const template = ref<string | undefined>(undefined)
 
 const templateOptions = [
@@ -77,9 +82,11 @@ async function doCommit() {
       repoPath: repo.activeRepoPath,
       message: message.value,
       amend: amend.value,
+      gpgSign: gpgSign.value,
     })
     message.value = ''
     amend.value = false
+    gpgSign.value = false
     template.value = undefined
     toast.success('Committed')
     await commits.fetchLogs(repo.activeRepoPath)

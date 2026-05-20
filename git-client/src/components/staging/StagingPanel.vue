@@ -132,6 +132,7 @@ async function handleCommit() {
       repoPath: repo.activeRepoPath,
       message: description.trim() ? `${summary}\n\n${description}` : summary,
       amend: rightPanel.amendMode,
+      gpgSign: false,
     })
     rightPanel.commitMessage = { summary: '', description: '' }
     toast.success('Committed successfully')

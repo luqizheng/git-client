@@ -58,6 +58,7 @@ pub fn create_commit(
     repo: &git2::Repository,
     message: &str,
     amend: bool,
+    gpg_sign: Option<bool>,
 ) -> Result<Commit, AppError> {
     let mut index = repo.index()?;
     index.write()?;
@@ -77,7 +78,21 @@ pub fn create_commit(
     };
 
     let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
+
+    let should_sign = gpg_sign.unwrap_or(false);
+    if should_sign {
+        let mut cfg = repo.config()?;
+        cfg.set_bool("commit.gpgSign", true)?;
+    }
+
     let oid = repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &parent_refs)?;
+
+    if should_sign {
+        if let Ok(mut cfg) = repo.config() {
+            let _ = cfg.remove("commit.gpgSign");
+        }
+    }
+
     let new_commit = repo.find_commit(oid)?;
     let ref_map = build_ref_map(repo)?;
     let refs = ref_map.get(&oid.to_string()).cloned().unwrap_or_default();
