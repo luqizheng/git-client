@@ -1,0 +1,185 @@
+<h2>UI/UX 方案对比 — GitKraken 风格 vs 当前</h2>
+<p class="subtitle">三套实施方案，推荐 A</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">当前我们的布局</div>
+    <div class="mockup-body" style="background:#1e1e2e;padding:0;font-size:11px">
+      <div style="display:flex;flex-direction:column;height:280px">
+        <div style="display:flex;background:#181825;border-bottom:1px solid #313244;padding:2px 8px;height:24px;align-items:center;font-size:10px;color:#6c7086">
+          <span style="background:#313244;padding:1px 8px;border-radius:4px;color:#cdd6f4">repo-name</span>
+          <span style="margin-left:8px;background:#313244;padding:1px 8px;border-radius:4px;color:#cdd6f4">main ▾</span>
+          <span style="margin-left:auto">⚙</span>
+        </div>
+        <div style="display:flex;background:#1e1e2e;border-bottom:1px solid #313244;padding:2px 8px;height:28px;align-items:center;gap:4px;font-size:10px;color:#6c7086">
+          <span style="opacity:0.35">↩</span><span style="opacity:0.35">↪</span><span>|</span>
+          <span>⟳ Fetch</span><span>⬇ Pull</span><span>⬆ Push</span><span>|</span>
+          <span>⑂</span><span>📦</span><span>📤</span><span>|</span>
+          <span>↩</span><span>⑂</span>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden">
+          <div style="width:180px;background:#181825;border-right:1px solid #313244;padding:4px 0;font-size:10px;color:#a6adc8">
+            <div style="padding:2px 8px;font-weight:600;color:#6c7086;font-size:9px;text-transform:uppercase">LOCAL</div>
+            <div style="padding:1px 8px 1px 16px;color:#89b4fa">● main</div>
+            <div style="padding:1px 8px 1px 16px;color:#a6adc8">○ feature-x</div>
+            <div style="padding:2px 8px;font-weight:600;color:#6c7086;font-size:9px;text-transform:uppercase">REMOTE</div>
+            <div style="padding:1px 8px 1px 16px;color:#cba6f7">○ origin/main</div>
+            <div style="padding:2px 8px;font-weight:600;color:#6c7086;font-size:9px;text-transform:uppercase">TAGS</div>
+            <div style="padding:1px 8px 1px 16px;color:#f9e2af">○ v1.0</div>
+            <div style="padding:2px 8px;font-weight:600;color:#6c7086;font-size:9px;text-transform:uppercase">STASHES</div>
+            <div style="padding:1px 8px 1px 16px;color:#94e2d5">○ WIP</div>
+          </div>
+          <div style="flex:1;background:#1e1e2e;padding:4px;font-size:10px;color:#cdd6f4;display:flex;flex-direction:column">
+            <div style="padding:4px 8px;border-bottom:1px solid #313244;display:flex;align-items:center;gap:8px">
+              <span style="color:#89b4fa;font-size:9px;background:#89b4fa20;padding:0 6px;border-radius:8px">main</span>
+              <span>Initial commit</span>
+              <span style="margin-left:auto;color:#6c7086">Author</span>
+              <span style="color:#6c7086">2h ago</span>
+            </div>
+            <div style="padding:4px 8px;display:flex;align-items:center;gap:8px;background:#89b4fa15">
+              <span style="color:#a6e3a1;font-size:9px;background:#a6e3a120;padding:0 6px;border-radius:8px">feature</span>
+              <span>Add new feature</span>
+              <span style="margin-left:auto;color:#6c7086">Author</span>
+              <span style="color:#6c7086">3h ago</span>
+            </div>
+            <div style="flex:1"></div>
+          </div>
+          <div style="width:260px;background:#1e1e2e;border-left:1px solid #313244;font-size:10px;color:#cdd6f4">
+            <div style="padding:8px;border-bottom:1px solid #313244">
+              <div style="font-size:12px;font-weight:600">Add new feature</div>
+              <div style="margin-top:4px;color:#6c7086">author • 3h ago</div>
+              <div style="margin-top:4px;font-family:monospace;color:#89b4fa;font-size:9px">SHA abc1234</div>
+            </div>
+            <div style="padding:8px;color:#6c7086;font-size:10px">2 changed files</div>
+          </div>
+        </div>
+        <div style="background:#181825;border-top:1px solid #313244;padding:0 8px;height:22px;display:flex;align-items:center;font-size:10px;color:#6c7086">
+          <span style="color:#89b4fa">⑂ main</span>
+          <span style="margin-left:8px">abc1234</span>
+          <span style="margin-left:auto">📁 /path/to/repo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">GitKraken 风格目标</div>
+    <div class="mockup-body" style="background:#0d1117;padding:0;font-size:11px">
+      <div style="display:flex;flex-direction:column;height:280px">
+        <div style="display:flex;background:#161b22;border-bottom:1px solid #30363d;padding:4px 12px;height:32px;align-items:center;font-size:11px;color:#c9d1d9">
+          <span style="background:#21262d;padding:2px 12px;border-radius:6px;color:#f0f6fc;font-weight:500;border:1px solid #30363d">📂 repo-name ▾</span>
+          <div style="flex:1"></div>
+          <span style="color:#8b949e;font-size:10px">⑂ main</span>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden">
+          <div style="width:200px;background:#0d1117;border-right:1px solid #30363d;padding:4px 0;font-size:11px;color:#c9d1d9">
+            <div style="padding:6px 12px;font-weight:700;color:#8b949e;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+              <span style="color:#58a6ff">⑂</span> LOCAL
+            </div>
+            <div style="padding:3px 12px 3px 24px;color:#58a6ff;font-weight:500;display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;background:#58a6ff;border-radius:50%;display:inline-block"></span> main ★
+            </div>
+            <div style="padding:3px 12px 3px 24px;color:#c9d1d9;display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border:1.5px solid #8b949e;border-radius:50%;display:inline-block"></span> feature-x
+            </div>
+            <div style="padding:6px 12px;font-weight:700;color:#8b949e;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+              <span style="color:#bc8cff">🌐</span> REMOTE
+            </div>
+            <div style="padding:3px 12px 3px 24px;color:#bc8cff;display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border:1.5px solid #bc8cff;border-radius:50%;display:inline-block"></span> origin/main
+            </div>
+            <div style="padding:6px 12px;font-weight:700;color:#8b949e;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+              <span style="color:#e3b341">🏷</span> TAGS
+            </div>
+            <div style="padding:3px 12px 3px 24px;color:#e3b341;display:flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border:1.5px solid #e3b341;border-radius:50%;display:inline-block"></span> v1.0
+            </div>
+          </div>
+          <div style="flex:1;background:#0d1117;display:flex;flex-direction:column">
+            <div style="display:flex;flex:1;flex-direction:column">
+              <div style="padding:4px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #21262d;font-size:11px">
+                <div style="width:60px;height:30px;display:flex;align-items:center;justify-content:center">
+                  <svg width="40" height="20"><circle cx="20" cy="10" r="5" fill="#58a6ff"/><line x1="20" y1="0" x2="20" y2="10" stroke="#58a6ff" stroke-width="2"/></svg>
+                </div>
+                <span style="color:#a371f7;font-size:9px;background:#a371f720;padding:1px 8px;border-radius:10px;font-weight:500">main</span>
+                <span style="color:#c9d1d9">Initial commit</span>
+                <span style="margin-left:auto;color:#8b949e;font-size:10px">Author</span>
+                <span style="color:#484f58;font-size:10px">2h</span>
+              </div>
+            </div>
+            <div style="background:#161b22;border-top:1px solid #30363d;padding:8px 12px;font-size:11px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span style="color:#3fb950;font-size:9px">M</span>
+                <span style="color:#c9d1d9">file.ts</span>
+                <span style="margin-left:auto;color:#3fb950;font-size:9px">+12 -3</span>
+              </div>
+            </div>
+          </div>
+          <div style="width:300px;background:#0d1117;border-left:1px solid #30363d;font-size:11px;color:#c9d1d9">
+            <div style="padding:12px;border-bottom:1px solid #21262d">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <span style="width:24px;height:24px;background:#58a6ff30;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#58a6ff;font-size:10px;font-weight:600">A</span>
+                <span style="font-weight:500">Author</span>
+                <span style="margin-left:auto;color:#8b949e;font-size:10px">3 hours ago</span>
+              </div>
+              <div style="font-size:13px;font-weight:600;color:#f0f6fc">Add new feature</div>
+              <div style="margin-top:8px;padding:4px 8px;background:#161b22;border-radius:6px;font-family:monospace;color:#58a6ff;font-size:10px">SHA: abc1234 📋</div>
+            </div>
+            <div style="padding:8px 12px;font-size:10px;color:#8b949e;font-weight:600;text-transform:uppercase">2 Files Changed</div>
+          </div>
+        </div>
+        <div style="background:#161b22;border-top:1px solid #30363d;padding:0 12px;height:24px;display:flex;align-items:center;font-size:10px;color:#8b949e">
+          <span style="color:#58a6ff">⑂ main</span>
+          <span style="margin-left:8px;color:#484f58">↑0 ↓0</span>
+          <span style="margin-left:auto">100%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>三种实施方案</h3>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#3b82f6">A</div>
+    <div class="content">
+      <h3>推荐：分层渐进式 — UI打底 → 核心功能 → 设置补全</h3>
+      <p><strong>Phase 1:</strong> UI/UX 统一 GitKraken 风格（CSS变量重定义 + 组件视觉打磨）</p>
+      <p><strong>Phase 2:</strong> 核心功能补全（Diff → 冲突解决 → Rebase → Undo/Discard）</p>
+      <p><strong>Phase 3:</strong> 设置面板完善（Git Config → Proxy → Editor → Shortcuts）</p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>先统一视觉，后续开发有设计基准</li><li>功能按依赖顺序：Diff → 冲突解决（依赖 Diff）→ Rebase（依赖冲突）</li><li>每阶段可独立交付</li></ul></div>
+        <div class="cons"><h4>风险</h4><ul><li>Phase 1 纯 UI 不增加功能，用户无感知</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">B</div>
+    <div class="content">
+      <h3>功能优先 — 核心功能先行，UI 随功能一起打磨</h3>
+      <p><strong>Phase 1:</strong> Diff 视图 + 三方冲突解决</p>
+      <p><strong>Phase 2:</strong> 交互式 Rebase + Undo/Discard</p>
+      <p><strong>Phase 3:</strong> 设置面板 + 全局 UI/UX 统一</p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>最快补全最痛的功能缺失</li><li>每个功能自带 UI 打磨</li></ul></div>
+        <div class="cons"><h4>风险</h4><ul><li>没有统一设计基准，风格可能不一致</li><li>后期可能需要返工 UI</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#ef4444">C</div>
+    <div class="content">
+      <h3>全量并行 — UI + 功能 + 设置同时推进</h3>
+      <p>三条线并行开发，UI 打基础，功能推进，设置同步</p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>交付最快</li><li>功能完整度最高</li></ul></div>
+        <div class="cons"><h4>风险</h4><ul><li>并行开发有冲突风险</li><li>质量难保证</li><li>合并复杂</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

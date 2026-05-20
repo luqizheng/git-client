@@ -1,0 +1,133 @@
+<h2>Phase 3 — 设置面板完善</h2>
+<p class="subtitle">核心设置优先：Git Config → Proxy → Editor → Shortcuts</p>
+
+<div class="section">
+<h3>3.0 设置面板重构 — 侧栏导航 + 内容区</h3>
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">当前（弹窗 + 3 Tab）</div>
+    <div class="mockup-body" style="background:#161b22;padding:16px;font-size:11px">
+      <div style="width:280px;background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid #30363d;font-weight:600;color:#c9d1d9">设置</div>
+        <div style="display:flex;border-bottom:1px solid #30363d">
+          <div style="padding:8px 16px;font-size:11px;color:#58a6ff;border-bottom:2px solid #58a6ff">通用</div>
+          <div style="padding:8px 16px;font-size:11px;color:#8b949e">SSH 密钥</div>
+          <div style="padding:8px 16px;font-size:11px;color:#8b949e">GPG 密钥</div>
+        </div>
+        <div style="padding:16px;color:#8b949e;font-size:11px">主题 / 语言...</div>
+      </div>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">目标（GitKraken 风格侧栏导航）</div>
+    <div class="mockup-body" style="background:#0d1117;padding:16px;font-size:11px">
+      <div style="width:400px;background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden;display:flex;height:300px">
+        <div style="width:120px;background:#161b22;border-right:1px solid #30363d;padding:8px 0">
+          <div style="padding:6px 12px;font-size:11px;color:#58a6ff;background:#58a6ff15;border-radius:4px;margin:0 4px">通用</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">Git 配置</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">认证</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">SSH 密钥</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">GPG 密钥</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">编辑器</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">代理</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">快捷键</div>
+          <div style="padding:6px 12px;font-size:11px;color:#8b949e;margin:0 4px">Git Hooks</div>
+        </div>
+        <div style="flex:1;padding:16px;color:#c9d1d9">
+          <div style="font-size:14px;font-weight:600;margin-bottom:12px">Git 配置</div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;color:#8b949e;margin-bottom:2px">User Name</div>
+            <div style="background:#161b22;border:1px solid #30363d;border-radius:4px;padding:4px 8px;color:#c9d1d9">Your Name</div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;color:#8b949e;margin-bottom:2px">User Email</div>
+            <div style="background:#161b22;border:1px solid #30363d;border-radius:4px;padding:4px 8px;color:#c9d1d9">you@example.com</div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;color:#8b949e;margin-bottom:2px">Default Branch Name</div>
+            <div style="background:#161b22;border:1px solid #30363d;border-radius:4px;padding:4px 8px;color:#c9d1d9">main</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:20px">
+<h3>3.1 各设置页详细设计</h3>
+
+<div class="cards">
+  <div class="card" data-choice="git-config" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Git 配置（直接抄 GitKraken）</h3>
+      <p><strong>user.name</strong> — 输入框，全局/仓库级别切换</p>
+      <p><strong>user.email</strong> — 输入框，全局/仓库级别切换</p>
+      <p><strong>init.defaultBranch</strong> — 下拉选择 main/master/custom</p>
+      <p><strong>core.autocrlf</strong> — 下拉 true/false/input</p>
+      <p><strong>pull.rebase</strong> — 下拉 true/false/interactive</p>
+      <p><strong>credential.helper</strong> — 显示当前值</p>
+      <p style="color:#58a6ff;margin-top:4px">🦀 Rust: settings.rs 已有 get_git_config / set_git_config</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="proxy" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>代理设置</h3>
+      <p><strong>HTTP Proxy</strong> — 输入框 http://host:port</p>
+      <p><strong>HTTPS Proxy</strong> — 输入框 https://host:port</p>
+      <p><strong>No Proxy</strong> — 排除列表</p>
+      <p><strong>SOCKS5 Proxy</strong> — 输入框 socks5://host:port</p>
+      <p><strong>认证</strong> — 用户名/密码（keyring 存储）</p>
+      <p style="color:#3fb950;margin-top:4px">🦀 Rust: 写入 git config http.proxy / https.proxy</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="editor" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>编辑器配置</h3>
+      <p><strong>默认编辑器</strong> — 下拉 VS Code / Vim / Nano / 自定义</p>
+      <p><strong>Diff 工具</strong> — 下选 内置 / VS Code / Beyond Compare / 自定义</p>
+      <p><strong>合并工具</strong> — 下选 内置 / VS Code / 自定义</p>
+      <p><strong>编辑器字号</strong> — 数字输入 12-24</p>
+      <p><strong>Tab 大小</strong> — 下拉 2/4/8</p>
+      <p style="color:#e3b341;margin-top:4px">🦀 Rust: core.editor / diff.tool / merge.tool</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="shortcuts" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>快捷键配置</h3>
+      <p><strong>分类列表：</strong></p>
+      <p>• 通用：Ctrl+Z Undo, Ctrl+Shift+Z Redo, Ctrl+S Save</p>
+      <p>• 仓库：Ctrl+Shift+O Open, Ctrl+Shift+N Clone</p>
+      <p>• Git：Ctrl+Enter Commit, Ctrl+P Push, Ctrl+F Fetch</p>
+      <p>• 导航：Ctrl+G Focus Graph, Ctrl+E Focus Editor</p>
+      <p><strong>自定义方式：</strong>点击快捷键 → 按新组合键 → 保存</p>
+      <p><strong>重置：</strong>每个可 Reset to Default</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="hooks" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>Git Hooks 管理</h3>
+      <p><strong>列表显示：</strong>pre-commit, commit-msg, pre-push 等</p>
+      <p><strong>每个 hook：</strong>启用/禁用开关 + 编辑按钮</p>
+      <p><strong>编辑器：</strong>打开 .git/hooks/ 文件编辑</p>
+      <p><strong>新建：</strong>从模板创建 hook 脚本</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="general-enhance" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>通用设置增强</h3>
+      <p><strong>主题：</strong>Dark / Light / System（新增跟随系统）</p>
+      <p><strong>语言：</strong>中文 / English（已有）</p>
+      <p><strong>启动时：</strong>打开上次仓库 / 显示欢迎页</p>
+      <p><strong>确认操作：</strong>强制推送/discard/重置前确认</p>
+      <p><strong>通知：</strong>操作完成通知 开/关</p>
+      <p><strong>自动 fetch：</strong>间隔分钟数（默认 0 = 关闭）</p>
+    </div>
+  </div>
+</div>
+</div>

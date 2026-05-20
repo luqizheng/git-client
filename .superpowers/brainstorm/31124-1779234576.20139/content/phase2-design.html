@@ -1,0 +1,166 @@
+<h2>Phase 2 — 核心功能补全</h2>
+<p class="subtitle">Diff 视图 → 三方冲突解决 → 交互式 Rebase → Undo/Discard</p>
+
+<div class="section">
+<h3>2.1 Monaco Diff 视图（P0 最高优先级）</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#58a6ff;font-weight:600;font-size:14px;margin-bottom:8px">📁 前端组件</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      <strong>diff/DiffViewer.vue</strong> — Monaco Editor diff 模式封装<br>
+      <strong>diff/FileDiffPanel.vue</strong> — 文件 diff 面板（含文件选择器）<br>
+      <strong>diff/DiffStatsBar.vue</strong> — +N/-N 差异统计条<br>
+      <strong>diff/InlineDiffView.vue</strong> — 内联 diff（轻量模式）<br>
+      <strong>diff/index.ts</strong> — 导出
+    </div>
+  </div>
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#3fb950;font-weight:600;font-size:14px;margin-bottom:8px">🦀 Rust 后端</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      已有 <code>diff_service.rs</code> 和 <code>commands/diff.rs</code><br>
+      需扩展：<br>
+      • <strong>diff_commit</strong> — 两个 commit 间差异<br>
+      • <strong>diff_working</strong> — 工作区 vs HEAD<br>
+      • <strong>diff_staged</strong> — 暂存区 vs HEAD<br>
+      • 返回结构：文件路径 + 变更类型 + hunks
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:12px;padding:12px;background:#0d1117;border:1px solid #30363d;border-radius:8px">
+  <div style="color:#bc8cff;font-weight:600;font-size:13px;margin-bottom:6px">🎨 Diff 视图布局</div>
+  <div style="display:flex;gap:12px;font-size:11px;color:#8b949e">
+    <div style="flex:1;padding:8px;background:#161b22;border-radius:4px;border:1px solid #30363d">
+      <div style="color:#c9d1d9;font-weight:500;margin-bottom:4px">Side-by-Side 模式（默认）</div>
+      左侧旧文件 | 右侧新文件<br>
+      行内高亮差异字符<br>
+      迷你地图概览
+    </div>
+    <div style="flex:1;padding:8px;background:#161b22;border-radius:4px;border:1px solid #30363d">
+      <div style="color:#c9d1d9;font-weight:500;margin-bottom:4px">Inline 模式（切换）</div>
+      单栏上下排列<br>
+      适合窄屏/大段差异<br>
+      +/- 指示变更
+    </div>
+    <div style="flex:1;padding:8px;background:#161b22;border-radius:4px;border:1px solid #30363d">
+      <div style="color:#c9d1d9;font-weight:500;margin-bottom:4px">文件树 + Diff 面板</div>
+      左侧变更文件列表<br>
+      右侧 Diff 内容<br>
+      文件状态图标
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>2.2 三方合并冲突解决（依赖 Diff 视图）</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
+  <div style="padding:12px;background:#161b22;border:1px solid #30363d;border-radius:8px;text-align:center">
+    <div style="color:#f85149;font-weight:600;font-size:13px;margin-bottom:6px">Ours（当前分支）</div>
+    <div style="height:80px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:8px;font-size:10px;color:#c9d1d9;text-align:left;font-family:monospace">
+      <div style="color:#3fb950">+ const x = 1;</div>
+      <div style="color:#3fb950">+ const y = 2;</div>
+      <div>console.log(x)</div>
+    </div>
+    <div style="margin-top:4px;font-size:10px;color:#8b949e">可选择此版本</div>
+  </div>
+  <div style="padding:12px;background:#161b22;border:1px solid #30363d;border-radius:8px;text-align:center">
+    <div style="color:#e3b341;font-weight:600;font-size:13px;margin-bottom:6px">Base（共同祖先）</div>
+    <div style="height:80px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:8px;font-size:10px;color:#8b949e;text-align:left;font-family:monospace">
+      <div>const x = 0;</div>
+      <div>console.log(x)</div>
+    </div>
+    <div style="margin-top:4px;font-size:10px;color:#8b949e">原始版本</div>
+  </div>
+  <div style="padding:12px;background:#161b22;border:1px solid #30363d;border-radius:8px;text-align:center">
+    <div style="color:#58a6ff;font-weight:600;font-size:13px;margin-bottom:6px">Theirs（合并来源）</div>
+    <div style="height:80px;background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:8px;font-size:10px;color:#c9d1d9;text-align:left;font-family:monospace">
+      <div>const x = 10;</div>
+      <div style="color:#3fb950">+ const z = 3;</div>
+      <div>console.log(x)</div>
+    </div>
+    <div style="margin-top:4px;font-size:10px;color:#8b949e">可选择此版本</div>
+  </div>
+</div>
+
+<div style="margin-top:12px;padding:12px;background:#161b22;border:1px solid #30363d;border-radius:8px;font-size:12px;color:#c9d1d9">
+  <strong style="color:#58a6ff">交互方式：</strong>
+  ① 点击列头选择整个 Ours/Base/Theirs<br>
+  ② 逐冲突块（hunk）选择 — 每个 hunk 有独立选择按钮<br>
+  ③ 底部编辑区可手动编辑合并结果<br>
+  ④ "Mark as Resolved" 按钮 → 下一个冲突文件<br>
+  ⑤ 全部解决后 "Complete Merge" 按钮
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>2.3 交互式 Rebase（依赖冲突解决）</h3>
+<div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px;margin-top:8px">
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <div style="padding:6px 12px;background:#bc8cff20;color:#bc8cff;border-radius:6px;font-size:12px;font-weight:500">pick</div>
+    <div style="padding:6px 12px;background:#58a6ff20;color:#58a6ff;border-radius:6px;font-size:12px;font-weight:500;cursor:move">⣡ squash</div>
+    <div style="padding:6px 12px;background:#e3b34120;color:#e3b341;border-radius:6px;font-size:12px;font-weight:500;cursor:move">⣡ reword</div>
+    <div style="padding:6px 12px;background:#f8514920;color:#f85149;border-radius:6px;font-size:12px;font-weight:500;cursor:move">⣡ drop</div>
+    <div style="padding:6px 12px;background:#3fb95020;color:#3fb950;border-radius:6px;font-size:12px;font-weight:500;cursor:move">⣡ edit</div>
+  </div>
+  <div style="font-size:12px;color:#c9d1d9;line-height:2">
+    <strong style="color:#58a6ff">拖拽排序：</strong>上下拖拽 commit 调整顺序<br>
+    <strong style="color:#bc8cff">操作切换：</strong>点击操作标签循环 pick → squash → reword → drop → edit<br>
+    <strong style="color:#e3b341">reword 模式：</strong>点击后弹出 commit message 编辑框<br>
+    <strong style="color:#3fb950">预览模式：</strong>左侧原始列表，右侧调整后列表<br>
+    <strong style="color:#f85149">冲突处理：</strong>rebase 过程遇冲突自动跳转冲突解决面板
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>2.4 Undo/Redo + Discard</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#58a6ff;font-weight:600;font-size:14px;margin-bottom:8px">↩ Undo / ↪ Redo</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      <strong>实现方式：</strong>Git reflog 操作栈<br>
+      • 每次操作（commit/merge/rebase/reset）记入栈<br>
+      • Undo = git reset 到 reflog 前一条<br>
+      • Redo = 前进到 reflog 后一条<br>
+      • 栈深度默认 50 条<br>
+      • 快捷键 Ctrl+Z / Ctrl+Shift+Z
+    </div>
+  </div>
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#f85149;font-weight:600;font-size:14px;margin-bottom:8px">🗑 Discard 更改</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      <strong>单个文件：</strong>git checkout -- &lt;file&gt;<br>
+      <strong>全部未暂存：</strong>git checkout -- .<br>
+      <strong>确认对话框：</strong>"确定丢弃 X 个文件的更改？"<br>
+      <strong>新增文件：</strong>git clean -f（需单独确认）<br>
+      • 右键菜单 → Discard This File<br>
+      • StagingPanel 顶部 → Discard All 按钮
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>2.5 Cherry-Pick + GPG 签名</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#e3b341;font-weight:600;font-size:14px;margin-bottom:8px">🍒 Cherry-Pick</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      • Commit 右键菜单 → Cherry-Pick<br>
+      • 调用 git cherry-pick &lt;sha&gt;<br>
+      • 冲突时跳转冲突解决面板<br>
+      • 支持多选 cherry-pick（Shift/Ctrl 多选）
+    </div>
+  </div>
+  <div style="padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <div style="color:#3fb950;font-weight:600;font-size:14px;margin-bottom:8px">🔑 GPG 签名提交</div>
+    <div style="color:#c9d1d9;font-size:12px;line-height:1.8">
+      • CommitEditor 添加 S 图标开关<br>
+      • 开启时 commit 加 --gpg-sign<br>
+      • 设置中可配置默认签名 key<br>
+      • 已有 GPG Key 管理基础
+    </div>
+  </div>
+</div>
+</div>

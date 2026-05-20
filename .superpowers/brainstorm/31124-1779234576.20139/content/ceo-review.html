@@ -1,0 +1,158 @@
+<h2>CEO Review — 设计文档审计</h2>
+<p class="subtitle">从产品价值、可行性、风险、范围四个维度审查</p>
+
+<div class="section">
+<h3>📊 总体评估</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:8px">
+  <div style="padding:16px;background:#3fb95015;border:1px solid #3fb95040;border-radius:8px;text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#3fb950">B+</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:4px">产品价值</div>
+  </div>
+  <div style="padding:16px;background:#58a6ff15;border:1px solid #58a6ff40;border-radius:8px;text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#58a6ff">B</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:4px">技术可行性</div>
+  </div>
+  <div style="padding:16px;background:#e3b34115;border:1px solid #e3b34140;border-radius:8px;text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#e3b341">C+</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:4px">风险控制</div>
+  </div>
+  <div style="padding:16px;background:#3fb95015;border:1px solid #3fb95040;border-radius:8px;text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#3fb950">A-</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:4px">范围控制</div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:20px">
+<h3>🟢 做得好的地方</h3>
+<div style="margin-top:8px;font-size:13px;color:#3fb950;line-height:2">
+  ✅ 范围控制清晰 — 明确排除了终端、AI、云端集成等，聚焦核心<br>
+  ✅ 依赖关系正确 — Diff → 冲突 → Rebase 的依赖链合理<br>
+  ✅ 分层渐进 — Phase 1 先统一视觉基准再补功能，避免返工<br>
+  ✅ 后端已有基础 — diff_service、merge_service、settings.rs 均已有代码，非零起步<br>
+  ✅ 不包含的范围明确 — 避免了范围蔓延
+</div>
+</div>
+
+<div class="section" style="margin-top:20px">
+<h3>🔴 关键风险（必须修复）</h3>
+
+<div class="cards">
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#f85149">R1: Phase 1 纯 UI 无功能增量 — 用户无感知</h3>
+      <p><strong>问题：</strong>Phase 1 仅改色系和视觉打磨，不增加任何功能。对用户来说「更新了但没什么不同」。</p>
+      <p><strong>建议：</strong>Phase 1 应与 Phase 2.4（Undo/Discard）并行交付。Discard 是当前最痛的缺失（StagingPanel 直接提示"不支持"），且不依赖 Diff 视图。这样 Phase 1 结束时用户能感知到功能变化。</p>
+      <p style="color:#58a6ff"><strong>修订：</strong>Phase 1 = UI 统一 + Undo/Discard + Cherry-Pick 右键入口</p>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#f85149">R2: 交互式 Rebase 技术复杂度被低估</h3>
+      <p><strong>问题：</strong>拖拽排序 + 操作切换 + 冲突自动跳转，涉及 git2 的 rebase API 和复杂状态机。GitKraken 团队花了好几版才做好。</p>
+      <p><strong>建议：</strong>MVP 版本先做「列表式交互 Rebase」（无拖拽，用上下箭头调整顺序），而不是一步到位做拖拽。拖拽作为 P1 增强后续迭代。</p>
+      <p style="color:#58a6ff"><strong>修订：</strong>Rebase MVP = 列表式操作 + 上下箭头排序 + squash/reword/drop 切换</p>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#f85149">R3: 三方冲突解决缺少降级方案</h3>
+      <p><strong>问题：</strong>三方 diff 依赖 Monaco Editor 的 3-way merge 能力，但 Monaco 原生只支持 2-way diff。需要自建三方视图或用第三方库。</p>
+      <p><strong>建议：</strong>MVP 先做「2-way + 手动编辑」模式（Ours vs Theirs，冲突区域高亮，底部编辑区手动合并），三方视图作为增强版迭代。2-way 已经能解决 90% 的冲突场景。</p>
+      <p style="color:#58a6ff"><strong>修订：</strong>冲突解决 MVP = 2-way diff + 手动编辑区 + Mark Resolved</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:20px">
+<h3>🟡 值得关注的问题</h3>
+
+<div class="cards">
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#e3b341">W1: Undo/Redo 基于 reflog 有边界风险</h3>
+      <p>reflog 是本地操作记录，但不是所有操作都能安全 undo（如已 push 的 commit undo 后会 diverge）。需要明确哪些操作允许 undo，哪些需要警告。</p>
+      <p style="color:#8b949e"><strong>建议：</strong>增加「已推送操作 undo 前强制确认」规则</p>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#e3b341">W2: 设置面板 9 个 Tab 同时实现范围偏大</h3>
+      <p>Phase 3 包含 9 个设置分类 + 6 个新页面，是三个 Phase 中工作量最大的。但设置面板不影响核心功能使用。</p>
+      <p style="color:#8b949e"><strong>建议：</strong>Phase 3 拆分为 3a（Git Config + 通用增强）和 3b（Proxy + Editor + Shortcuts + Hooks），3a 先交付</p>
+    </div>
+  </div>
+
+  <div class="card" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3 style="color:#e3b341">W3: CSS 变量迁移可能遗漏硬编码颜色</h3>
+      <p>组件中可能存在硬编码颜色值（如 Sidebar.vue 的 `border-gray-700`、`hover:bg-gray-800/50`），仅改 CSS 变量不够。</p>
+      <p style="color:#8b949e"><strong>建议：</strong>Phase 1 增加全局扫描，将所有硬编码颜色替换为 CSS 变量或 UnoCSS 语义 token</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:20px">
+<h3>📋 修订建议汇总</h3>
+<div style="margin-top:8px">
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <thead>
+    <tr style="border-bottom:2px solid #30363d">
+      <th style="text-align:left;padding:8px;color:#f85149">ID</th>
+      <th style="text-align:left;padding:8px">修订内容</th>
+      <th style="text-align:center;padding:8px">优先级</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #21262d">
+      <td style="padding:6px 8px;color:#f85149;font-weight:600">R1</td>
+      <td style="padding:6px 8px;color:#c9d1d9">Phase 1 合并 Undo/Discard + Cherry-Pick，确保有功能增量</td>
+      <td style="text-align:center;color:#f85149">必须</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d">
+      <td style="padding:6px 8px;color:#f85149;font-weight:600">R2</td>
+      <td style="padding:6px 8px;color:#c9d1d9">Rebase MVP 降级为列表式（无拖拽），拖拽作为 P1 增强</td>
+      <td style="text-align:center;color:#f85149">必须</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d">
+      <td style="padding:6px 8px;color:#f85149;font-weight:600">R3</td>
+      <td style="padding:6px 8px;color:#c9d1d9">冲突解决 MVP 降级为 2-way diff + 手动编辑，三方作为增强</td>
+      <td style="text-align:center;color:#f85149">必须</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d">
+      <td style="padding:6px 8px;color:#e3b341;font-weight:600">W1</td>
+      <td style="padding:6px 8px;color:#c9d1d9">Undo 增加已推送操作强制确认规则</td>
+      <td style="text-align:center;color:#e3b341">建议</td>
+    </tr>
+    <tr style="border-bottom:1px solid #21262d">
+      <td style="padding:6px 8px;color:#e3b341;font-weight:600">W2</td>
+      <td style="padding:6px 8px;color:#c9d1d9">Phase 3 拆分为 3a/3b，3a 先交付 Git Config + 通用增强</td>
+      <td style="text-align:center;color:#e3b341">建议</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 8px;color:#e3b341;font-weight:600">W3</td>
+      <td style="padding:6px 8px;color:#c9d1d9">Phase 1 增加硬编码颜色扫描和替换</td>
+      <td style="text-align:center;color:#e3b341">建议</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<div class="section" style="margin-top:20px;padding:16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+<h3 style="color:#58a6ff">修订后的 Phase 结构</h3>
+<div style="font-size:12px;color:#c9d1d9;line-height:2;margin-top:8px">
+  <strong style="color:#58a6ff">Phase 1</strong> — UI 统一 + Undo/Discard + Cherry-Pick + GPG 签名（有功能增量）<br>
+  <strong style="color:#3fb950">Phase 2a</strong> — Monaco Diff 视图（2-way）<br>
+  <strong style="color:#3fb950">Phase 2b</strong> — 冲突解决（2-way + 手动编辑 MVP）<br>
+  <strong style="color:#3fb950">Phase 2c</strong> — 交互式 Rebase（列表式 MVP）<br>
+  <strong style="color:#e3b341">Phase 3a</strong> — 设置面板重构 + Git Config + 通用增强<br>
+  <strong style="color:#e3b341">Phase 3b</strong> — Proxy + Editor + Shortcuts + Hooks<br>
+  <strong style="color:#bc8cff">增强迭代</strong> — 三方冲突解决 + 拖拽 Rebase + Command Palette 等
+</div>
+</div>

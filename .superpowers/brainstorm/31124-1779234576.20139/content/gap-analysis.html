@@ -1,0 +1,169 @@
+<h2>GitKraken vs 我们 — 功能对比与差距分析</h2>
+<p class="subtitle">对标 GitKraken 免费版核心功能，红色为缺失/未完成，绿色为已完成</p>
+
+<div class="section">
+<h3>🔴 P0 — 必须完成（核心 Git 操作缺失）</h3>
+<div class="options" data-multiselect>
+  <div class="option" data-choice="p0-1" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>Diff 视图（Monaco Diff）</h3>
+      <p>diff/ 目录完全为空。Commit详情中只能看文件列表，无法查看具体代码差异。GitKraken 核心体验。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-2" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>交互式 Rebase</h3>
+      <p>RebaseDialog 仅有壳，无法拖拽排序 commit、squash、reword。GitKraken 拖拽式 rebase 是杀手功能。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-3" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>Cherry-Pick</h3>
+      <p>右键菜单无 Cherry-Pick 选项。GitKraken 右键 commit 即可 cherry-pick。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-4" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>Undo / Redo</h3>
+      <p>工具栏 Undo/Redo 按钮始终 disabled。GitKraken 一键撤销/重做 Git 操作。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-5" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>Discard 丢弃更改</h3>
+      <p>StagingPanel 中 discard 功能仅 toast 提示"不支持"。无法丢弃单个文件或全部未暂存更改。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-6" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>内置代码编辑器</h3>
+      <p>无法在 diff 视图中直接编辑文件解决冲突。GitKraken 内置编辑器可原地修改。</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section">
+<h3>🔴 P0 — 冲突解决（核心体验缺失）</h3>
+<div class="options" data-multiselect>
+  <div class="option" data-choice="p0-7" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>三方合并冲突解决</h3>
+      <p>ConflictResolver 仅 3 个按钮（Ours/Theirs/Base），无真正的三栏 diff 对比。ThreeWayDiff 组件为空壳。GitKraken 有完整的 3 栏可视化冲突解决。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p0-8" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#dc2626">!</div>
+    <div class="content">
+      <h3>合并冲突预测提示</h3>
+      <p>无 Predictive Merge Conflict Alerts。GitKraken 会在合并前预测冲突数量。</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section">
+<h3>🟡 P1 — 重要但非紧急</h3>
+<div class="options" data-multiselect>
+  <div class="option" data-choice="p1-1" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>File History 文件历史</h3>
+      <p>无法查看单个文件的完整修改历史。GitKraken 右键文件可查看 File History。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p1-2" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>Command Palette 命令面板</h3>
+      <p>无 Ctrl+Shift+P 快捷命令面板。GitKraken 的 Command Palette 可快速执行任何操作。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p1-3" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>Git LFS 支持</h3>
+      <p>无 Git LFS 管理。大文件仓库必需。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p1-4" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>.gitignore 可视化编辑</h3>
+      <p>无 .gitignore 管理。GitKraken 可视化管理忽略规则。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p1-5" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>GPG 签名提交</h3>
+      <p>GPG Key 管理界面有，但 CommitEditor 无 GPG 签名选项。GitKraken 支持 GPG 签名。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="p1-6" onclick="toggleSelect(this)">
+    <div class="letter" style="background:#eab308">~</div>
+    <div class="content">
+      <h3>拖拽式 Push/Pull</h3>
+      <p>无法拖拽分支到远程推送。GitKraken 可拖拽分支到 remote 推送。</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section">
+<h3>🟢 已完成的功能</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Commit Graph 可视化</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ 暂存区 Stage/Unstage</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Commit 提交</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Fetch / Pull / Push</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Branch 创建/切换/删除</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Tag 管理</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Stash 列表（基本）</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ SSH Key 生成/导入/管理</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ GPG Key 管理（查看/删除）</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Blame 视图</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Submodule 列表</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Worktree 管理</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Clone 仓库</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ 多仓库 Tab 切换</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ Dark/Light 主题</div>
+  <div style="padding:8px 12px;background:#16a34a20;border:1px solid #16a34a40;border-radius:6px;color:#4ade80;font-size:13px">✅ 中/英国际化</div>
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⚙️ 设置面板 — 对标 GitKraken 的缺失项</h3>
+<p class="subtitle">当前设置仅 3 个 Tab（通用/SSH/GPG），GitKraken 设置远超于此</p>
+<div style="margin-top:12px">
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead>
+    <tr style="border-bottom:2px solid #3b3b3b">
+      <th style="text-align:left;padding:8px;color:#a78bfa">GitKraken 设置项</th>
+      <th style="text-align:center;padding:8px;color:#a78bfa">我们</th>
+      <th style="text-align:left;padding:8px;color:#a78bfa">说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">General — 主题/语言/默认仓库</td><td style="text-align:center">✅</td><td style="padding:6px 8px;color:#888">有主题+语言</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Git Config — user.name / user.email</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">完全缺失，需直接抄</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">SSH Keys</td><td style="text-align:center">✅</td><td style="padding:6px 8px;color:#888">已有</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">GPG Keys</td><td style="text-align:center">✅</td><td style="padding:6px 8px;color:#888">已有</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Authentication — GitHub/GitLab/Bitbucket 登录</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">需集成 OAuth</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Proxy 设置</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">企业用户必须</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Editor — 默认编辑器/差异工具</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">无法配置外部 diff 工具</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Commit Template — 提交模板</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">当前仅硬编码模板</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Git Hooks 管理</td><td style="text-align:center;color:#eab308;font-weight:bold">~</td><td style="padding:6px 8px;color:#888">HookDialog 存在但功能不完整</td></tr>
+    <tr style="border-bottom:1px solid #2a2a2a"><td style="padding:6px 8px">Git Flow 配置</td><td style="text-align:center;color:#eab308;font-weight:bold">~</td><td style="padding:6px 8px;color:#888">GitFlowDialog 存在但未集成</td></tr>
+    <tr><td style="padding:6px 8px">Shortcut Keys — 快捷键自定义</td><td style="text-align:center;color:#dc2626;font-weight:bold">❌</td><td style="padding:6px 8px;color:#888">无快捷键设置面板</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
