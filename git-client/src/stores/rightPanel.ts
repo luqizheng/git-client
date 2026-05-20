@@ -7,7 +7,7 @@ export interface CommitDetail {
   files: FileDiff[]
 }
 
-export type RightPanelMode = 'commit' | 'staging' | null
+export type RightPanelMode = 'commit' | 'staging' | 'diff' | null
 
 export const useRightPanelStore = defineStore('rightPanel', () => {
   const visible = ref(false)
@@ -22,13 +22,17 @@ export const useRightPanelStore = defineStore('rightPanel', () => {
   const unstagedFiles = ref<FileDiff[]>([])
   const stagedFiles = ref<FileDiff[]>([])
 
+  const diffFiles = ref<FileDiff[]>([])
+  const diffOldCommitId = ref<string | null>(null)
+  const diffNewCommitId = ref<string | null>(null)
+
   const commitMessage = ref({ summary: '', description: '' })
   const amendMode = ref(false)
 
   const MIN_WIDTH = 240
   const MAX_WIDTH = 480
 
-  function showPanel(m: 'commit' | 'staging', sha?: string) {
+  function showPanel(m: 'commit' | 'staging' | 'diff', sha?: string) {
     mode.value = m
     visible.value = true
     if (m === 'commit' && sha) {
@@ -64,13 +68,20 @@ export const useRightPanelStore = defineStore('rightPanel', () => {
     stagedFiles.value = staged
   }
 
+  function setDiffData(files: FileDiff[], oldCommitId?: string, newCommitId?: string) {
+    diffFiles.value = files
+    diffOldCommitId.value = oldCommitId || null
+    diffNewCommitId.value = newCommitId || null
+  }
+
   return {
     visible, width, isDragging, mode,
     selectedCommitSha, commitDetail, changedFiles,
     unstagedFiles, stagedFiles,
+    diffFiles, diffOldCommitId, diffNewCommitId,
     commitMessage, amendMode,
     MIN_WIDTH, MAX_WIDTH,
     showPanel, hidePanel, togglePanel, setWidth,
-    setCommitDetail, setStagingData,
+    setCommitDetail, setStagingData, setDiffData,
   }
 })

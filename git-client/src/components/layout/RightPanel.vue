@@ -15,20 +15,40 @@
       >
         Commit Detail
       </button>
+      <button
+        class="panel-tab"
+        :class="{ 'tab-active': rightPanel.mode === 'diff' }"
+        @click="rightPanel.mode = 'diff'"
+      >
+        Diff
+      </button>
     </div>
     <div class="flex-1 overflow-hidden">
       <CommitDetails v-if="rightPanel.mode === 'commit'" />
       <StagingPanel v-else-if="rightPanel.mode === 'staging'" />
+      <FileDiffPanel
+        v-else-if="rightPanel.mode === 'diff'"
+        :repo-path="repoPath"
+        :files="rightPanel.diffFiles"
+        :old-commit-id="rightPanel.diffOldCommitId || undefined"
+        :new-commit-id="rightPanel.diffNewCommitId || undefined"
+      />
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRightPanelStore } from '../../stores/rightPanel'
+import { useRepoStore } from '../../stores/repo'
 import CommitDetails from '../commit/CommitDetails.vue'
 import StagingPanel from '../staging/StagingPanel.vue'
+import { FileDiffPanel } from '../diff'
 
 const rightPanel = useRightPanelStore()
+const repoStore = useRepoStore()
+
+const repoPath = computed(() => repoStore.currentRepo?.path || '')
 </script>
 
 <style scoped>
