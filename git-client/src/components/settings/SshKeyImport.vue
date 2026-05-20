@@ -2,26 +2,26 @@
   <Dialog :open="showModal" @update:open="showModal = $event">
     <DialogContent class="sm:max-w-[500px]">
       <DialogHeader>
-        <DialogTitle>导入 SSH 密钥</DialogTitle>
+        <DialogTitle>{{ t('sshKeys.import') }}</DialogTitle>
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label class="text-right">密钥名称</Label>
-          <Input v-model="form.name" placeholder="例如: imported-key" class="col-span-3" />
+          <Label class="text-right">{{ t('sshKeys.name') }}</Label>
+          <Input v-model="form.name" :placeholder="t('sshKeys.namePlaceholder')" class="col-span-3" />
         </div>
         <div class="grid grid-cols-4 items-start gap-4">
-          <Label class="text-right pt-2">私钥文件</Label>
+          <Label class="text-right pt-2">{{ t('sshKeys.privateKeyFile') }}</Label>
           <div class="col-span-3 space-y-2">
             <Input v-model="form.sourcePath" placeholder="/path/to/private/key" readonly />
-            <Button variant="outline" @click="selectFile">选择文件</Button>
+            <Button variant="outline" @click="selectFile">{{ t('sshKeys.actions.selectFile') }}</Button>
           </div>
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="showModal = false">取消</Button>
+        <Button variant="outline" @click="showModal = false">{{ t('sshKeys.actions.cancel') }}</Button>
         <Button :disabled="loading" @click="handleImport">
           <span v-if="loading" class="mr-2">...</span>
-          导入
+          {{ t('sshKeys.import') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -36,7 +36,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { open } from '@tauri-apps/plugin-dialog';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { sshKeyApi } from '../../utils/keys';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   modelValue: boolean;
@@ -83,23 +86,23 @@ async function selectFile() {
 
 async function handleImport() {
   if (!form.value.name.trim()) {
-    toast.warning('请输入密钥名称');
+    toast.warning(t('sshKeys.messages.enterName'));
     return;
   }
   if (!form.value.sourcePath) {
-    toast.warning('请选择私钥文件');
+    toast.warning(t('sshKeys.messages.selectKeyFile'));
     return;
   }
 
   loading.value = true;
   try {
     await sshKeyApi.import(form.value.sourcePath, form.value.name);
-    toast.success('密钥导入成功！');
+    toast.success(t('sshKeys.messages.importSuccess'));
     showModal.value = false;
     form.value = { name: '', sourcePath: '' };
     emit('success');
   } catch (e) {
-    toast.error(`导入失败: ${e}`);
+    toast.error(t('sshKeys.messages.importFailed'));
   } finally {
     loading.value = false;
   }

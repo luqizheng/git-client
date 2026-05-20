@@ -5,17 +5,17 @@
       <div>
         <div class="font-medium">{{ gpgKey.user_ids[0] || gpgKey.id }}</div>
         <div class="text-xs text-muted-foreground">
-          {{ gpgKey.algorithm }} {{ gpgKey.length }}�?
-          �?{{ gpgKey.fingerprint.substring(0, 16) }}...
+          {{ gpgKey.algorithm }} {{ gpgKey.length }} -
+          {{ gpgKey.fingerprint.substring(0, 16) }}...
         </div>
         <div v-if="gpgKey.expires_at" class="text-xs text-muted-foreground">
-          过期: {{ formatDate(gpgKey.expires_at) }}
+          {{ t('gpgKeys.expiresAt') }} {{ formatDate(gpgKey.expires_at) }}
         </div>
       </div>
     </div>
     <div class="flex gap-2">
-      <Button size="sm" variant="outline" @click="$emit('export', gpgKey)">导出公钥</Button>
-      <Button size="sm" variant="destructive" @click="confirmDelete">删除</Button>
+      <Button size="sm" variant="outline" @click="$emit('export', gpgKey)">{{ t('gpgKeys.actions.exportPublic') }}</Button>
+      <Button size="sm" variant="destructive" @click="confirmDelete">{{ t('gpgKeys.actions.delete') }}</Button>
     </div>
   </div>
 </template>
@@ -23,7 +23,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { ShieldCheckmark as ShieldIcon } from '@vicons/ionicons5';
+import { useI18n } from 'vue-i18n';
 import type { GpgKey } from '../../types/key';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   gpgKey: GpgKey;
@@ -39,7 +42,7 @@ function formatDate(dateStr: string) {
 }
 
 function confirmDelete() {
-  if (confirm('确定要删除此 GPG 密钥吗？')) {
+  if (confirm(t('gpgKeys.messages.deleteConfirm'))) {
     emit('delete', props.gpgKey);
   }
 }

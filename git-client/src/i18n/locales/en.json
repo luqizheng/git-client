@@ -51,19 +51,30 @@
   "settings": {
     "title": "Settings",
     "tabs": {
-      "general": "General",
+      "general": "General Settings",
       "sshKeys": "SSH Keys",
       "gpgKeys": "GPG Keys"
     },
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "themes": {
+      "dark": "Dark",
+      "light": "Light"
+    },
+    "languages": {
+      "zh": "中文",
+      "en": "English"
+    }
   },
   "sshKeys": {
     "title": "SSH Key Management",
     "generate": "Generate New Key",
     "import": "Import Key",
     "noKeys": "No SSH keys",
+    "privateKeyFile": "Private Key File",
+    "createdAt": "Created on",
     "algorithm": {
+      "label": "Algorithm",
       "ed25519": "Ed25519 (Recommended)",
       "rsa": "RSA 4096",
       "ecdsa": "ECDSA"
@@ -93,6 +104,10 @@
       "importFailed": "Import failed",
       "deleteFailed": "Delete failed",
       "loadFailed": "Failed to load keys",
+      "copyFailed": "Copy failed",
+      "addToAgentFailed": "Add failed",
+      "removeFromAgentFailed": "Remove failed",
+      "deleteSuccess": "Key deleted",
       "enterName": "Please enter key name",
       "selectKeyFile": "Please select private key file"
     }
@@ -101,6 +116,7 @@
     "title": "GPG Key Management",
     "noKeys": "No GPG keys",
     "notInstalled": "GPG is not installed. Please install GPG tools first.",
+    "expiresAt": "Expires:",
     "actions": {
       "exportPublic": "Export Public Key",
       "delete": "Delete"

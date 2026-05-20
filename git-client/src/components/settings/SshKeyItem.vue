@@ -5,22 +5,22 @@
       <div>
         <div class="font-medium">{{ sshKey.name }}</div>
         <div class="text-xs text-muted-foreground">
-          {{ algorithmLabel }} �?{{ sshKey.fingerprint.substring(0, 16) }}...
+          {{ algorithmLabel }} - {{ sshKey.fingerprint.substring(0, 16) }}...
           <Badge v-if="isInAgent" variant="default" class="ml-1 text-xs">Agent</Badge>
         </div>
-        <div class="text-xs text-muted-foreground">创建�?{{ formatDate(sshKey.created_at) }}</div>
+        <div class="text-xs text-muted-foreground">{{ t('sshKeys.createdAt') }} {{ formatDate(sshKey.created_at) }}</div>
       </div>
     </div>
     <div class="flex gap-2">
-      <Button size="sm" variant="outline" @click="$emit('view', sshKey)">查看公钥</Button>
-      <Button size="sm" variant="outline" @click="$emit('copy', sshKey)">复制</Button>
+      <Button size="sm" variant="outline" @click="$emit('view', sshKey)">{{ t('sshKeys.actions.viewPublic') }}</Button>
+      <Button size="sm" variant="outline" @click="$emit('copy', sshKey)">{{ t('sshKeys.actions.copy') }}</Button>
       <Button
         v-if="!isInAgent"
         size="sm"
         variant="default"
         @click="$emit('addToAgent', sshKey)"
       >
-        添加�?Agent
+        {{ t('sshKeys.actions.addToAgent') }}
       </Button>
       <Button
         v-else
@@ -28,9 +28,9 @@
         variant="outline"
         @click="$emit('removeFromAgent', sshKey)"
       >
-        移除
+        {{ t('sshKeys.actions.removeFromAgent') }}
       </Button>
-      <Button size="sm" variant="destructive" @click="confirmDelete">删除</Button>
+      <Button size="sm" variant="destructive" @click="confirmDelete">{{ t('sshKeys.actions.delete') }}</Button>
     </div>
   </div>
 </template>
@@ -40,8 +40,11 @@ import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { KeyOutline as KeyIcon } from '@vicons/ionicons5';
+import { useI18n } from 'vue-i18n';
 import type { SshKey } from '../../types/key';
 import { SshAlgorithm } from '../../types/key';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   sshKey: SshKey;
@@ -74,7 +77,7 @@ function formatDate(dateStr: string) {
 }
 
 function confirmDelete() {
-  if (confirm(`确定要删除密�?"${props.sshKey.name}" 吗？此操作不可撤销。`)) {
+  if (confirm(t('sshKeys.messages.deleteConfirm', { name: props.sshKey.name }))) {
     emit('delete', props.sshKey);
   }
 }

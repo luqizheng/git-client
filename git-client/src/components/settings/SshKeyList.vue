@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-2">
     <div v-if="keys.length === 0" class="text-center py-8 text-muted-foreground">
-      暂无 SSH 密钥
+      {{ t('sshKeys.noKeys') }}
     </div>
     <ssh-key-item
       v-for="key in keys"
@@ -20,9 +20,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import SshKeyItem from './SshKeyItem.vue';
 import type { SshKey } from '../../types/key';
 import { sshKeyApi } from '../../utils/keys';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   keys: SshKey[];
@@ -56,9 +59,9 @@ async function loadAgentKeys() {
 async function handleView(key: SshKey) {
   try {
     const content = await sshKeyApi.getPublicKey(key.public_key_path);
-    toast.info(`公钥: ${content.substring(0, 50)}...`);
+    toast.info(`${t('sshKeys.actions.viewPublic')}: ${content.substring(0, 50)}...`);
   } catch (e) {
-    toast.error(`获取公钥失败: ${e}`);
+    toast.error(t('sshKeys.messages.loadFailed'));
   }
 }
 
@@ -66,39 +69,39 @@ async function handleCopy(key: SshKey) {
   try {
     const content = await sshKeyApi.getPublicKey(key.public_key_path);
     await navigator.clipboard.writeText(content);
-    toast.success('公钥已复制到剪贴�?);
+    toast.success(t('sshKeys.messages.copied'));
   } catch (e) {
-    toast.error(`复制失败: ${e}`);
+    toast.error(t('sshKeys.messages.copyFailed'));
   }
 }
 
 async function handleDelete(key: SshKey) {
   try {
     await sshKeyApi.delete(key.id);
-    toast.success('密钥已删�?);
+    toast.success(t('sshKeys.messages.deleteSuccess'));
     emit('refresh');
   } catch (e) {
-    toast.error(`删除失败: ${e}`);
+    toast.error(t('sshKeys.messages.deleteFailed'));
   }
 }
 
 async function handleAddToAgent(key: SshKey) {
   try {
     await sshKeyApi.addToAgent(key.private_key_path);
-    toast.success('密钥已添加到 ssh-agent');
+    toast.success(t('sshKeys.messages.addToAgentSuccess'));
     await loadAgentKeys();
   } catch (e) {
-    toast.error(`添加失败: ${e}`);
+    toast.error(t('sshKeys.messages.addToAgentFailed'));
   }
 }
 
 async function handleRemoveFromAgent(key: SshKey) {
   try {
     await sshKeyApi.removeFromAgent(key.public_key_path);
-    toast.success('密钥已从 ssh-agent 移除');
+    toast.success(t('sshKeys.messages.removeFromAgentSuccess'));
     await loadAgentKeys();
   } catch (e) {
-    toast.error(`移除失败: ${e}`);
+    toast.error(t('sshKeys.messages.removeFromAgentFailed'));
   }
 }
 

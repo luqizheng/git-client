@@ -51,19 +51,30 @@
   "settings": {
     "title": "设置",
     "tabs": {
-      "general": "通用",
+      "general": "通用设置",
       "sshKeys": "SSH 密钥",
       "gpgKeys": "GPG 密钥"
     },
     "theme": "主题",
-    "language": "语言"
+    "language": "语言",
+    "themes": {
+      "dark": "深色",
+      "light": "浅色"
+    },
+    "languages": {
+      "zh": "中文",
+      "en": "English"
+    }
   },
   "sshKeys": {
     "title": "SSH 密钥管理",
     "generate": "生成新密钥",
     "import": "导入密钥",
     "noKeys": "暂无 SSH 密钥",
+    "privateKeyFile": "私钥文件",
+    "createdAt": "创建于",
     "algorithm": {
+      "label": "算法",
       "ed25519": "Ed25519 (推荐)",
       "rsa": "RSA 4096",
       "ecdsa": "ECDSA"
@@ -93,6 +104,10 @@
       "importFailed": "导入失败",
       "deleteFailed": "删除失败",
       "loadFailed": "加载密钥失败",
+      "copyFailed": "复制失败",
+      "addToAgentFailed": "添加失败",
+      "removeFromAgentFailed": "移除失败",
+      "deleteSuccess": "删除成功",
       "enterName": "请输入密钥名称",
       "selectKeyFile": "请选择私钥文件"
     }
@@ -101,6 +116,7 @@
     "title": "GPG 密钥管理",
     "noKeys": "暂无 GPG 密钥",
     "notInstalled": "GPG 未安装，请先安装 GPG 工具",
+    "expiresAt": "过期:",
     "actions": {
       "exportPublic": "导出公钥",
       "delete": "删除"

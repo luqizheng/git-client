@@ -2,36 +2,36 @@
   <Dialog :open="showModal" @update:open="showModal = $event">
     <DialogContent class="sm:max-w-[500px]">
       <DialogHeader>
-        <DialogTitle>生成新 SSH 密钥</DialogTitle>
+        <DialogTitle>{{ t('sshKeys.generate') }}</DialogTitle>
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label class="text-right">密钥名称</Label>
-          <Input v-model="form.name" placeholder="例如: work-key" class="col-span-3" />
+          <Label class="text-right">{{ t('sshKeys.name') }}</Label>
+          <Input v-model="form.name" :placeholder="t('sshKeys.namePlaceholder')" class="col-span-3" />
         </div>
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label class="text-right">算法</Label>
+          <Label class="text-right">{{ t('sshKeys.algorithm.label') }}</Label>
           <Select v-model="form.algorithm" class="col-span-3">
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem :value="SshAlgorithm.Ed25519">Ed25519 (推荐)</SelectItem>
-              <SelectItem :value="SshAlgorithm.Rsa">RSA 4096</SelectItem>
-              <SelectItem :value="SshAlgorithm.Ecdsa">ECDSA</SelectItem>
+              <SelectItem :value="SshAlgorithm.Ed25519">{{ t('sshKeys.algorithm.ed25519') }}</SelectItem>
+              <SelectItem :value="SshAlgorithm.Rsa">{{ t('sshKeys.algorithm.rsa') }}</SelectItem>
+              <SelectItem :value="SshAlgorithm.Ecdsa">{{ t('sshKeys.algorithm.ecdsa') }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label class="text-right">注释 (可选)</Label>
-          <Input v-model="form.comment" placeholder="例如: user@example.com" class="col-span-3" />
+          <Label class="text-right">{{ t('sshKeys.comment') }}</Label>
+          <Input v-model="form.comment" :placeholder="t('sshKeys.commentPlaceholder')" class="col-span-3" />
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="showModal = false">取消</Button>
+        <Button variant="outline" @click="showModal = false">{{ t('sshKeys.actions.cancel') }}</Button>
         <Button :disabled="loading" @click="handleGenerate">
           <span v-if="loading" class="mr-2">...</span>
-          生成
+          {{ t('sshKeys.actions.generate') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -46,8 +46,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { sshKeyApi } from '../../utils/keys';
 import { SshAlgorithm } from '../../types/key';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   modelValue: boolean;
@@ -77,7 +80,7 @@ watch(showModal, (val) => {
 
 async function handleGenerate() {
   if (!form.value.name.trim()) {
-    toast.warning('请输入密钥名称');
+    toast.warning(t('sshKeys.messages.enterName'));
     return;
   }
 
@@ -88,12 +91,12 @@ async function handleGenerate() {
       form.value.algorithm,
       form.value.comment || undefined
     );
-    toast.success('密钥生成成功！请记得备份私钥。');
+    toast.success(t('sshKeys.messages.generateSuccess'));
     showModal.value = false;
     form.value = { name: '', algorithm: SshAlgorithm.Ed25519, comment: '' };
     emit('success');
   } catch (e) {
-    toast.error(`生成失败: ${e}`);
+    toast.error(t('sshKeys.messages.generateFailed'));
   } finally {
     loading.value = false;
   }

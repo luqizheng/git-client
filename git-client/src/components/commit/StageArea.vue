@@ -7,7 +7,7 @@
         :key="'staged-' + file.path"
         class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
       >
-        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="unstage(file.path)">âˆ?/Button>
+        <Button size="icon" variant="ghost" class="h-5 w-5" @click.stop="unstage(file.path)">-</Button>
         <span class="ml-1 text-accent-green">{{ statusIcon(file.status) }}</span>
         <span class="ml-1 text-foreground truncate">{{ file.path }}</span>
       </div>

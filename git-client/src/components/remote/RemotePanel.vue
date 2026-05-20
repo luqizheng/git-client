@@ -18,7 +18,7 @@
     <div v-for="remote in remotes" :key="remote.name"
       class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer"
     >
-      <span class="text-purple-400 mr-1">�?/span>
+      <span class="text-purple-400 mr-1"> if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' } ?/span>
       <span class="text-foreground">{{ remote.name }}</span>
       <span class="ml-1 text-muted-foreground truncate">{{ remote.url }}</span>
     </div>

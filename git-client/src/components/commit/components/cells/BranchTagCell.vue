@@ -24,7 +24,7 @@ const extraCount = computed(() => Math.max(0, props.refs.length - 3))
       :class="ref.ref_type === 'tag' ? 'bg-secondary/20 text-secondary border border-secondary/50' : 'bg-primary/20 text-primary border border-primary/50'"
     >
       {{ ref.name }}
-      <span v-if="ref.is_head" class="text-accent ml-0.5">◆</span>
+      <span v-if="ref.is_head" class="text-accent ml-0.5"> if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' } </span>
     </span>
     <span v-if="extraCount > 0" class="text-xs text-muted-foreground">+{{ extraCount }}</span>
   </div>
