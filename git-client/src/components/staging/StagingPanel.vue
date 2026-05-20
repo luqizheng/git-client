@@ -93,12 +93,26 @@ async function handleUnstageAll() {
   await refreshStaging()
 }
 
-function handleDiscard(_path: string) {
-  toast.warning('Discard is not yet supported')
+async function handleDiscard(path: string) {
+  if (!repo.activeRepoPath) return
+  try {
+    await invoke<void>('discard_file', { repoPath: repo.activeRepoPath, filePath: path })
+    toast.success(`Discarded: ${path}`)
+    await refreshStaging()
+  } catch (e) {
+    toast.error(`Discard failed: ${e}`)
+  }
 }
 
-function handleDiscardAll() {
-  toast.warning('Discard is not yet supported')
+async function handleDiscardAll() {
+  if (!repo.activeRepoPath) return
+  try {
+    await invoke<void>('discard_all', { repoPath: repo.activeRepoPath })
+    toast.success('All changes discarded')
+    await refreshStaging()
+  } catch (e) {
+    toast.error(`Discard all failed: ${e}`)
+  }
 }
 
 function handleSelectFile(path: string) {

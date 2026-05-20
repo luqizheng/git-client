@@ -41,10 +41,10 @@
     </div>
 
     <div class="tab-bar-center">
-      <Button variant="ghost" size="icon" class="bar-btn h-6 w-6" disabled title="Undo">
+      <Button variant="ghost" size="icon" class="bar-btn h-6 w-6" :disabled="!repo.activeRepoPath || undoLoading" title="Undo" @click="handleUndo">
         <ArrowUndoOutline class="w-3.5 h-3.5" />
       </Button>
-      <Button variant="ghost" size="icon" class="bar-btn h-6 w-6" disabled title="Redo">
+      <Button variant="ghost" size="icon" class="bar-btn h-6 w-6" :disabled="!repo.activeRepoPath || redoLoading" title="Redo" @click="handleRedo">
         <ArrowRedoOutline class="w-3.5 h-3.5" />
       </Button>
 
@@ -127,6 +127,7 @@ import { useRepoStore } from '../../stores/repo'
 import { useBranchesStore } from '../../stores/branches'
 import { useCommitsStore } from '../../stores/commits'
 import { useRemoteStore } from '../../stores/remote'
+import { invoke } from '../../utils/ipc'
 
 const emit = defineEmits(['fetch', 'pull', 'push', 'create-branch', 'stash', 'pop-stash'])
 
@@ -135,6 +136,9 @@ const branches = useBranchesStore()
 const commits = useCommitsStore()
 const remote = useRemoteStore()
 const showSettings = ref(false)
+const undoLoading = ref(false)
+const redoLoading = ref(false)
+const reflogIndex = ref(0)
 
 const isSyncing = computed(() => {
   if (!repo.activeRepoPath) return false
@@ -193,6 +197,36 @@ async function handleRefresh() {
     commits.fetchLogs(repo.activeRepoPath),
     branches.fetchBranches(repo.activeRepoPath),
   ])
+}
+
+async function handleUndo() {
+  if (!repo.activeRepoPath) return
+  undoLoading.value = true
+  try {
+    await invoke<void>('undo', { repoPath: repo.activeRepoPath })
+    reflogIndex.value = Math.max(0, reflogIndex.value + 1)
+    await handleRefresh()
+    toast.success('Undo successful')
+  } catch (e) {
+    toast.error(`Undo failed: ${e}`)
+  } finally {
+    undoLoading.value = false
+  }
+}
+
+async function handleRedo() {
+  if (!repo.activeRepoPath) return
+  redoLoading.value = true
+  try {
+    await invoke<void>('redo', { repoPath: repo.activeRepoPath, currentIndex: reflogIndex.value })
+    reflogIndex.value = Math.max(0, reflogIndex.value - 1)
+    await handleRefresh()
+    toast.success('Redo successful')
+  } catch (e) {
+    toast.error(`Redo failed: ${e}`)
+  } finally {
+    redoLoading.value = false
+  }
 }
 </script>
 
