@@ -277,15 +277,18 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 }
 
 .row-selected {
-  background: rgba(14, 99, 156, 0.3);
+  box-shadow: inset 3px 0 0 var(--primary);
+  background: rgba(88, 166, 255, 0.08);
 }
 
 .row-selected:hover {
-  background: rgba(14, 99, 156, 0.35);
+  background: rgba(88, 166, 255, 0.12);
 }
 
 .wip-row {
   position: relative;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
 }
 
 .row-graph-placeholder {
@@ -357,23 +360,23 @@ function getRefDisplayName(ref: { name: string; ref_type: string }): string {
 }
 
 .ref-main {
-  background: var(--accent-green);
+  background: #3fb950;
   color: #fff;
 }
 
 .ref-branch {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
+  background: #58a6ff;
+  color: #fff;
 }
 
 .ref-remote {
-  background: var(--accent-purple);
+  background: #bc8cff;
   color: #fff;
 }
 
 .ref-tag {
-  background: var(--accent-yellow);
-  color: #1b1b1b;
+  background: #e3b341;
+  color: #1f2328;
 }
 
 .wip-label {
