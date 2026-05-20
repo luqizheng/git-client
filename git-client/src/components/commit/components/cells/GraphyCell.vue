@@ -1,82 +1,67 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Commit } from '../../../../types/git'
+import { computeGraphLayout, COLUMN_WIDTH, ROW_HEIGHT, CENTER_X, CIRCLE_RADIUS } from '../../../../utils/graphLayout'
 
-defineProps<{
-  commit: Commit
+const props = defineProps<{
+  commits: Commit[]
 }>()
+
+const layout = computed(() => computeGraphLayout(props.commits))
+const verticalSegments = computed(() => layout.value.segments.filter(s => s.type === 'vertical'))
+const horizontalSegments = computed(() => layout.value.segments.filter(s => s.type === 'horizontal'))
+const nodesWithRefs = computed(() => layout.value.nodes.filter(n => n.hasRefs))
 </script>
 
 <template>
-  <div class="graphy-cell flex items-center justify-center h-full">
-    <svg width="40" height="24" viewBox="0 0 40 24" class="overflow-visible">
-      <g :transform="`translate(20, 12)`">
-        <circle
-          r="6"
-          class="fill-primary stroke-border stroke-1"
-        />
-        <circle
-          v-if="commit.refs && commit.refs.length > 0"
-          r="8"
-          class="fill-transparent stroke-green-500/50 stroke-1"
-        />
-      </g>
-      <g v-if="commit.parent_ids && commit.parent_ids.length > 0">
-        <line
-          v-if="commit.parent_ids.length === 1"
-          x1="20"
-          y1="18"
-          x2="20"
-          y2="24"
-          class="stroke-border stroke-1"
-        />
-        <line
-          v-if="commit.parent_ids.length >= 2"
-          x1="20"
-          y1="18"
-          x2="8"
-          y2="24"
-          class="stroke-border stroke-1"
-        />
-        <line
-          v-if="commit.parent_ids.length >= 2"
-          x1="20"
-          y1="18"
-          x2="32"
-          y2="24"
-          class="stroke-border stroke-1"
-        />
-        <line
-          v-if="commit.parent_ids.length === 1"
-          x1="20"
-          y1="6"
-          x2="20"
-          y2="0"
-          class="stroke-border stroke-1"
-        />
-        <line
-          v-if="commit.parent_ids.length === 1"
-          x1="20"
-          y1="6"
-          x2="8"
-          y2="0"
-          class="stroke-border stroke-0.5 stroke-dashed"
-        />
-      </g>
-      <g v-else>
-        <line
-          x1="20"
-          y1="6"
-          x2="20"
-          y2="0"
-          class="stroke-border stroke-1"
-        />
-      </g>
-    </svg>
-  </div>
+  <svg
+    :width="layout.columns * COLUMN_WIDTH"
+    :height="commits.length * ROW_HEIGHT"
+    :viewBox="`0 0 ${layout.columns * COLUMN_WIDTH} ${commits.length * ROW_HEIGHT}`"
+    class="overflow-visible"
+  >
+    <line
+      v-for="seg in verticalSegments"
+      :key="`v-${seg.x1}-${seg.y1}`"
+      :x1="seg.x1" :y1="seg.y1" :x2="seg.x2" :y2="seg.y2"
+      :stroke="seg.color"
+      stroke-width="2"
+    />
+
+    <line
+      v-for="seg in horizontalSegments"
+      :key="`h-${seg.x1}-${seg.y1}`"
+      :x1="seg.x1" :y1="seg.y1" :x2="seg.x2" :y2="seg.y2"
+      :stroke="seg.color"
+      stroke-width="2"
+    />
+
+    <circle
+      v-for="node in layout.nodes"
+      :key="node.commitId"
+      :cx="node.column * COLUMN_WIDTH + CENTER_X"
+      :cy="node.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2"
+      :r="CIRCLE_RADIUS"
+      :fill="node.color"
+      :stroke="node.color"
+      stroke-width="2"
+    />
+
+    <circle
+      v-for="node in nodesWithRefs"
+      :key="`ref-${node.commitId}`"
+      :cx="node.column * COLUMN_WIDTH + CENTER_X"
+      :cy="node.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2"
+      :r="CIRCLE_RADIUS + 2"
+      fill="transparent"
+      stroke="rgba(63, 185, 80, 0.5)"
+      stroke-width="2"
+    />
+  </svg>
 </template>
 
 <style scoped>
-.graphy-cell {
-  min-width: 40px;
+svg {
+  min-width: v-bind("`${COLUMN_WIDTH}px`");
 }
 </style>
