@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@monaco-editor/loader": "^1.7.0",
     "@tanstack/vue-virtual": "^3.13.24",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.7.1",
@@ -25,6 +26,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
+    "monaco-editor": "^0.55.1",
     "pinia": "^3.0.4",
     "reka-ui": "^2.9.7",
     "tailwind-merge": "^3.6.0",
