@@ -72,5 +72,11 @@ export const useCommitsStore = defineStore('commits', () => {
     await invoke('cherry_pick', { repo_path: repoPath, commit_id: commitId })
   }
 
-  return { fetchLogs, selectCommit, clearCommits, filterByBranch, clearBranchFilter, cherryPick }
+  function isLoading(repoPath: string): boolean {
+    const repo = useRepoStore()
+    const openRepo = repo.openRepos.get(repoPath)
+    return openRepo?.loading ?? false
+  }
+
+  return { fetchLogs, selectCommit, clearCommits, filterByBranch, clearBranchFilter, cherryPick, isLoading }
 })

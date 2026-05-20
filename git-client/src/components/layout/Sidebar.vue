@@ -544,6 +544,9 @@ async function loadSidebarData() {
   color: var(--sidebar-foreground);
   opacity: 0.4;
   padding: 4px 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .sidebar-root .remote-group {

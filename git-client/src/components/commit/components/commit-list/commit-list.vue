@@ -21,6 +21,8 @@ import { useRepoStore } from '../../../../stores/repo'
 import { useCommitsStore } from '../../../../stores/commits'
 import { invoke } from '../../../../utils/ipc'
 import { toast } from 'vue-sonner'
+import { Skeleton } from '@/components/ui/skeleton'
+import { GitCommit } from '@vicons/ionicons5'
 
 const rightPanelStore = useRightPanelStore()
 const stagingStore = useStagingStore()
@@ -53,6 +55,11 @@ const hasWip = computed(() => {
   if (!repoStore.activeRepoPath) return false
   const state = stagingStore.getFileState(repoStore.activeRepoPath)
   return state.unstaged.length > 0 || state.staged.length > 0
+})
+
+const isLoading = computed(() => {
+  if (!repoStore.activeRepoPath) return false
+  return commitsStore.isLoading(repoStore.activeRepoPath)
 })
 
 const wipUnstagedCount = computed(() => {
@@ -150,7 +157,23 @@ async function onDropdownSelect(key: string) {
 
     <CommitListHeader />
 
+    <div v-if="isLoading" class="flex-1 overflow-auto p-4 space-y-3">
+      <div v-for="i in 8" :key="i" class="flex items-center gap-3">
+        <Skeleton class="w-4 h-4 rounded-full" />
+        <div class="flex-1 space-y-1.5">
+          <Skeleton class="h-3 w-3/4" />
+          <Skeleton class="h-2 w-1/4" />
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="!repoStore.activeRepoPath" class="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+      <GitCommit class="w-12 h-12 opacity-30" />
+      <p class="text-sm">Open a repository to view commits</p>
+    </div>
+
     <CommitGraph
+      v-else
       :commits="graphCommits"
       :selected-commit-id="selectedCommitId"
       :has-wip="hasWip"
