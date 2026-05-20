@@ -40,37 +40,78 @@ export const BRANCH_COLORS = [
 ]
 
 function allocateColumns(commits: Commit[]): GraphNode[] {
-  const nodes: GraphNode[] = []
+  const commitMap = new Map(commits.map((c, i) => [c.id, { commit: c, rowIndex: i }]))
+  const childrenMap = new Map<string, string[]>()
+
+  for (const commit of commits) {
+    for (const parentId of commit.parent_ids) {
+      if (!childrenMap.has(parentId)) {
+        childrenMap.set(parentId, [])
+      }
+      childrenMap.get(parentId)!.push(commit.id)
+    }
+  }
+
+  const nodes = new Map<string, GraphNode>()
   let nextColumn = 0
 
-  for (let i = 0; i < commits.length; i++) {
-    const commit = commits[i]
+  const toVisit: string[] = []
+  const visited = new Set<string>()
 
-    const parentNodes = commit.parent_ids
-      .map(pid => nodes.find(n => n.commitId === pid))
-      .filter((n): n is GraphNode => n !== undefined)
+  for (const commit of commits) {
+    if (commit.parent_ids.length === 0) {
+      toVisit.push(commit.id)
+    }
+  }
+
+  while (toVisit.length > 0) {
+    const commitId = toVisit.shift()!
+    if (visited.has(commitId)) continue
+
+    const info = commitMap.get(commitId)
+    if (!info) continue
+
+    const allParentsProcessed = info.commit.parent_ids.every(
+      pid => !commitMap.has(pid) || visited.has(pid)
+    )
+    if (!allParentsProcessed) {
+      toVisit.push(commitId)
+      continue
+    }
+
+    visited.add(commitId)
 
     let column: number
     let color: string
 
-    if (parentNodes.length > 0) {
-      column = parentNodes[0].column
-      color = parentNodes[0].color
+    const firstParentId = info.commit.parent_ids[0]
+    const firstParentNode = firstParentId ? nodes.get(firstParentId) : undefined
+
+    if (firstParentNode) {
+      column = firstParentNode.column
+      color = firstParentNode.color
     } else {
       column = nextColumn++
       color = BRANCH_COLORS[column % BRANCH_COLORS.length]
     }
 
-    nodes.push({
-      commitId: commit.id,
-      rowIndex: i,
+    nodes.set(commitId, {
+      commitId,
+      rowIndex: info.rowIndex,
       column,
       color,
-      hasRefs: !!(commit.refs && commit.refs.length > 0),
+      hasRefs: !!(info.commit.refs && info.commit.refs.length > 0),
     })
+
+    const children = childrenMap.get(commitId) || []
+    for (const childId of children) {
+      if (!visited.has(childId)) {
+        toVisit.push(childId)
+      }
+    }
   }
 
-  return nodes
+  return Array.from(nodes.values()).sort((a, b) => a.rowIndex - b.rowIndex)
 }
 
 function generateSegments(commits: Commit[], nodes: GraphNode[]): PathSegment[] {
