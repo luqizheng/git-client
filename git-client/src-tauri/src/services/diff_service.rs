@@ -26,6 +26,23 @@ pub fn get_staged_diff(repo: &git2::Repository) -> Result<Vec<FileDiff>, AppErro
     parse_diff(&diff)
 }
 
+pub fn diff_between_commits(
+    repo: &git2::Repository,
+    old_commit_id: &str,
+    new_commit_id: &str,
+) -> Result<Vec<FileDiff>, AppError> {
+    let old_oid = git2::Oid::from_str(old_commit_id)?;
+    let old_commit = repo.find_commit(old_oid)?;
+    let old_tree = old_commit.tree()?;
+
+    let new_oid = git2::Oid::from_str(new_commit_id)?;
+    let new_commit = repo.find_commit(new_oid)?;
+    let new_tree = new_commit.tree()?;
+
+    let diff = repo.diff_tree_to_tree(Some(&old_tree), Some(&new_tree), None)?;
+    parse_diff(&diff)
+}
+
 fn parse_diff(diff: &git2::Diff) -> Result<Vec<FileDiff>, AppError> {
     let mut files = Vec::new();
     for i in 0..diff.deltas().len() {
@@ -100,7 +117,6 @@ pub fn get_file_content(
 
     let new_content = get_blob_content(repo, &tree, file_path)?;
 
-    // 提取 diff 和 hunks
     let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), None)?;
     let hunks = extract_hunks_for_file(&diff, file_path)?;
 
@@ -140,6 +156,35 @@ pub fn get_file_content(
     })
 }
 
+pub fn get_file_diff_content(
+    repo: &git2::Repository,
+    old_commit_id: &str,
+    new_commit_id: &str,
+    file_path: &str,
+) -> Result<FileContent, AppError> {
+    let old_oid = git2::Oid::from_str(old_commit_id)?;
+    let old_commit = repo.find_commit(old_oid)?;
+    let old_tree = old_commit.tree()?;
+
+    let new_oid = git2::Oid::from_str(new_commit_id)?;
+    let new_commit = repo.find_commit(new_oid)?;
+    let new_tree = new_commit.tree()?;
+
+    let old_content = get_blob_content(repo, &old_tree, file_path)?;
+    let new_content = get_blob_content(repo, &new_tree, file_path)?;
+
+    let diff = repo.diff_tree_to_tree(Some(&old_tree), Some(&new_tree), None)?;
+    let hunks = extract_hunks_for_file(&diff, file_path)?;
+
+    Ok(FileContent {
+        old_content,
+        new_content,
+        old_path: Some(file_path.to_string()),
+        new_path: Some(file_path.to_string()),
+        hunks,
+    })
+}
+
 fn extract_hunks_for_file(
     diff: &git2::Diff,
     target_file_path: &str,
@@ -151,7 +196,6 @@ fn extract_hunks_for_file(
     let target_path = target_file_path.to_string();
 
     diff.print(git2::DiffFormat::Patch, |delta, hunk, line| {
-        // 检查是否为目标文件
         let is_target = delta
             .new_file()
             .path()
@@ -166,7 +210,6 @@ fn extract_hunks_for_file(
             let hunk_header = h.header().to_vec();
             let header_str = String::from_utf8_lossy(&hunk_header);
 
-            // 解析 hunk header: @@ -old_start,old_lines +new_start,new_lines @@
             let parts: Vec<&str> = header_str.split_whitespace().collect();
             let old_range = parts.get(1).unwrap_or(&"-0,0");
             let new_range = parts.get(2).unwrap_or(&"+0,0");
@@ -193,7 +236,6 @@ fn extract_hunks_for_file(
 
             let mut hunks_mut = hunks.borrow_mut();
 
-            // 查找是否已存在该 hunk
             let hunk_idx = hunks_mut.iter().position(|h: &Hunk| {
                 h.old_start == old_start
                     && h.new_start == new_start
@@ -215,7 +257,6 @@ fn extract_hunks_for_file(
                 }
             };
 
-            // 解析行内容
             let content = String::from_utf8_lossy(line.content()).to_string();
             let diff_line = match line.origin() {
                 '+' => DiffLine::Addition(content),

@@ -49,6 +49,22 @@ pub async fn get_staged_diff(
 }
 
 #[tauri::command]
+pub async fn diff_between_commits(
+    state: State<'_, AppState>,
+    repo_path: String,
+    old_commit_id: String,
+    new_commit_id: String,
+) -> Result<Vec<FileDiff>, AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        diff_service::diff_between_commits(&repo, &old_commit_id, &new_commit_id)
+    })
+    .await?
+}
+
+#[tauri::command]
 pub async fn stage_files(
     state: State<'_, AppState>,
     repo_path: String,
@@ -106,6 +122,23 @@ pub async fn get_file_content(
         let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let repo = manager.get_repo(&repo_path)?;
         diff_service::get_file_content(&repo, &commit_id, &file_path)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn get_file_diff_content(
+    state: State<'_, AppState>,
+    repo_path: String,
+    old_commit_id: String,
+    new_commit_id: String,
+    file_path: String,
+) -> Result<FileContent, AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        diff_service::get_file_diff_content(&repo, &old_commit_id, &new_commit_id, &file_path)
     })
     .await?
 }
