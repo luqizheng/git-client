@@ -10,9 +10,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import CommitGraph from '../../../graph/CommitGraph.vue'
-import CommitListHeader from '../../CommitListHeader.vue'
-import type { GraphCommit } from '../../utils/graphRenderer'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useCommitList } from '../../composables/useCommitList'
 import { useColumnConfig } from '../../composables/useColumnConfig'
 import { useRightPanelStore } from '../../../../stores/rightPanel'
@@ -23,13 +29,14 @@ import { invoke } from '../../../../utils/ipc'
 import { toast } from 'vue-sonner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { GitCommit } from '@vicons/ionicons5'
+import { clsx } from 'clsx'
 
 const rightPanelStore = useRightPanelStore()
 const stagingStore = useStagingStore()
 const repoStore = useRepoStore()
 const commitsStore = useCommitsStore()
 
-const { columnStyles } = useColumnConfig()
+const { visibleColumns, columnStyles } = useColumnConfig()
 
 const {
   filterText,
@@ -39,17 +46,6 @@ const {
   handleClick,
   hideContextMenu,
 } = useCommitList()
-
-const graphCommits = computed<GraphCommit[]>(() =>
-  filteredCommits.value.map(c => ({
-    id: c.id,
-    parents: c.parent_ids,
-    refs: c.refs.map(r => ({ name: r.name, ref_type: r.ref_type })),
-    message: c.message,
-    author: c.author,
-    time: c.time,
-  })),
-)
 
 const hasWip = computed(() => {
   if (!repoStore.activeRepoPath) return false
@@ -86,6 +82,24 @@ function onContextMenu(e: MouseEvent, commitId: string) {
   if (commit) {
     contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, commit }
   }
+}
+
+function formatSha(sha: string) {
+  return sha.slice(0, 7)
+}
+
+function formatTime(timestamp: number) {
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`
+  if (days < 365) return `${Math.floor(days / 30)} months ago`
+  return `${Math.floor(days / 365)} years ago`
 }
 
 async function onDropdownSelect(key: string) {
@@ -155,51 +169,101 @@ async function onDropdownSelect(key: string) {
       </div>
     </div>
 
-    <CommitListHeader />
+    <ScrollArea class="flex-1">
+      <Table class="min-w-full">
+        <TableHeader class="sticky top-0 z-10 bg-card">
+          <TableRow class="h-8">
+            <template v-for="col in visibleColumns" :key="col.id">
+              <TableHead :style="columnStyles[col.id]">
+                <span class="text-xs font-medium uppercase tracking-wider">{{ col.label }}</span>
+              </TableHead>
+            </template>
+            <TableHead class="w-32">
+              <span class="text-xs font-medium uppercase tracking-wider">Date</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
 
-    <div v-if="isLoading" class="flex-1 overflow-auto p-4 space-y-3">
-      <div v-for="i in 8" :key="i" class="flex items-center gap-3">
-        <Skeleton class="w-4 h-4 rounded-full" />
-        <div class="flex-1 space-y-1.5">
-          <Skeleton class="h-3 w-3/4" />
-          <Skeleton class="h-2 w-1/4" />
-        </div>
-      </div>
-    </div>
+        <TableBody>
+          <template v-if="isLoading">
+            <TableRow v-for="i in 8" :key="i" class="h-10">
+              <TableCell v-for="col in visibleColumns" :key="col.id">
+                <Skeleton class="h-3 w-3/4" />
+              </TableCell>
+              <TableCell>
+                <Skeleton class="h-3 w-24" />
+              </TableCell>
+            </TableRow>
+          </template>
 
-    <div v-else-if="!repoStore.activeRepoPath" class="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-      <GitCommit class="w-12 h-12 opacity-30" />
-      <p class="text-sm">Open a repository to view commits</p>
-    </div>
+          <template v-else-if="!repoStore.activeRepoPath">
+            <TableRow>
+              <TableCell :colspan="visibleColumns.length + 1" class="h-32 text-center">
+                <GitCommit class="w-12 h-12 opacity-30 mx-auto mb-2" />
+                <p class="text-sm text-muted-foreground">Open a repository to view commits</p>
+              </TableCell>
+            </TableRow>
+          </template>
 
-    <CommitGraph
-      v-else
-      :commits="graphCommits"
-      :selected-commit-id="selectedCommitId"
-      :has-wip="hasWip"
-      :wip-unstaged-count="wipUnstagedCount"
-      :wip-staged-count="wipStagedCount"
-      :column-styles="columnStyles"
-      @commit-click="onCommitClick"
-      @wip-click="onWipClick"
-      @context-menu="onContextMenu"
-    />
+          <template v-else-if="filteredCommits.length === 0">
+            <TableRow>
+              <TableCell :colspan="visibleColumns.length + 1" class="h-32 text-center">
+                <GitCommit class="w-12 h-12 opacity-30 mx-auto mb-2" />
+                <p class="text-sm text-muted-foreground">No commits found</p>
+              </TableCell>
+            </TableRow>
+          </template>
+
+          <template v-else>
+            <TableRow
+              v-if="hasWip"
+              class="h-10 hover:bg-accent/50 cursor-pointer transition-colors"
+              @click="onWipClick"
+            >
+              <TableCell>
+                <span class="font-medium text-yellow-600">WIP</span>
+              </TableCell>
+              <TableCell>
+                <span class="text-sm text-muted-foreground">{{ wipStagedCount }} staged, {{ wipUnstagedCount }} unstaged</span>
+              </TableCell>
+              <TableCell class="text-sm text-muted-foreground">Staging</TableCell>
+              <TableCell class="text-sm text-muted-foreground">Just now</TableCell>
+            </TableRow>
+
+            <TableRow
+              v-for="commit in filteredCommits"
+              :key="commit.id"
+              :class="clsx('h-10 hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
+              @click="onCommitClick(commit.id)"
+              @contextmenu.prevent="onContextMenu($event, commit.id)"
+            >
+              <TableCell class="font-medium text-sm truncate" :style="columnStyles['message']">
+                {{ commit.message }}
+              </TableCell>
+              <TableCell class="text-sm text-muted-foreground truncate" :style="columnStyles['author']">
+                {{ commit.author }}
+              </TableCell>
+              <TableCell class="text-sm font-mono text-muted-foreground" :style="columnStyles['sha']">
+                {{ formatSha(commit.id) }}
+              </TableCell>
+              <TableCell class="text-sm text-muted-foreground">
+                {{ formatTime(commit.time) }}
+              </TableCell>
+            </TableRow>
+          </template>
+        </TableBody>
+      </Table>
+    </ScrollArea>
 
     <DropdownMenu :open="contextMenu.visible" @update:open="contextMenu.visible = $event">
       <DropdownMenuTrigger as-child>
         <div :style="{ position: 'fixed', left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem @click="onDropdownSelect('cherry-pick')">
-          Cherry-pick
-        </DropdownMenuItem>
-        <DropdownMenuItem @click="onDropdownSelect('revert')">
-          Revert
-        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('cherry-pick')">Cherry-pick</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('revert')">Revert</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('rebase')">
-          Rebase
-        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('rebase')">Rebase</DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Reset</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -209,16 +273,10 @@ async function onDropdownSelect(key: string) {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('create-branch')">
-          Create Branch
-        </DropdownMenuItem>
-        <DropdownMenuItem @click="onDropdownSelect('create-tag')">
-          Create Tag
-        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('create-branch')">Create Branch</DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('create-tag')">Create Tag</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem @click="onDropdownSelect('copy-sha')">
-          Copy SHA
-        </DropdownMenuItem>
+        <DropdownMenuItem @click="onDropdownSelect('copy-sha')">Copy SHA</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   </div>

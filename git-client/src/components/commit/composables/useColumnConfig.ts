@@ -11,13 +11,12 @@ export interface ColumnConfig {
 }
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { id: 'refs', label: 'Branch/Tag', visible: true, width: 120, minWidth: 80, hideable: true },
-  { id: 'message', label: 'Message', visible: true, width: 300, minWidth: 200, hideable: false },
+  { id: 'message', label: 'Commit Message', visible: true, width: 300, minWidth: 200, hideable: false },
   { id: 'author', label: 'Author', visible: true, width: 100, minWidth: 60, hideable: true },
-  { id: 'date', label: 'Date', visible: true, width: 80, minWidth: 60, hideable: true },
+  { id: 'sha', label: 'SHA', visible: true, width: 80, minWidth: 60, hideable: true },
 ]
 
-const STORAGE_KEY = 'commit-list-columns'
+const STORAGE_KEY = 'commit-list-columns-v2'
 
 export function useColumnConfig() {
   const repoStore = useRepoStore()
