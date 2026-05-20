@@ -339,7 +339,7 @@ async function onDropdownSelect(key: string) {
                 :rowspan="filteredCommits.length"
                 style="vertical-align:top"
               >
-           
+
                 <GraphyCell :commits="filteredCommits" />
               </TableCell>
 

@@ -14,6 +14,7 @@ const nodesWithRefs = computed(() => layout.value.nodes.filter(n => n.hasRefs))
 </script>
 
 <template>
+  {{ commits }}
   <svg
     :width="layout.columns * COLUMN_WIDTH"
     :height="commits.length * ROW_HEIGHT"

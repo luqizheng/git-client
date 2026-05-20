@@ -39,7 +39,127 @@ export const BRANCH_COLORS = [
   'var(--branch-color-8)',
 ]
 
+interface CommitWithIndex {
+  commit: Commit
+  rowIndex: number
+}
+
+function getBranchChildren(commitId: string, childrenMap: Map<string, string[]>, allCommits: Map<string, CommitWithIndex>): string[] {
+  const children = childrenMap.get(commitId) || []
+  return children.filter(childId => {
+    const child = allCommits.get(childId)
+    return child && child.commit.parent_ids[0] === commitId
+  })
+}
+
+function getMergeChildren(commitId: string, childrenMap: Map<string, string[]>, allCommits: Map<string, CommitWithIndex>): string[] {
+  const children = childrenMap.get(commitId) || []
+  return children.filter(childId => {
+    const child = allCommits.get(childId)
+    return child && child.commit.parent_ids[0] !== commitId
+  })
+}
+
 function allocateColumns(commits: Commit[]): GraphNode[] {
+  if (commits.length === 0) return []
+
+  const allCommits = new Map<string, CommitWithIndex>()
+  const childrenMap = new Map<string, string[]>()
+
+  for (let i = 0; i < commits.length; i++) {
+    const commit = commits[i]
+    allCommits.set(commit.id, { commit, rowIndex: i })
+
+    for (const parentId of commit.parent_ids) {
+      if (!childrenMap.has(parentId)) {
+        childrenMap.set(parentId, [])
+      }
+      childrenMap.get(parentId)!.push(commit.id)
+    }
+  }
+
+  const activeBranches: string[] = []
+  const nodes: GraphNode[] = []
+  const visited = new Set<string>()
+
+  for (let i = 0; i < commits.length; i++) {
+    const commit = commits[i]
+    if (visited.has(commit.id)) continue
+
+    const branchChildren = getBranchChildren(commit.id, childrenMap, allCommits)
+
+    let branchToReplace: string | null = null
+    let branchToReplaceIdx = Infinity
+
+    for (const childId of branchChildren) {
+      const idx = activeBranches.indexOf(childId)
+      if (idx !== -1 && idx < branchToReplaceIdx) {
+        branchToReplace = childId
+        branchToReplaceIdx = idx
+      }
+    }
+
+    if (branchToReplace !== null) {
+      activeBranches[branchToReplaceIdx] = commit.id
+    } else {
+      activeBranches.push(commit.id)
+    }
+
+    for (const childId of branchChildren) {
+      const idx = activeBranches.indexOf(childId)
+      if (idx !== -1 && childId !== branchToReplace) {
+        activeBranches[idx] = ''
+      }
+    }
+
+    const column = activeBranches.indexOf(commit.id)
+    const color = BRANCH_COLORS[column % BRANCH_COLORS.length]
+
+    nodes.push({
+      commitId: commit.id,
+      rowIndex: i,
+      column,
+      color,
+      hasRefs: !!(commit.refs && commit.refs.length > 0),
+    })
+
+    visited.add(commit.id)
+  }
+
+  for (const childList of childrenMap.values()) {
+    for (const childId of childList) {
+      if (!visited.has(childId)) {
+        const childInfo = allCommits.get(childId)
+        if (childInfo) {
+          const column = activeBranches.indexOf('')
+          if (column === -1) {
+            activeBranches.push(childId)
+          } else {
+            activeBranches[column] = childId
+          }
+
+          const color = BRANCH_COLORS[activeBranches.indexOf(childId) % BRANCH_COLORS.length]
+
+          nodes.push({
+            commitId: childId,
+            rowIndex: childInfo.rowIndex,
+            column: activeBranches.indexOf(childId),
+            color,
+            hasRefs: !!(childInfo.commit.refs && childInfo.commit.refs.length > 0),
+          })
+
+          visited.add(childId)
+        }
+      }
+    }
+  }
+
+  return nodes.sort((a, b) => a.rowIndex - b.rowIndex)
+}
+
+function generateSegments(commits: Commit[], nodes: GraphNode[]): PathSegment[] {
+  const segments: PathSegment[] = []
+  const nodeMap = new Map(nodes.map(n => [n.commitId, n]))
   const commitMap = new Map(commits.map((c, i) => [c.id, { commit: c, rowIndex: i }]))
   const childrenMap = new Map<string, string[]>()
 
@@ -52,102 +172,71 @@ function allocateColumns(commits: Commit[]): GraphNode[] {
     }
   }
 
-  const nodes = new Map<string, GraphNode>()
-  let nextColumn = 0
-
-  const toVisit: string[] = []
-  const visited = new Set<string>()
-
-  for (const commit of commits) {
-    if (commit.parent_ids.length === 0) {
-      toVisit.push(commit.id)
-    }
-  }
-
-  while (toVisit.length > 0) {
-    const commitId = toVisit.shift()!
-    if (visited.has(commitId)) continue
-
-    const info = commitMap.get(commitId)
-    if (!info) continue
-
-    const allParentsProcessed = info.commit.parent_ids.every(
-      pid => !commitMap.has(pid) || visited.has(pid)
-    )
-    if (!allParentsProcessed) {
-      toVisit.push(commitId)
-      continue
-    }
-
-    visited.add(commitId)
-
-    let column: number
-    let color: string
-
-    const firstParentId = info.commit.parent_ids[0]
-    const firstParentNode = firstParentId ? nodes.get(firstParentId) : undefined
-
-    if (firstParentNode) {
-      column = firstParentNode.column
-      color = firstParentNode.color
-    } else {
-      column = nextColumn++
-      color = BRANCH_COLORS[column % BRANCH_COLORS.length]
-    }
-
-    nodes.set(commitId, {
-      commitId,
-      rowIndex: info.rowIndex,
-      column,
-      color,
-      hasRefs: !!(info.commit.refs && info.commit.refs.length > 0),
-    })
-
-    const children = childrenMap.get(commitId) || []
-    for (const childId of children) {
-      if (!visited.has(childId)) {
-        toVisit.push(childId)
-      }
-    }
-  }
-
-  return Array.from(nodes.values()).sort((a, b) => a.rowIndex - b.rowIndex)
-}
-
-function generateSegments(commits: Commit[], nodes: GraphNode[]): PathSegment[] {
-  const segments: PathSegment[] = []
-  const nodeMap = new Map(nodes.map(n => [n.commitId, n]))
-
   for (const node of nodes) {
+    if (node.rowIndex < 0 || node.rowIndex >= commits.length) continue
+
     const commit = commits[node.rowIndex]
-    const nodeY = node.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
     const nodeX = node.column * COLUMN_WIDTH + CENTER_X
+    const nodeY = node.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
 
-    if (node.rowIndex < commits.length - 1) {
-      const nextCommit = commits[node.rowIndex + 1]
-      const nextNode = nodeMap.get(nextCommit.id)
+    const branchChildren = getBranchChildren(node.commitId, childrenMap, commitMap)
+    for (const childId of branchChildren) {
+      const childNode = nodeMap.get(childId)
+      if (!childNode) continue
 
-      if (!nextNode || nextNode.column !== node.column) {
+      const childX = childNode.column * COLUMN_WIDTH + CENTER_X
+      const childY = childNode.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+
+      if (childNode.column === node.column) {
         segments.push({
           type: 'vertical',
           x1: nodeX,
           y1: nodeY + CIRCLE_RADIUS,
-          x2: nodeX,
-          y2: (node.rowIndex + 1) * ROW_HEIGHT + ROW_HEIGHT / 2 - CIRCLE_RADIUS,
+          x2: childX,
+          y2: childY - CIRCLE_RADIUS,
           color: node.color,
         })
       }
     }
 
+    const mergeChildren = getMergeChildren(node.commitId, childrenMap, commitMap)
+    for (const childId of mergeChildren) {
+      const childNode = nodeMap.get(childId)
+      if (!childNode) continue
+
+      const childX = childNode.column * COLUMN_WIDTH + CENTER_X
+      const childY = childNode.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+
+      segments.push({
+        type: 'vertical',
+        x1: nodeX,
+        y1: nodeY + CIRCLE_RADIUS,
+        x2: nodeX,
+        y2: childY - CIRCLE_RADIUS,
+        color: node.color,
+      })
+
+      segments.push({
+        type: 'horizontal',
+        x1: nodeX,
+        y1: childY,
+        x2: childX,
+        y2: childY,
+        color: node.color,
+      })
+    }
+
     if (commit.parent_ids && commit.parent_ids.length > 0) {
-      for (const parentId of commit.parent_ids) {
-        const parentNode = nodeMap.get(parentId)
-        if (!parentNode) continue
+      const firstParentId = commit.parent_ids[0]
+      const parentNode = nodeMap.get(firstParentId)
 
-        const parentX = parentNode.column * COLUMN_WIDTH + CENTER_X
-        const parentY = parentNode.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+      if (!parentNode) continue
 
-        if (parentNode.column === node.column) {
+      const parentX = parentNode.column * COLUMN_WIDTH + CENTER_X
+      const parentY = parentNode.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+
+      if (parentNode.column === node.column) {
+        if (node.rowIndex < commits.length - 1) {
           segments.push({
             type: 'vertical',
             x1: nodeX,
@@ -156,25 +245,52 @@ function generateSegments(commits: Commit[], nodes: GraphNode[]): PathSegment[] 
             y2: parentY - CIRCLE_RADIUS,
             color: node.color,
           })
-        } else {
-          segments.push({
-            type: 'horizontal',
-            x1: nodeX,
-            y1: nodeY,
-            x2: parentX,
-            y2: nodeY,
-            color: node.color,
-          })
-
-          segments.push({
-            type: 'vertical',
-            x1: parentX,
-            y1: nodeY,
-            x2: parentX,
-            y2: parentY - CIRCLE_RADIUS,
-            color: node.color,
-          })
         }
+      } else {
+        segments.push({
+          type: 'horizontal',
+          x1: nodeX,
+          y1: nodeY,
+          x2: parentX,
+          y2: nodeY,
+          color: node.color,
+        })
+
+        segments.push({
+          type: 'vertical',
+          x1: parentX,
+          y1: nodeY,
+          y2: parentY - CIRCLE_RADIUS,
+          x2: parentX,
+          color: node.color,
+        })
+      }
+
+      for (let i = 1; i < commit.parent_ids.length; i++) {
+        const parentId = commit.parent_ids[i]
+        const parentNode = nodeMap.get(parentId)
+        if (!parentNode) continue
+
+        const parentX = parentNode.column * COLUMN_WIDTH + CENTER_X
+        const parentY = parentNode.rowIndex * ROW_HEIGHT + ROW_HEIGHT / 2
+
+        segments.push({
+          type: 'vertical',
+          x1: nodeX,
+          y1: nodeY + CIRCLE_RADIUS,
+          x2: nodeX,
+          y2: parentY - CIRCLE_RADIUS,
+          color: node.color,
+        })
+
+        segments.push({
+          type: 'horizontal',
+          x1: nodeX,
+          y1: parentY,
+          x2: parentX,
+          y2: parentY,
+          color: node.color,
+        })
       }
     }
   }
