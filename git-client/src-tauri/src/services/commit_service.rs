@@ -11,7 +11,10 @@ fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<CommitRe
 
     let refs = repo.references()?;
     for reference in refs {
-        let reference = reference?;
+        let reference = match reference {
+            Ok(r) => r,
+            Err(_) => continue,
+        };
         let full_name = reference.name().unwrap_or("");
         let (ref_type, short_name) = if let Some(s) = full_name.strip_prefix("refs/heads/") {
             (RefType::Local, s)
@@ -25,13 +28,31 @@ fn build_ref_map(repo: &git2::Repository) -> Result<HashMap<String, Vec<CommitRe
 
         let is_head = head_shorthand.as_deref() == Some(short_name);
 
-        if let Some(oid) = reference.target() {
-            map.entry(oid.to_string()).or_default().push(CommitRef {
-                name: short_name.to_string(),
-                ref_type,
-                is_head,
-            });
-        }
+        let target_oid = match ref_type {
+            RefType::Tag => {
+                if let Ok(tag) = reference.peel_to_tag() {
+                    tag.target_id()
+                } else {
+                    match reference.target() {
+                        Some(oid) => oid,
+                        None => continue,
+                    }
+                }
+            }
+            _ => {
+                match reference.target() {
+                    Some(oid) => oid,
+                    None => continue,
+                }
+            }
+        };
+
+        let oid = target_oid;
+        map.entry(oid.to_string()).or_default().push(CommitRef {
+            name: short_name.to_string(),
+            ref_type,
+            is_head,
+        });
     }
     Ok(map)
 }
@@ -311,7 +332,7 @@ mod tests {
         let mut index = repo.index().unwrap();
         index.add_path(std::path::Path::new("hello.txt")).unwrap();
         index.write().unwrap();
-        let result = create_commit(&repo, "first commit", false);
+        let result = create_commit(&repo, "first commit", false, None);
         assert!(result.is_ok(), "create_commit should work on empty repo");
         let commit = result.unwrap();
         assert_eq!(commit.message, "first commit");
@@ -328,7 +349,7 @@ mod tests {
         let mut index = repo.index().unwrap();
         index.add_path(std::path::Path::new("second.txt")).unwrap();
         index.write().unwrap();
-        let result = create_commit(&repo, "add second file", false);
+        let result = create_commit(&repo, "add second file", false, None);
         assert!(result.is_ok());
         let commit = result.unwrap();
         assert_eq!(commit.message, "add second file");
@@ -353,7 +374,7 @@ mod tests {
 
         crate::services::diff_service::stage_files(&repo, &["hello.txt".to_string()]).unwrap();
 
-        let commit = create_commit(&repo, "first commit", false).unwrap();
+        let commit = create_commit(&repo, "first commit", false, None).unwrap();
         assert_eq!(commit.message, "first commit");
         assert!(commit.parent_ids.is_empty());
 
@@ -363,5 +384,64 @@ mod tests {
 
         drop(repo);
         drop(dir);
+    }
+
+    #[test]
+    fn test_log_with_branch_ref() {
+        let (dir, repo) = setup_repo();
+        create_initial_commit(&repo);
+        
+        let commit_id = repo.head().unwrap().target().unwrap();
+        
+        repo.branch("main", &repo.find_commit(commit_id).unwrap(), false).unwrap();
+        
+        let commits = log(&repo, 10, None).unwrap();
+        assert_eq!(commits.len(), 1);
+        assert!(!commits[0].refs.is_empty(), "refs should not be empty");
+        
+        let main_ref = commits[0].refs.iter().find(|r| r.name == "main");
+        assert!(main_ref.is_some(), "main branch ref should exist");
+        assert!(matches!(main_ref.unwrap().ref_type, RefType::Local));
+        
+        drop(repo);
+        drop(dir);
+    }
+
+    #[test]
+    fn test_log_real_repo() {
+        let path = r"D:\projects\海关\仓库\coder.datasynctray";
+        let repo = git2::Repository::open(path).expect("Failed to open repo");
+        
+        // Check HEAD
+        let head = repo.head().ok();
+        println!("HEAD shorthand: {:?}", head.as_ref().and_then(|h| h.shorthand()));
+        
+        // Check all references
+        let refs = repo.references().expect("Failed to get references");
+        println!("Total references: {}", refs.count());
+        
+        // Re-open to iterate again
+        let refs = repo.references().expect("Failed to get references");
+        for r in refs.take(10) {
+            if let Ok(r) = r {
+                println!("  ref: {} -> {:?}", r.name().unwrap_or("?"), r.target());
+            }
+        }
+        
+        let commits = log(&repo, 5, None).expect("Failed to get log");
+        
+        println!("\nFound {} commits:", commits.len());
+        for (i, commit) in commits.iter().enumerate() {
+            println!("{}. {} - {}", i + 1, &commit.id[..8], commit.message.lines().next().unwrap_or(""));
+            if commit.refs.is_empty() {
+                println!("   (no refs)");
+            } else {
+                println!("   refs: {:?}", commit.refs.iter().map(|r| &r.name).collect::<Vec<_>>());
+            }
+        }
+        
+        assert!(!commits.is_empty(), "Should have at least one commit");
+        assert_eq!(commits.len(), 5, "Should have 5 commits");
+        assert_eq!(&commits[0].id[..8], "7304da5c", "First commit should be 7304da5c");
     }
 }

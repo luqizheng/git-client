@@ -75,6 +75,9 @@ mod tests {
             path: "main.rs".to_string(),
             ours_modified: true,
             theirs_modified: false,
+            ours_content: None,
+            theirs_content: None,
+            base_content: None,
         }];
         let err = AppError::Conflict(files);
         assert!(err.to_string().contains("Merge conflict"));
