@@ -11,6 +11,9 @@
           <ChevronBack class="w-4 h-4" />
         </Button>
       </div>
+      <div class="sidebar-search" v-if="!app.sidebarCollapsed">
+        <input v-model="searchQuery" placeholder="Filter branches..." class="search-input" />
+      </div>
       <div class="sidebar-scroll overflow-auto">
         <RefPanelSection
           title="Local"
@@ -19,7 +22,7 @@
           @toggle="sectionExpanded.local = !sectionExpanded.local"
         >
           <div
-            v-for="branch in localBranches"
+            v-for="branch in filteredLocalBranches"
             :key="branch.name"
             class="ref-item"
             @contextmenu.prevent="onLocalContext($event, branch)"
@@ -29,7 +32,7 @@
             <span class="ref-name" :class="{ 'ref-name-current': branch.is_head }">{{ branch.name }}</span>
             <span v-if="branch.upstream" class="ref-upstream">→ {{ branch.upstream }}</span>
           </div>
-          <div v-if="localBranches.length === 0" class="ref-empty">No local branches</div>
+          <div v-if="filteredLocalBranches.length === 0" class="ref-empty">No local branches</div>
         </RefPanelSection>
 
         <RefPanelSection
@@ -124,6 +127,7 @@
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem v-for="opt in contextOptions" :key="opt.key" @click="onContextSelect(opt.key)">
+          <component v-if="opt.icon" :is="opt.icon" class="w-4 h-4 mr-2" />
           {{ opt.label }}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -149,6 +153,17 @@ import {
   Pricetag,
   Archive,
   GitMerge,
+  SwapHorizontal as CheckoutIcon,
+  GitMerge as MergeIcon,
+  ReturnDownBack as RebaseIcon,
+  TrashOutline as DeleteIcon,
+  CreateOutline as RenameIcon,
+  ArrowUp as PushTagIcon,
+  ArchiveOutline as PopStashIcon,
+  DownloadOutline as ApplyStashIcon,
+  Refresh as UpdateIcon,
+  AddOutline as InitIcon,
+  RemoveOutline as RemoveIcon,
 } from '@vicons/ionicons5'
 import { toast } from 'vue-sonner'
 import { useAppStore } from '../../stores/app'
@@ -208,6 +223,19 @@ const sectionExpanded = reactive({
 const remoteExpandedMap = reactive<Record<string, boolean>>({})
 
 const stashEntries = ref<StashEntry[]>([])
+const searchQuery = ref('')
+
+const filteredLocalBranches = computed(() => {
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return localBranches.value
+  return localBranches.value.filter(b => b.name.toLowerCase().includes(q))
+})
+
+const filteredRemoteBranches = computed(() => {
+  const q = searchQuery.value.toLowerCase()
+  if (!q) return remoteBranches.value
+  return remoteBranches.value.filter(b => b.name.toLowerCase().includes(q))
+})
 
 const localBranches = computed(() =>
   (repo.activeRepo?.branches ?? []).filter(b => !b.is_remote),
@@ -223,7 +251,7 @@ const remotes = computed(() =>
 
 function getRemoteBranches(remoteName: string): Branch[] {
   const prefix = `remotes/${remoteName}/`
-  return remoteBranches.value.filter(b => b.name.startsWith(prefix))
+  return filteredRemoteBranches.value.filter(b => b.name.startsWith(prefix))
 }
 
 function stripRemotePrefix(branchName: string, remoteName: string): string {
@@ -238,37 +266,37 @@ function toggleRemoteExpanded(name: string) {
 const contextX = ref(0)
 const contextY = ref(0)
 const contextShow = ref(false)
-const contextOptions = ref<{ label: string; key: string }[]>([])
+const contextOptions = ref<{ label: string; key: string; icon?: Component }[]>([])
 
 const localMenuOptions = [
-  { label: 'Checkout', key: 'checkout' },
-  { label: 'Merge', key: 'merge' },
-  { label: 'Rebase', key: 'rebase' },
-  { label: 'Delete', key: 'delete' },
-  { label: 'Rename', key: 'rename' },
+  { label: 'Checkout', key: 'checkout', icon: CheckoutIcon },
+  { label: 'Merge', key: 'merge', icon: MergeIcon },
+  { label: 'Rebase', key: 'rebase', icon: RebaseIcon },
+  { label: 'Delete', key: 'delete', icon: DeleteIcon },
+  { label: 'Rename', key: 'rename', icon: RenameIcon },
 ]
 
 const remoteBranchMenuOptions = [
-  { label: 'Checkout', key: 'checkout' },
-  { label: 'Merge', key: 'merge' },
-  { label: 'Delete', key: 'delete' },
+  { label: 'Checkout', key: 'checkout', icon: CheckoutIcon },
+  { label: 'Merge', key: 'merge', icon: MergeIcon },
+  { label: 'Delete', key: 'delete', icon: DeleteIcon },
 ]
 
 const tagMenuOptions = [
-  { label: 'Delete Tag', key: 'delete_tag' },
-  { label: 'Push Tag', key: 'push_tag' },
+  { label: 'Delete Tag', key: 'delete_tag', icon: DeleteIcon },
+  { label: 'Push Tag', key: 'push_tag', icon: PushTagIcon },
 ]
 
 const stashMenuOptions = [
-  { label: 'Apply Stash', key: 'apply_stash' },
-  { label: 'Pop Stash', key: 'pop_stash' },
-  { label: 'Delete Stash', key: 'delete_stash' },
+  { label: 'Apply Stash', key: 'apply_stash', icon: ApplyStashIcon },
+  { label: 'Pop Stash', key: 'pop_stash', icon: PopStashIcon },
+  { label: 'Delete Stash', key: 'delete_stash', icon: DeleteIcon },
 ]
 
 const submoduleMenuOptions = [
-  { label: 'Update', key: 'update' },
-  { label: 'Init', key: 'init' },
-  { label: 'Remove', key: 'remove' },
+  { label: 'Update', key: 'update', icon: UpdateIcon },
+  { label: 'Init', key: 'init', icon: InitIcon },
+  { label: 'Remove', key: 'remove', icon: RemoveIcon },
 ]
 
 function onLocalContext(e: MouseEvent, _branch: Branch) {
@@ -395,7 +423,7 @@ async function loadSidebarData() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 28px;
+  height: 32px;
   padding: 0 8px;
   cursor: pointer;
   user-select: none;
@@ -459,6 +487,7 @@ async function loadSidebarData() {
 
 .sidebar-root .dot-current {
   background: var(--sidebar-primary);
+  box-shadow: 0 0 0 2px var(--sidebar-primary);
 }
 
 .sidebar-root .dot-other {
@@ -497,7 +526,7 @@ async function loadSidebarData() {
 
 .sidebar-root .ref-name-current {
   color: var(--sidebar-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .sidebar-root .ref-upstream {
@@ -549,5 +578,31 @@ async function loadSidebarData() {
 
 .sidebar-root .remote-branches {
   padding: 0;
+}
+
+.sidebar-root .sidebar-search {
+  padding: 4px 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-root .search-input {
+  width: 100%;
+  background: var(--sidebar-accent);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--sidebar-foreground);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.sidebar-root .search-input:focus {
+  border-color: var(--sidebar-primary);
+}
+
+.sidebar-root .search-input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
 }
 </style>
