@@ -71,7 +71,11 @@ pub fn delete_branch(repo: &git2::Repository, name: &str, _force: bool) -> Resul
     Ok(())
 }
 
-pub fn rebase(repo: &mut git2::Repository, upstream: &str, branch: Option<&str>) -> Result<(), AppError> {
+pub fn rebase_with_ops(
+    repo: &mut git2::Repository,
+    upstream: &str,
+    branch: Option<&str>,
+) -> Result<(), AppError> {
     let target_branch = match branch {
         Some(name) => {
             let b = repo.find_branch(name, git2::BranchType::Local)?;
@@ -103,6 +107,83 @@ pub fn rebase(repo: &mut git2::Repository, upstream: &str, branch: Option<&str>)
 
     rebase.finish(None)?;
     Ok(())
+}
+
+pub fn get_rebase_in_progress(repo: &git2::Repository) -> Result<Option<RebaseInfo>, AppError> {
+    let state = repo.state();
+    let in_progress = state == git2::RepositoryState::Rebase
+        || state == git2::RepositoryState::RebaseInteractive;
+    
+    if !in_progress {
+        return Ok(None);
+    }
+
+    let head = repo.head()?.target().ok_or_else(|| AppError::Generic("HEAD detached".to_string()))?;
+    let head_commit = repo.find_commit(head)?;
+    
+    Ok(Some(RebaseInfo {
+        original_head: head_commit.parent_id(0)?.to_string(),
+        onto: String::new(),
+        current_operation: None,
+    }))
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct RebaseInfo {
+    pub original_head: String,
+    pub onto: String,
+    pub current_operation: Option<usize>,
+}
+
+pub fn get_rebase_operations_list(
+    repo: &git2::Repository,
+) -> Result<Vec<RebaseOperation>, AppError> {
+    let mut rebase = repo.open_rebase(None)?;
+    let mut operations = Vec::new();
+    let mut id = 0;
+
+    while let Some(op) = rebase.next() {
+        let op = op?;
+        let commit = repo.find_commit(op.id())?;
+        operations.push(RebaseOperation {
+            id,
+            commit_id: op.id().to_string(),
+            action: "pick".to_string(),
+            message: commit.summary().unwrap_or_default().to_string(),
+        });
+        id += 1;
+    }
+
+    Ok(operations)
+}
+
+pub fn rebase_continue(repo: &mut git2::Repository) -> Result<(), AppError> {
+    let mut rebase = repo.open_rebase(None)?;
+    
+    if let Some(op) = rebase.next() {
+        let _op = op?;
+        if let Err(e) = rebase.commit(None, &repo.signature()?, None) {
+            rebase.abort()?;
+            return Err(AppError::Git(e));
+        }
+    }
+
+    rebase.finish(None)?;
+    Ok(())
+}
+
+pub fn rebase_abort(repo: &mut git2::Repository) -> Result<(), AppError> {
+    let mut rebase = repo.open_rebase(None)?;
+    rebase.abort()?;
+    Ok(())
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct RebaseOperation {
+    pub id: usize,
+    pub commit_id: String,
+    pub action: String,
+    pub message: String,
 }
 
 #[derive(Debug, serde::Serialize)]

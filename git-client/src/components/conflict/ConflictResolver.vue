@@ -36,10 +36,10 @@
           </span>
           <span class="text-sm font-medium truncate flex-1">{{ conflict.path }}</span>
           <div class="flex items-center gap-1">
-            <Button size="xs" variant="outline" @click="useOurs(idx)">
+            <Button size="sm" variant="outline" @click="useOurs(idx)">
               Use Ours
             </Button>
-            <Button size="xs" variant="outline" @click="useTheirs(idx)">
+            <Button size="sm" variant="outline" @click="useTheirs(idx)">
               Use Theirs
             </Button>
           </div>

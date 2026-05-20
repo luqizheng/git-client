@@ -25,10 +25,10 @@
         @contextmenu.prevent="onContext($event, branch)"
       >
         <span class="mr-1" :class="branch.is_head ? 'text-accent-green' : 'text-primary'">
-          {{ branch.is_head ? '*' : ' if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' } ' }}
+          {{ branch.is_head ? '*' : '-' }}
         </span>
         <span class="text-foreground truncate">{{ branch.name }}</span>
-        <span v-if="branch.upstream" class="ml-1 text-muted-foreground"> if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' } {{ branch.upstream }}</span>
+        <span v-if="branch.upstream" class="ml-1 text-muted-foreground">{{ branch.upstream }}</span>
       </div>
       <Button size="sm" variant="ghost" class="mt-1 h-6 text-xs" @click="showDialog = true">+ New Branch</Button>
     </div>
@@ -37,7 +37,7 @@
       <div v-for="branch in remoteBranches" :key="branch.name"
         class="flex items-center px-2 py-0.5 hover:bg-muted cursor-pointer text-muted-foreground"
       >
-        <span class="mr-1"> if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' }  if ($args[0].Value -eq [char]8730) { '√' } elseif ($args[0].Value -eq [char]215) { '×' } elseif ($args[0].Value -eq [char]176) { '°' } else { '?' } </span>
+        <span class="mr-1">-</span>
         <span class="truncate">{{ branch.name }}</span>
       </div>
     </div>

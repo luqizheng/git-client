@@ -128,5 +128,25 @@
       "deleteFailed": "Delete failed",
       "loadFailed": "Cannot load GPG keys. GPG may not be installed."
     }
+  },
+  "rebase": {
+    "title": "Interactive Rebase",
+    "selectBranches": "Select branches to rebase",
+    "currentBranch": "Current Branch",
+    "ontoBranch": "Onto",
+    "selectBranch": "Select branch",
+    "selectUpstream": "Select target",
+    "inProgress": "Rebase in progress...",
+    "startRebase": "Start Rebase",
+    "continue": "Continue",
+    "abort": "Abort"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "save": "Save",
+    "loading": "Loading..."
   }
 }

@@ -1,5 +1,5 @@
 use crate::models::branch::Branch;
-use crate::services::branch_service;
+use crate::services::branch_service::{self, RebaseInfo, RebaseOperation};
 use crate::utils::error::AppError;
 use crate::AppState;
 use tauri::State;
@@ -74,9 +74,9 @@ pub async fn rebase_branch(
 ) -> Result<(), AppError> {
     let repos = state.repos.clone();
     tokio::task::spawn_blocking(move || {
-        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;
-        branch_service::rebase(&mut repo, &upstream, branch.as_deref())
+        branch_service::rebase_with_ops(&mut repo, &upstream, branch.as_deref())
     })
     .await?
 }
@@ -93,6 +93,62 @@ pub async fn compare_branches(
         let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let repo = manager.get_repo(&repo_path)?;
         branch_service::compare_branches(&repo, &base, &compare)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn get_rebase_in_progress(
+    state: State<'_, AppState>,
+    repo_path: String,
+) -> Result<Option<RebaseInfo>, AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        branch_service::get_rebase_in_progress(&repo)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn get_rebase_operations(
+    state: State<'_, AppState>,
+    repo_path: String,
+) -> Result<Vec<RebaseOperation>, AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let repo = manager.get_repo(&repo_path)?;
+        branch_service::get_rebase_operations_list(&repo)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn rebase_continue(
+    state: State<'_, AppState>,
+    repo_path: String,
+) -> Result<(), AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let mut repo = manager.get_repo(&repo_path)?;
+        branch_service::rebase_continue(&mut repo)
+    })
+    .await?
+}
+
+#[tauri::command]
+pub async fn rebase_abort(
+    state: State<'_, AppState>,
+    repo_path: String,
+) -> Result<(), AppError> {
+    let repos = state.repos.clone();
+    tokio::task::spawn_blocking(move || {
+        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let mut repo = manager.get_repo(&repo_path)?;
+        branch_service::rebase_abort(&mut repo)
     })
     .await?
 }

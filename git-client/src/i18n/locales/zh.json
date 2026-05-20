@@ -128,5 +128,25 @@
       "deleteFailed": "删除失败",
       "loadFailed": "无法加载 GPG 密钥，可能未安装 GPG"
     }
+  },
+  "rebase": {
+    "title": "交互式变基",
+    "selectBranches": "选择要变基的分支",
+    "currentBranch": "当前分支",
+    "ontoBranch": "变基到",
+    "selectBranch": "选择分支",
+    "selectUpstream": "选择目标",
+    "inProgress": "变基进行中...",
+    "startRebase": "开始变基",
+    "continue": "继续",
+    "abort": "中止"
+  },
+  "common": {
+    "close": "关闭",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "save": "保存",
+    "loading": "加载中..."
   }
 }

@@ -48,7 +48,7 @@ import { FileDiffPanel } from '../diff'
 const rightPanel = useRightPanelStore()
 const repoStore = useRepoStore()
 
-const repoPath = computed(() => repoStore.currentRepo?.path || '')
+const repoPath = computed(() => repoStore.activeRepo?.state.path || '')
 </script>
 
 <style scoped>
