@@ -220,6 +220,7 @@ async function onDropdownSelect(key: string) {
               class="h-10 hover:bg-accent/50 cursor-pointer transition-colors"
               @click="onWipClick"
             >
+              <TableCell class="text-sm" />
               <TableCell>
                 <span class="font-medium text-yellow-600">WIP</span>
               </TableCell>
@@ -233,11 +234,23 @@ async function onDropdownSelect(key: string) {
             <TableRow
               v-for="commit in filteredCommits"
               :key="commit.id"
-              :class="clsx('h-10 hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
+              :class="clsx('hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
               @click="onCommitClick(commit.id)"
               @contextmenu.prevent="onContextMenu($event, commit.id)"
             >
-              <TableCell class="font-medium text-sm truncate" :style="columnStyles['message']">
+              <TableCell class="text-sm" :style="columnStyles['refs']">
+                <span
+                  v-for="ref in commit.refs"
+                  :key="ref.name"
+                  :class="clsx(
+                    'inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-0.5',
+                    ref.ref_type === 'tag' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
+                  )"
+                >
+                  {{ ref.name }}
+                </span>
+              </TableCell>
+              <TableCell class="font-medium text-sm whitespace-pre-wrap break-words leading-snug" :style="columnStyles['message']">
                 {{ commit.message }}
               </TableCell>
               <TableCell class="text-sm text-muted-foreground truncate" :style="columnStyles['author']">
