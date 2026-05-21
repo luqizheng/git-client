@@ -22,7 +22,8 @@
     "workflow:plan": "echo 'Use: Skill \"writing-plans\" to create implementation plan'",
     "workflow:execute": "echo 'Use: Skill \"subagent-driven-development\" to execute plan'",
     "workflow:review": "echo 'Use: Skill \"requesting-code-review\" for code review'",
-    "skills:refresh": "node scripts/agents/refresh.js"
+    "skills:refresh": "node scripts/agents/refresh.js",
+    "mcp:start": "npx @hypothesi/tauri-mcp-server"
   },
   "keywords": [
     "git-client",
@@ -30,5 +31,8 @@
     "multi-agent"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@hypothesi/tauri-mcp-server": "^0.11.2"
+  }
 }

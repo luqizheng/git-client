@@ -62,10 +62,16 @@ pub fn run() {
     let state = AppState {
         repos: Arc::new(Mutex::new(RepoManager::new())),
     };
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+    }
+
+    builder
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        //.plugin(tauri_plugin_mcp_bridge::init())
         .manage(state)
         .invoke_handler(tauri::generate_handler![
             commands::repo::open_repo,
