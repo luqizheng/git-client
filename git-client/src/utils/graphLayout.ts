@@ -1,9 +1,9 @@
 // utils/graphLayout.ts
 
-export const COLUMN_WIDTH = 40
-export const ROW_HEIGHT = 60
+export const COLUMN_WIDTH = 60
+export const ROW_HEIGHT = 32
 export const CENTER_X = COLUMN_WIDTH / 2
-export const CIRCLE_RADIUS = 12
+export const CIRCLE_RADIUS = 10
 
 export interface LayoutNode {
   commitId: string

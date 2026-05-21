@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 
 const ACTION_TYPES = {
   CHERRY_PICK: "cherry-pick",
@@ -13,8 +13,36 @@ const ACTION_TYPES = {
   COPY_SHA: "copy-sha",
 } as const;
 
+const graphWidth = ref(56)
+let isResizing = false
+let startX = 0
+let startWidth = 0
+
+function onResizeStart(e: MouseEvent) {
+  isResizing = true
+  startX = e.clientX
+  startWidth = graphWidth.value
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup', onResizeEnd)
+  e.preventDefault()
+}
+
+function onResizeMove(e: MouseEvent) {
+  if (!isResizing) return
+  const delta = e.clientX - startX
+  graphWidth.value = Math.max(40, Math.min(200, startWidth + delta))
+}
+
+function onResizeEnd() {
+  isResizing = false
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', onResizeEnd)
+}
+
 onUnmounted(() => {
   contextMenu.value.visible = false;
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', onResizeEnd)
 });
 import {
   DropdownMenu,
@@ -26,17 +54,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCommitList } from "../../composables/useCommitList";
-import { useColumnConfig } from "../../composables/useColumnConfig";
 import GraphyCell from "../cells/GraphyCell.vue";
 import { useRightPanelStore } from "../../../../stores/rightPanel";
 import { useStagingStore } from "../../../../stores/staging";
@@ -52,8 +71,6 @@ const rightPanelStore = useRightPanelStore();
 const stagingStore = useStagingStore();
 const repoStore = useRepoStore();
 const commitsStore = useCommitsStore();
-
-const { visibleColumns, columnStyles } = useColumnConfig();
 
 const {
   filterText,
@@ -189,207 +206,124 @@ async function onDropdownSelect(key: string) {
 
 <template>
   <div class="commit-list flex flex-col h-full w-full bg-card">
-    <div
-      class="toolbar flex items-center gap-2 px-3 py-2 border-b border-border shrink-0"
-    >
-      <div
-        class="search-box flex items-center bg-muted rounded px-2 py-1 flex-1 max-w-80"
-      >
-        <svg
-          class="w-4 h-4 text-muted-foreground mr-1 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
+    <div class="toolbar flex items-center gap-2 px-2 py-1.5 border-b border-border shrink-0">
+      <div class="search-box flex items-center bg-muted rounded px-2 py-0.5 flex-1 max-w-64">
+        <svg class="w-3.5 h-3.5 text-muted-foreground mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input
           v-model="filterText"
           type="text"
-          placeholder="Search commits..."
-          class="bg-transparent border-none outline-none text-sm text-foreground w-full placeholder:text-muted-foreground"
+          placeholder="Search..."
+          class="bg-transparent border-none outline-none text-xs text-foreground w-full placeholder:text-muted-foreground"
         />
-        <span v-if="filterText" class="text-xs text-muted-foreground ml-1">{{
-          filteredCommits.length
-        }}</span>
+        <span v-if="filterText" class="text-xs text-muted-foreground ml-1">{{ filteredCommits.length }}</span>
       </div>
     </div>
 
     <ScrollArea class="flex-1">
-      <Table class="min-w-full">
-        <TableHeader class="sticky top-0 z-10 bg-card">
-          <TableRow class="h-8">
-            <template v-for="col in visibleColumns" :key="col.id">
-              <TableHead :style="columnStyles[col.id]">
-                <span class="text-xs font-medium uppercase tracking-wider">{{
-                  col.label
-                }}</span>
-              </TableHead>
+      <div class="flex min-w-full">
+        <div
+          class="shrink-0 bg-background border-r border-border/50 relative"
+          :style="{ width: graphWidth + 'px' }"
+        >
+          <div
+            class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-20 hover:bg-primary/30 transition-colors"
+            @mousedown.prevent="onResizeStart"
+          />
+          <div class="sticky top-0 z-10 h-8 flex items-center px-1">
+            <span class="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Graph</span>
+          </div>
+          <div class="divide-y divide-border/50">
+            <template v-if="isLoading">
+              <div v-for="i in 8" :key="i" class="h-8 flex items-center justify-center">
+                <Skeleton class="h-2 w-2" />
+              </div>
             </template>
-            <TableHead class="w-32">
-              <span class="text-xs font-medium uppercase tracking-wider"
-                >Date</span
-              >
-            </TableHead>
-          </TableRow>
-        </TableHeader>
+            <template v-else-if="repoStore.activeRepoPath && filteredCommits.length > 0">
+              <GraphyCell :commits="filteredCommits" />
+            </template>
+            <template v-else>
+              <div v-for="i in 8" :key="i" class="h-8"></div>
+            </template>
+          </div>
+        </div>
 
-        <TableBody>
-          <template v-if="isLoading">
-            <TableRow v-for="i in 8" :key="i" class="h-10">
-              <TableCell v-for="col in visibleColumns" :key="col.id">
-                <Skeleton class="h-3 w-3/4" />
-              </TableCell>
-              <TableCell>
-                <Skeleton class="h-3 w-24" />
-              </TableCell>
-            </TableRow>
-          </template>
+        <div class="flex-1 min-w-0">
+          <div class="sticky top-0 z-10 bg-card border-b border-border/50 px-2 py-1 flex items-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span class="flex-1">Message</span>
+            <span class="w-20 shrink-0">Author</span>
+            <span class="w-20 text-right">Date</span>
+            <span class="w-16 shrink-0 font-mono text-right">SHA</span>
+          </div>
 
-          <template v-else-if="!repoStore.activeRepoPath">
-            <TableRow>
-              <TableCell
-                :colspan="visibleColumns.length + 1"
-                class="h-32 text-center"
-              >
-                <GitCommit class="w-12 h-12 opacity-30 mx-auto mb-2" />
-                <p class="text-sm text-muted-foreground">
-                  Open a repository to view commits
-                </p>
-              </TableCell>
-            </TableRow>
-          </template>
+          <div class="divide-y divide-border/50">
+            <template v-if="isLoading">
+              <div v-for="i in 8" :key="i" class="h-8 px-2 flex items-center gap-4">
+                <Skeleton class="h-3 flex-1" />
+                <Skeleton class="h-3 w-16" />
+                <Skeleton class="h-3 w-16" />
+                <Skeleton class="h-3 w-12" />
+              </div>
+            </template>
 
-          <template v-else-if="filteredCommits.length === 0">
-            <TableRow>
-              <TableCell
-                :colspan="visibleColumns.length + 1"
-                class="h-32 text-center"
-              >
-                <GitCommit class="w-12 h-12 opacity-30 mx-auto mb-2" />
-                <p class="text-sm text-muted-foreground">No commits found</p>
-              </TableCell>
-            </TableRow>
-          </template>
+            <template v-else-if="!repoStore.activeRepoPath">
+              <div class="h-32 flex items-center justify-center">
+                <div class="text-center">
+                  <GitCommit class="w-10 h-10 opacity-30 mx-auto mb-2" />
+                  <p class="text-xs text-muted-foreground">Open a repository to view commits</p>
+                </div>
+              </div>
+            </template>
 
-          <template v-else>
-            <TableRow
-              v-if="hasWip"
-              class="h-10 hover:bg-accent/50 cursor-pointer transition-colors"
-              @click="onWipClick"
-            >
-              <TableCell v-for="col in visibleColumns" :key="col.id">
-                <template v-if="col.id === 'graphy'">
-                  <div class="flex items-center justify-center h-full">
-                    <svg width="40" height="24" viewBox="0 0 40 24">
-                      <circle
-                        cx="20"
-                        cy="12"
-                        r="6"
-                        class="fill-yellow-500 stroke-yellow-600 stroke-1"
-                      />
-                      <line
-                        x1="20"
-                        y1="18"
-                        x2="20"
-                        y2="24"
-                        class="stroke-border stroke-1"
-                      />
-                    </svg>
-                  </div>
-                </template>
-                <template v-else-if="col.id === 'message'">
-                  <span class="font-medium text-yellow-600">WIP</span>
-                </template>
-                <template v-else-if="col.id === 'author'">
-                  <span class="text-sm text-muted-foreground"
-                    >{{ wipStagedCount }} staged,
-                    {{ wipUnstagedCount }} unstaged</span
-                  >
-                </template>
-                <template v-else-if="col.id === 'sha'">
-                  <span class="text-sm text-muted-foreground">Staging</span>
-                </template>
-                <template v-else-if="col.id === 'refs'" />
-              </TableCell>
-              <TableCell class="text-sm text-muted-foreground"
-                >Just now</TableCell
-              >
-            </TableRow>
+            <template v-else-if="filteredCommits.length === 0">
+              <div class="h-32 flex items-center justify-center">
+                <div class="text-center">
+                  <GitCommit class="w-10 h-10 opacity-30 mx-auto mb-2" />
+                  <p class="text-xs text-muted-foreground">No commits found</p>
+                </div>
+              </div>
+            </template>
 
-            <TableRow
-              v-for="(commit, index) in filteredCommits"
-              :key="commit.id"
-              :class="
-                clsx(
-                  'hover:bg-accent/50 cursor-pointer transition-colors',
-                  selectedCommitId === commit.id ? 'bg-accent' : '',
-                )
-              "
-              @click="onCommitClick(commit.id)"
-              @contextmenu.prevent="onContextMenu($event, commit.id)"
-            >
-              <TableCell
-                v-if="index === 0"
-                :rowspan="filteredCommits.length"
-                style="vertical-align: top"
-                class="bg-background"
+            <template v-else>
+              <div
+                v-if="hasWip"
+                class="h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
+                @click="onWipClick"
               >
-                <GraphyCell :commits="filteredCommits" />
-              </TableCell>
+                <span class="flex-1 text-[11px] font-medium text-yellow-600 truncate">WIP</span>
+                <span class="w-20 shrink-0 text-[10px] text-muted-foreground truncate">{{ wipStagedCount }}s / {{ wipUnstagedCount }}u</span>
+                <span class="w-20 text-right text-[10px] text-muted-foreground">now</span>
+                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">staging</span>
+              </div>
 
-              <TableCell
-                v-for="col in visibleColumns.filter((c) => c.id !== 'graphy')"
-                :key="col.id"
-                :style="columnStyles[col.id]"
+              <div
+                v-for="commit in filteredCommits"
+                :key="commit.id"
+                :class="clsx('h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
+                @click="onCommitClick(commit.id)"
+                @contextmenu.prevent="onContextMenu($event, commit.id)"
               >
-                <template v-if="col.id === 'refs'">
+                <div class="flex-1 flex items-center gap-2 min-w-0">
                   <span
-                    v-for="ref in commit.refs"
+                    v-for="ref in commit.refs.slice(0, 1)"
                     :key="ref.name"
-                    :class="
-                      clsx(
-                        'inline-block px-1.5 py-0.5 rounded text-xs font-medium mr-0.5',
-                        ref.ref_type === 'tag'
-                          ? 'bg-blue-500/20 text-blue-400'
-                          : 'bg-green-500/20 text-green-400',
-                      )
-                    "
+                    :class="clsx('px-1 py-0 rounded text-[9px] font-medium shrink-0', ref.ref_type === 'tag' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400')"
                   >
                     {{ ref.name }}
                   </span>
-                </template>
-                <template
-                  v-else-if="col.id === 'message'"
-                  class="font-medium text-sm whitespace-pre-wrap break-words leading-snug"
-                >
-                  {{ commit.message }}
-                </template>
-                <template
-                  v-else-if="col.id === 'author'"
-                  class="text-sm text-muted-foreground truncate"
-                >
-                  {{ commit.author }}
-                </template>
-                <template
-                  v-else-if="col.id === 'sha'"
-                  class="text-sm font-mono text-muted-foreground"
-                >
-                  {{ formatSha(commit.id) }}
-                </template>
-              </TableCell>
-              <TableCell class="text-sm text-muted-foreground">
-                {{ formatTime(commit.time) }}
-              </TableCell>
-            </TableRow>
-          </template>
-        </TableBody>
-      </Table>
+                  <span class="text-[11px] truncate">{{ commit.message }}</span>
+                </div>
+                <div class="w-20 shrink-0">
+                  <span class="text-[10px] text-muted-foreground truncate block">{{ commit.author }}</span>
+                </div>
+                <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(commit.time) }}</span>
+                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(commit.id) }}</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
     </ScrollArea>
 
     <DropdownMenu
