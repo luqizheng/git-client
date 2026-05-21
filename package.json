@@ -11,6 +11,7 @@
     "agents:info": "node scripts/agents/info.js",
     "agents:skills": "ls -la .agents/skills/",
     "dev:git-client": "npm run dev --workspace=git-client",
+    "dev:tauri": "npm run tauri dev --workspace=git-client",
     "dev:all": "npm run dev:git-client",
     "build:git-client": "npm run build --workspace=git-client",
     "test:git-client": "npm run test --workspace=git-client",
@@ -23,7 +24,8 @@
     "workflow:execute": "echo 'Use: Skill \"subagent-driven-development\" to execute plan'",
     "workflow:review": "echo 'Use: Skill \"requesting-code-review\" for code review'",
     "skills:refresh": "node scripts/agents/refresh.js",
-    "mcp:start": "npx @hypothesi/tauri-mcp-server"
+    "mcp:start": "npx @hypothesi/tauri-mcp-server",
+    "tauri:dev:mcp": "powershell -Command \"Start-Process -NoNewWindow npm -ArgumentList 'run','dev:tauri'; Start-Process -NoNewWindow npx -ArgumentList '@hypothesi/tauri-mcp-server'\""
   },
   "keywords": [
     "git-client",
