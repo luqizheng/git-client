@@ -39,15 +39,14 @@ function getHorizontalSegmentsForRow(rowIndex: number) {
     <div
       v-for="(_, index) in sortedCommits"
       :key="index"
-      class="graph-row h-8 relative flex items-center justify-center"
+      class="graph-row h-8 relative flex items-center justify-center overflow-hidden"
       style="width: 100%"
     >
       <svg
         :width="layout.columns * COLUMN_WIDTH"
         height="32"
         :viewBox="`0 0 ${layout.columns * COLUMN_WIDTH} 32`"
-        class="overflow-visible absolute inset-0"
-        style="overflow: visible"
+        class="absolute inset-0 overflow-hidden"
       >
         <!-- 该行的垂直连线 -->
         <line

@@ -222,7 +222,7 @@ async function onDropdownSelect(key: string) {
     </div>
 
     <ScrollArea class="flex-1">
-      <div class="flex min-w-full">
+      <div class="flex min-w-full bg-background" >
         <div
           class="shrink-0 bg-background border-r border-border/50 relative"
           :style="{ width: graphWidth + 'px' }"
@@ -231,12 +231,12 @@ async function onDropdownSelect(key: string) {
             class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-20 hover:bg-primary/30 transition-colors"
             @mousedown.prevent="onResizeStart"
           />
-          <div class="sticky top-0 z-10 h-8 flex items-center px-1">
+          <div class="sticky top-0 z-20 h-8 flex items-center px-2 bg-background border-b border-border/50">
             <span class="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Graph</span>
           </div>
-          <div class="divide-y divide-border/50">
+          <div class="divide-y divide-border/50 bg-background overflow-hidden" >
             <template v-if="isLoading">
-              <div v-for="i in 8" :key="i" class="h-8 flex items-center justify-center">
+              <div v-for="i in 8" :key="i" class="h-8 flex items-center justify-center bg-background">
                 <Skeleton class="h-2 w-2" />
               </div>
             </template>
@@ -250,7 +250,7 @@ async function onDropdownSelect(key: string) {
         </div>
 
         <div class="flex-1 min-w-0">
-          <div class="sticky top-0 z-10 bg-card border-b border-border/50 px-2 py-1 flex items-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <div class="sticky top-0 z-10 h-8 bg-card border-b border-border/50 px-2 flex items-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             <span class="flex-1">Message</span>
             <span class="w-20 shrink-0">Author</span>
             <span class="w-20 text-right">Date</span>
