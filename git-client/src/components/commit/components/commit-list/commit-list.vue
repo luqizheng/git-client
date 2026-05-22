@@ -57,6 +57,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCommitList } from "../../composables/useCommitList";
 import GraphyCell from "../cells/GraphyCell.vue";
+import BranchTagCell from "../cells/BranchTagCell.vue";
 import { useRightPanelStore } from "../../../../stores/rightPanel";
 import { useStagingStore } from "../../../../stores/staging";
 import { useRepoStore } from "../../../../stores/repo";
@@ -305,13 +306,7 @@ async function onDropdownSelect(key: string) {
                 @contextmenu.prevent="onContextMenu($event, commit.id)"
               >
                 <div class="flex-1 flex items-center gap-2 min-w-0">
-                  <span
-                    v-for="ref in commit.refs.slice(0, 1)"
-                    :key="ref.name"
-                    :class="clsx('px-1 py-0 rounded text-[9px] font-medium shrink-0', ref.ref_type === 'tag' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400')"
-                  >
-                    {{ ref.name }}
-                  </span>
+                  <BranchTagCell :refs="commit.refs" />
                   <span class="text-[11px] truncate">{{ commit.message }}</span>
                 </div>
                 <div class="w-20 shrink-0">
