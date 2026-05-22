@@ -1,8 +1,8 @@
 import { onMounted, onUnmounted } from 'vue'
 
-type ShortcutHandler = () => void
+type ShortcutHandler = (e?: Event) => void
 
-interface Shortcut {
+export interface Shortcut {
   key: string
   ctrl?: boolean
   shift?: boolean
@@ -18,7 +18,7 @@ export function useKeyboard(shortcuts: Shortcut[]) {
       const altMatch = s.alt ? e.altKey : !e.altKey
       if (ctrlMatch && shiftMatch && altMatch && e.key.toLowerCase() === s.key.toLowerCase()) {
         e.preventDefault()
-        s.handler()
+        s.handler(e)
         return
       }
     }

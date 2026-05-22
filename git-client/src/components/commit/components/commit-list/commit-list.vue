@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCommitList } from "../../composables/useCommitList";
+import { useCommitKeyboard } from "../../composables/useCommitKeyboard";
 import GraphyCell from "../cells/GraphyCell.vue";
 import BranchTagCell from "../cells/BranchTagCell.vue";
 import { useRightPanelStore } from "../../../../stores/rightPanel";
@@ -87,6 +88,19 @@ const {
   totalHeight,
   visibleItems,
 } = useCommitList();
+
+const {
+  selectedIndex,
+  selectedIds,
+  clearSelection,
+} = useCommitKeyboard(() => filteredCommits.value, {
+  onSelect: (commit: any) => handleClick(commit),
+  onCopySha: async (sha: string) => {
+    await navigator.clipboard.writeText(sha)
+    toast.success("SHA copied")
+  },
+  onOpenDetail: (commit: any) => handleClick(commit),
+})
 
 const hasWip = computed(() => {
   if (!repoStore.activeRepoPath) return false;
@@ -298,7 +312,10 @@ async function onDropdownSelect(key: string) {
                 v-for="item in visibleItems"
                 :key="filteredCommits[item.index].id"
                 class="absolute w-full h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
-                :class="selectedCommitId === filteredCommits[item.index].id ? 'bg-accent' : ''"
+                :class="[
+                  selectedCommitId === filteredCommits[item.index].id || selectedIndex === item.index ? 'bg-accent' : '',
+                  selectedIds.has(filteredCommits[item.index].id) ? 'ring-1 ring-primary' : ''
+                ]"
                 :style="{ transform: 'translateY(' + item.start + 'px)' }"
                 @click="onCommitClick(filteredCommits[item.index].id)"
                 @contextmenu.prevent="onContextMenu($event, filteredCommits[item.index].id)"
@@ -321,7 +338,7 @@ async function onDropdownSelect(key: string) {
 
     <DropdownMenu
       :open="contextMenu.visible"
-      @update:open="contextMenu.visible = $event"
+      @update:open="(v: boolean) => { contextMenu.visible = v; if (!v) clearSelection(); }"
     >
       <DropdownMenuTrigger as-child>
         <div
