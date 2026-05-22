@@ -66,7 +66,6 @@ import { invoke } from "../../../../utils/ipc";
 import { toast } from "vue-sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GitCommit } from "@vicons/ionicons5";
-import { clsx } from "clsx";
 
 const rightPanelStore = useRightPanelStore();
 const stagingStore = useStagingStore();
@@ -80,6 +79,8 @@ const {
   contextMenu,
   handleClick,
   hideContextMenu,
+  totalHeight,
+  visibleItems,
 } = useCommitList();
 
 const hasWip = computed(() => {
@@ -222,8 +223,8 @@ async function onDropdownSelect(key: string) {
       </div>
     </div>
 
-    <ScrollArea class="flex-1">
-      <div class="flex min-w-full bg-background" >
+    <ScrollArea ref="scrollContainer" class="flex-1">
+      <div class="flex min-w-full bg-background">
         <div
           class="shrink-0 bg-background border-r border-border/50 relative"
           :style="{ width: graphWidth + 'px' }"
@@ -235,19 +236,7 @@ async function onDropdownSelect(key: string) {
           <div class="sticky top-0 z-20 h-8 flex items-center px-2 bg-background border-b border-border/50">
             <span class="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Graph</span>
           </div>
-          <div class="divide-y divide-border/50 bg-background overflow-hidden" >
-            <template v-if="isLoading">
-              <div v-for="i in 8" :key="i" class="h-8 flex items-center justify-center bg-background">
-                <Skeleton class="h-2 w-2" />
-              </div>
-            </template>
-            <template v-else-if="repoStore.activeRepoPath && filteredCommits.length > 0">
-              <GraphyCell :commits="filteredCommits" />
-            </template>
-            <template v-else>
-              <div v-for="i in 8" :key="i" class="h-8"></div>
-            </template>
-          </div>
+          <GraphyCell :commits="filteredCommits" />
         </div>
 
         <div class="flex-1 min-w-0">
@@ -258,9 +247,20 @@ async function onDropdownSelect(key: string) {
             <span class="w-16 shrink-0 font-mono text-right">SHA</span>
           </div>
 
-          <div class="divide-y divide-border/50">
+          <div
+            v-if="hasWip"
+            class="h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50"
+            @click="onWipClick"
+          >
+            <span class="flex-1 text-[11px] font-medium text-yellow-600 truncate">WIP</span>
+            <span class="w-20 shrink-0 text-[10px] text-muted-foreground truncate">{{ wipStagedCount }}s / {{ wipUnstagedCount }}u</span>
+            <span class="w-20 text-right text-[10px] text-muted-foreground">now</span>
+            <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">staging</span>
+          </div>
+
+          <div class="relative" :style="{ height: totalHeight + 'px' }">
             <template v-if="isLoading">
-              <div v-for="i in 8" :key="i" class="h-8 px-2 flex items-center gap-4">
+              <div v-for="i in 8" :key="'skel-'+i" class="absolute w-full h-8 px-2 flex items-center gap-4" :style="{ transform: 'translateY(' + ((i-1)*40) + 'px)' }">
                 <Skeleton class="h-3 flex-1" />
                 <Skeleton class="h-3 w-16" />
                 <Skeleton class="h-3 w-16" />
@@ -269,7 +269,7 @@ async function onDropdownSelect(key: string) {
             </template>
 
             <template v-else-if="!repoStore.activeRepoPath">
-              <div class="h-32 flex items-center justify-center">
+              <div class="absolute inset-0 flex items-center justify-center">
                 <div class="text-center">
                   <GitCommit class="w-10 h-10 opacity-30 mx-auto mb-2" />
                   <p class="text-xs text-muted-foreground">Open a repository to view commits</p>
@@ -278,7 +278,7 @@ async function onDropdownSelect(key: string) {
             </template>
 
             <template v-else-if="filteredCommits.length === 0">
-              <div class="h-32 flex items-center justify-center">
+              <div class="absolute inset-0 flex items-center justify-center">
                 <div class="text-center">
                   <GitCommit class="w-10 h-10 opacity-30 mx-auto mb-2" />
                   <p class="text-xs text-muted-foreground">No commits found</p>
@@ -288,32 +288,23 @@ async function onDropdownSelect(key: string) {
 
             <template v-else>
               <div
-                v-if="hasWip"
-                class="h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
-                @click="onWipClick"
-              >
-                <span class="flex-1 text-[11px] font-medium text-yellow-600 truncate">WIP</span>
-                <span class="w-20 shrink-0 text-[10px] text-muted-foreground truncate">{{ wipStagedCount }}s / {{ wipUnstagedCount }}u</span>
-                <span class="w-20 text-right text-[10px] text-muted-foreground">now</span>
-                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">staging</span>
-              </div>
-
-              <div
-                v-for="commit in filteredCommits"
-                :key="commit.id"
-                :class="clsx('h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors', selectedCommitId === commit.id ? 'bg-accent' : '')"
-                @click="onCommitClick(commit.id)"
-                @contextmenu.prevent="onContextMenu($event, commit.id)"
+                v-for="item in visibleItems"
+                :key="filteredCommits[item.index].id"
+                class="absolute w-full h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
+                :class="selectedCommitId === filteredCommits[item.index].id ? 'bg-accent' : ''"
+                :style="{ transform: 'translateY(' + item.start + 'px)' }"
+                @click="onCommitClick(filteredCommits[item.index].id)"
+                @contextmenu.prevent="onContextMenu($event, filteredCommits[item.index].id)"
               >
                 <div class="flex-1 flex items-center gap-2 min-w-0">
-                  <BranchTagCell :refs="commit.refs" />
-                  <span class="text-[11px] truncate">{{ commit.message }}</span>
+                  <BranchTagCell :refs="filteredCommits[item.index].refs" />
+                  <span class="text-[11px] truncate">{{ filteredCommits[item.index].message }}</span>
                 </div>
                 <div class="w-20 shrink-0">
-                  <span class="text-[10px] text-muted-foreground truncate block">{{ commit.author }}</span>
+                  <span class="text-[10px] text-muted-foreground truncate block">{{ filteredCommits[item.index].author }}</span>
                 </div>
-                <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(commit.time) }}</span>
-                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(commit.id) }}</span>
+                <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(filteredCommits[item.index].time) }}</span>
+                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(filteredCommits[item.index].id) }}</span>
               </div>
             </template>
           </div>

@@ -15,13 +15,18 @@ export interface ContextMenuState {
 }
 
 const ROW_HEIGHT = 40
+const WIP_HEIGHT = 40
+
+interface ScrollAreaRef {
+  viewportRef: HTMLElement | null
+}
 
 export function useCommitList() {
   const repoStore = useRepoStore()
   const commitsStore = useCommitsStore()
   const rightPanelStore = useRightPanelStore()
 
-  const scrollContainer = ref<HTMLElement | null>(null)
+  const scrollContainer = ref<ScrollAreaRef | null>(null)
   const loadingMore = ref(false)
 
   const displayCommits = computed(() => repoStore.activeRepo?.commits ?? [])
@@ -42,12 +47,15 @@ export function useCommitList() {
 
   const rowVirtualizer = useVirtualizer({
     get count() { return filteredCommits.value.length },
-    getScrollElement: () => scrollContainer.value,
+    getScrollElement: () => {
+      const scrollArea = scrollContainer.value
+      return scrollArea?.viewportRef ?? null
+    },
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
   })
 
-  const totalHeight = computed(() => rowVirtualizer.value.getTotalSize())
+  const totalHeight = computed(() => rowVirtualizer.value.getTotalSize() + WIP_HEIGHT)
   const visibleItems = computed(() => rowVirtualizer.value.getVirtualItems())
 
   async function loadMoreCommits() {
@@ -63,10 +71,10 @@ export function useCommitList() {
     }
   }
 
-  const { onScroll } = useInfiniteScroll(scrollContainer, {
-    threshold: 200,
-    onLoadMore: loadMoreCommits,
-  })
+  useInfiniteScroll(
+    computed(() => scrollContainer.value?.viewportRef ?? null) as any,
+    { threshold: 200, onLoadMore: loadMoreCommits }
+  )
 
   function selectCommit(commit: Commit | null) {
     if (repoStore.activeRepoPath) {
@@ -120,7 +128,6 @@ export function useCommitList() {
   })
 
   return {
-    scrollContainer,
     filterText,
     filteredCommits,
     totalHeight,
@@ -135,7 +142,6 @@ export function useCommitList() {
     setHovered,
     showContextMenu,
     hideContextMenu,
-    onScroll,
     loadMoreCommits,
     scrollToHead,
   }
