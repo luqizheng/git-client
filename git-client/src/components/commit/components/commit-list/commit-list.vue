@@ -11,6 +11,7 @@ const ACTION_TYPES = {
   CREATE_BRANCH: "create-branch",
   CREATE_TAG: "create-tag",
   COPY_SHA: "copy-sha",
+  COPY_MESSAGE: "copy-message",
 } as const;
 
 const graphWidth = ref(56)
@@ -60,6 +61,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCommitList } from "../../composables/useCommitList";
 import { useCommitKeyboard } from "../../composables/useCommitKeyboard";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import GraphyCell from "../cells/GraphyCell.vue";
 import BranchTagCell from "../cells/BranchTagCell.vue";
 import { useRightPanelStore } from "../../../../stores/rightPanel";
@@ -72,6 +74,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GitCommit } from "@vicons/ionicons5";
 import BranchDialog from "@/components/branch/BranchDialog.vue";
 import TagDialog from "@/components/tag/TagDialog.vue";
+
+const hoveredCommit = ref<any>(null)
 
 const rightPanelStore = useRightPanelStore();
 const stagingStore = useStagingStore();
@@ -217,6 +221,10 @@ async function onDropdownSelect(key: string) {
         await navigator.clipboard.writeText(commit.id);
         toast.success("SHA copied");
         return;
+      case ACTION_TYPES.COPY_MESSAGE:
+        await navigator.clipboard.writeText(commit.message);
+        toast.success("Message copied");
+        return;
       default:
         return;
     }
@@ -311,24 +319,43 @@ async function onDropdownSelect(key: string) {
               <div
                 v-for="item in visibleItems"
                 :key="filteredCommits[item.index].id"
-                class="absolute w-full h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
-                :class="[
-                  selectedCommitId === filteredCommits[item.index].id || selectedIndex === item.index ? 'bg-accent' : '',
-                  selectedIds.has(filteredCommits[item.index].id) ? 'ring-1 ring-primary' : ''
-                ]"
-                :style="{ transform: 'translateY(' + item.start + 'px)' }"
-                @click="onCommitClick(filteredCommits[item.index].id)"
-                @contextmenu.prevent="onContextMenu($event, filteredCommits[item.index].id)"
               >
-                <div class="flex-1 flex items-center gap-2 min-w-0">
-                  <BranchTagCell :refs="filteredCommits[item.index].refs" />
-                  <span class="text-[11px] truncate">{{ filteredCommits[item.index].message }}</span>
-                </div>
-                <div class="w-20 shrink-0">
-                  <span class="text-[10px] text-muted-foreground truncate block">{{ filteredCommits[item.index].author }}</span>
-                </div>
-                <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(filteredCommits[item.index].time) }}</span>
-                <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(filteredCommits[item.index].id) }}</span>
+                <Tooltip :open="hoveredCommit?.id === filteredCommits[item.index].id">
+                  <TooltipTrigger as-child>
+                    <div
+                      class="absolute w-full h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors"
+                      :class="[
+                        selectedCommitId === filteredCommits[item.index].id || selectedIndex === item.index ? 'bg-accent' : '',
+                        selectedIds.has(filteredCommits[item.index].id) ? 'ring-1 ring-primary' : ''
+                      ]"
+                      :style="{ transform: 'translateY(' + item.start + 'px)' }"
+                      @click="onCommitClick(filteredCommits[item.index].id)"
+                      @contextmenu.prevent="onContextMenu($event, filteredCommits[item.index].id)"
+                      @mouseenter="hoveredCommit = filteredCommits[item.index]"
+                      @mouseleave="hoveredCommit = null"
+                    >
+                      <div class="flex-1 flex items-center gap-2 min-w-0">
+                        <BranchTagCell :refs="filteredCommits[item.index].refs" />
+                        <span class="text-[11px] truncate">{{ filteredCommits[item.index].message }}</span>
+                      </div>
+                      <div class="w-20 shrink-0">
+                        <span class="text-[10px] text-muted-foreground truncate block">{{ filteredCommits[item.index].author }}</span>
+                      </div>
+                      <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(filteredCommits[item.index].time) }}</span>
+                      <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(filteredCommits[item.index].id) }}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" :side-offset="10" class="max-w-xs">
+                    <div class="space-y-1.5">
+                      <p class="text-xs font-medium">{{ filteredCommits[item.index].message }}</p>
+                      <div class="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span>{{ filteredCommits[item.index].author }}</span>
+                        <span>{{ formatTime(filteredCommits[item.index].time) }}</span>
+                      </div>
+                      <p class="font-mono text-[10px] text-muted-foreground">{{ filteredCommits[item.index].id }}</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </template>
           </div>
@@ -385,6 +412,9 @@ async function onDropdownSelect(key: string) {
           >Create Tag</DropdownMenuItem
         >
         <DropdownMenuSeparator />
+        <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.COPY_MESSAGE)"
+          >Copy Message</DropdownMenuItem
+        >
         <DropdownMenuItem @click="onDropdownSelect(ACTION_TYPES.COPY_SHA)"
           >Copy SHA</DropdownMenuItem
         >
