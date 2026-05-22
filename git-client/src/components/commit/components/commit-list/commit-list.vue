@@ -270,7 +270,8 @@ onUnmounted(() => {
 
         <div class="flex-1 min-w-0">
           <div class="sticky top-0 z-10 h-8 bg-card border-b border-border/50 px-2 flex items-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            <span class="flex-1">Message</span>
+            <span class="w-28 shrink-0">Branch / Tag</span>
+            <span class="flex-1 min-w-0">Message</span>
             <span class="w-20 shrink-0">Author</span>
             <span class="w-20 text-right">Date</span>
             <span class="w-16 shrink-0 font-mono text-right">SHA</span>
@@ -281,8 +282,9 @@ onUnmounted(() => {
             class="h-8 px-2 flex items-center gap-4 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50"
             @click="onWipClick"
           >
-            <span class="flex-1 text-[11px] font-medium text-yellow-600 truncate">WIP</span>
-            <span class="w-20 shrink-0 text-[10px] text-muted-foreground truncate">{{ wipStagedCount }}s / {{ wipUnstagedCount }}u</span>
+            <span class="w-28 shrink-0 text-[11px] font-medium text-yellow-600 truncate">WIP</span>
+            <span class="flex-1 text-[11px] text-muted-foreground truncate">{{ wipStagedCount }} staged / {{ wipUnstagedCount }} unstaged</span>
+            <span class="w-20 shrink-0 text-[10px] text-muted-foreground truncate"></span>
             <span class="w-20 text-right text-[10px] text-muted-foreground">now</span>
             <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">staging</span>
           </div>
@@ -290,6 +292,7 @@ onUnmounted(() => {
           <div class="relative" :style="{ height: totalHeight + 'px' }">
             <template v-if="isLoading">
               <div v-for="i in 8" :key="'skel-'+i" class="absolute w-full h-8 px-2 flex items-center gap-4" :style="{ transform: 'translateY(' + ((i-1)*40) + 'px)' }">
+                <Skeleton class="h-3 w-24 shrink-0" />
                 <Skeleton class="h-3 flex-1" />
                 <Skeleton class="h-3 w-16" />
                 <Skeleton class="h-3 w-16" />
@@ -334,10 +337,10 @@ onUnmounted(() => {
                       @mouseenter="hoveredCommit = filteredCommits[item.index]"
                       @mouseleave="hoveredCommit = null"
                     >
-                      <div class="flex-1 flex items-center gap-2 min-w-0">
+                      <div class="w-28 shrink-0 min-w-0">
                         <BranchTagCell :refs="filteredCommits[item.index].refs" />
-                        <span class="text-[11px] truncate">{{ filteredCommits[item.index].message }}</span>
                       </div>
+                      <span class="flex-1 text-[11px] truncate min-w-0">{{ filteredCommits[item.index].message }}</span>
                       <div class="w-20 shrink-0">
                         <span class="text-[10px] text-muted-foreground truncate block">{{ filteredCommits[item.index].author }}</span>
                       </div>
