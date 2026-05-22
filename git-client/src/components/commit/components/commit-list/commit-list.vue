@@ -15,6 +15,7 @@ const ACTION_TYPES = {
 
 const graphWidth = ref(56)
 const showBranchDialog = ref(false)
+const showTagDialog = ref(false)
 const dialogTargetCommit = ref<string | null>(null)
 let isResizing = false
 let startX = 0
@@ -69,6 +70,7 @@ import { toast } from "vue-sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GitCommit } from "@vicons/ionicons5";
 import BranchDialog from "@/components/branch/BranchDialog.vue";
+import TagDialog from "@/components/tag/TagDialog.vue";
 
 const rightPanelStore = useRightPanelStore();
 const stagingStore = useStagingStore();
@@ -194,8 +196,9 @@ async function onDropdownSelect(key: string) {
         showBranchDialog.value = true
         break;
       case ACTION_TYPES.CREATE_TAG:
-        toast.info("Create tag dialog coming soon");
-        return;
+        dialogTargetCommit.value = commit.id
+        showTagDialog.value = true
+        break;
       case ACTION_TYPES.COPY_SHA:
         await navigator.clipboard.writeText(commit.id);
         toast.success("SHA copied");
@@ -372,5 +375,12 @@ async function onDropdownSelect(key: string) {
     </DropdownMenu>
 
     <BranchDialog v-model:show="showBranchDialog" />
+
+    <TagDialog
+      :visible="showTagDialog"
+      :repo-path="repoStore.activeRepoPath || ''"
+      :target-sha="dialogTargetCommit ?? undefined"
+      @update:visible="showTagDialog = $event"
+    />
   </div>
 </template>
