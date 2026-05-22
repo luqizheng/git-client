@@ -14,6 +14,8 @@ const ACTION_TYPES = {
 } as const;
 
 const graphWidth = ref(56)
+const showBranchDialog = ref(false)
+const dialogTargetCommit = ref<string | null>(null)
 let isResizing = false
 let startX = 0
 let startWidth = 0
@@ -66,6 +68,7 @@ import { invoke } from "../../../../utils/ipc";
 import { toast } from "vue-sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GitCommit } from "@vicons/ionicons5";
+import BranchDialog from "@/components/branch/BranchDialog.vue";
 
 const rightPanelStore = useRightPanelStore();
 const stagingStore = useStagingStore();
@@ -187,8 +190,9 @@ async function onDropdownSelect(key: string) {
         toast.success("Revert successful");
         break;
       case ACTION_TYPES.CREATE_BRANCH:
-        toast.info("Create branch dialog coming soon");
-        return;
+        dialogTargetCommit.value = commit.id
+        showBranchDialog.value = true
+        break;
       case ACTION_TYPES.CREATE_TAG:
         toast.info("Create tag dialog coming soon");
         return;
@@ -366,5 +370,7 @@ async function onDropdownSelect(key: string) {
         >
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <BranchDialog v-model:show="showBranchDialog" />
   </div>
 </template>
