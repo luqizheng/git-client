@@ -1,4 +1,5 @@
 // utils/graphLayout.ts
+import type { Commit } from '../types/git'
 
 export const COLUMN_WIDTH = 60
 export const ROW_HEIGHT = 32
@@ -88,7 +89,7 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
       let chosenCol = Math.min(...parentCols)
 
       // 但需要确保该列不会与当前已分配给其他提交的列冲突（实际上同一行只有一个提交，无冲突）
-      // 然而，为了后续连线不重叠，有时需要向右偏移。更精确的做法是检查该列是否已被“活跃”占用（即该列最底部的提交是否还在分支线上）。
+      // 然而，为了后续连线不重叠，有时需要向右偏移。更精确的做法是检查该列是否已被"活跃"占用（即该列最底部的提交是否还在分支线上）。
       // 为了简洁，我们直接使用较小列。
       commitToColumn.set(commit.id, chosenCol)
     }
@@ -100,11 +101,11 @@ export function computeGraphLayout(commits: Commit[]): GraphLayout {
 
   // 经过第一轮分配，有可能某些相邻提交使用了相同列，这是正确的（同分支）。
   // 但还需要处理一种情况：当两个不同分支的提交被分配到同一列，且它们之间没有继承关系，连线会出现交叉。
-  // 更完善的算法需要“列重分配”或“冲突解决”。为了快速修复你的问题，我们在此加一个后处理：
+  // 更完善的算法需要"列重分配"或"冲突解决"。为了快速修复你的问题，我们在此加一个后处理：
   // 如果某个提交的列与其父提交的列相同，但父提交还有其他子提交也使用该列，则不需要调整。
-  // 实际上标准的 Git 图算法会维护每个列的“最近提交”，如果新提交要使用的列最近不是由其父提交占据，则向右偏移。
+  // 实际上标准的 Git 图算法会维护每个列的"最近提交"，如果新提交要使用的列最近不是由其父提交占据，则向右偏移。
 
-  // 我们改进一下：使用“每列的最后提交”映射
+  // 我们改进一下：使用"每列的最后提交"映射
   const lastCommitInColumn = new Map<number, string>()
 
   for (let i = 0; i < commits.length; i++) {

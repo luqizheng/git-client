@@ -1,53 +1,5 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from "vue";
-
-const ACTION_TYPES = {
-  CHERRY_PICK: "cherry-pick",
-  REBASE: "rebase",
-  RESET_SOFT: "reset-soft",
-  RESET_MIXED: "reset-mixed",
-  RESET_HARD: "reset-hard",
-  REVERT: "revert",
-  CREATE_BRANCH: "create-branch",
-  CREATE_TAG: "create-tag",
-  COPY_SHA: "copy-sha",
-  COPY_MESSAGE: "copy-message",
-} as const;
-
-const graphWidth = ref(56)
-const showBranchDialog = ref(false)
-const showTagDialog = ref(false)
-const dialogTargetCommit = ref<string | null>(null)
-let isResizing = false
-let startX = 0
-let startWidth = 0
-
-function onResizeStart(e: MouseEvent) {
-  isResizing = true
-  startX = e.clientX
-  startWidth = graphWidth.value
-  document.addEventListener('mousemove', onResizeMove)
-  document.addEventListener('mouseup', onResizeEnd)
-  e.preventDefault()
-}
-
-function onResizeMove(e: MouseEvent) {
-  if (!isResizing) return
-  const delta = e.clientX - startX
-  graphWidth.value = Math.max(40, Math.min(200, startWidth + delta))
-}
-
-function onResizeEnd() {
-  isResizing = false
-  document.removeEventListener('mousemove', onResizeMove)
-  document.removeEventListener('mouseup', onResizeEnd)
-}
-
-onUnmounted(() => {
-  contextMenu.value.visible = false;
-  document.removeEventListener('mousemove', onResizeMove)
-  document.removeEventListener('mouseup', onResizeEnd)
-});
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,6 +27,48 @@ import { GitCommit } from "@vicons/ionicons5";
 import BranchDialog from "@/components/branch/BranchDialog.vue";
 import TagDialog from "@/components/tag/TagDialog.vue";
 
+const ACTION_TYPES = {
+  CHERRY_PICK: "cherry-pick",
+  REBASE: "rebase",
+  RESET_SOFT: "reset-soft",
+  RESET_MIXED: "reset-mixed",
+  RESET_HARD: "reset-hard",
+  REVERT: "revert",
+  CREATE_BRANCH: "create-branch",
+  CREATE_TAG: "create-tag",
+  COPY_SHA: "copy-sha",
+  COPY_MESSAGE: "copy-message",
+} as const;
+
+const graphWidth = ref(56)
+const showBranchDialog = ref(false)
+const showTagDialog = ref(false)
+const dialogTargetCommit = ref<string | null>(null)
+const isResizing = ref(false)
+const startX = ref(0)
+const startWidth = ref(0)
+
+function onResizeStart(e: MouseEvent) {
+  isResizing.value = true
+  startX.value = e.clientX
+  startWidth.value = graphWidth.value
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup', onResizeEnd)
+  e.preventDefault()
+}
+
+function onResizeMove(e: MouseEvent) {
+  if (!isResizing.value) return
+  const delta = e.clientX - startX.value
+  graphWidth.value = Math.max(40, Math.min(200, startWidth.value + delta))
+}
+
+function onResizeEnd() {
+  isResizing.value = false
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', onResizeEnd)
+}
+
 const hoveredCommit = ref<any>(null)
 
 const rightPanelStore = useRightPanelStore();
@@ -83,6 +77,7 @@ const repoStore = useRepoStore();
 const commitsStore = useCommitsStore();
 
 const {
+  scrollContainer,
   filterText,
   filteredCommits,
   selectedCommitId,
@@ -147,9 +142,8 @@ function formatSha(sha: string) {
   return sha.slice(0, 7);
 }
 
-function formatTime(timestamp: number) {
+function formatTime(timestamp: number, now: Date) {
   const date = new Date(timestamp * 1000);
-  const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
@@ -233,6 +227,12 @@ async function onDropdownSelect(key: string) {
     toast.error(String(e));
   }
 }
+
+onUnmounted(() => {
+  contextMenu.value.visible = false;
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', onResizeEnd)
+});
 </script>
 
 <template>
@@ -341,7 +341,7 @@ async function onDropdownSelect(key: string) {
                       <div class="w-20 shrink-0">
                         <span class="text-[10px] text-muted-foreground truncate block">{{ filteredCommits[item.index].author }}</span>
                       </div>
-                      <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(filteredCommits[item.index].time) }}</span>
+                      <span class="w-20 text-right text-[10px] text-muted-foreground shrink-0">{{ formatTime(filteredCommits[item.index].time, new Date()) }}</span>
                       <span class="w-16 shrink-0 font-mono text-right text-[10px] text-muted-foreground">{{ formatSha(filteredCommits[item.index].id) }}</span>
                     </div>
                   </TooltipTrigger>
@@ -350,7 +350,7 @@ async function onDropdownSelect(key: string) {
                       <p class="text-xs font-medium">{{ filteredCommits[item.index].message }}</p>
                       <div class="flex items-center gap-3 text-[10px] text-muted-foreground">
                         <span>{{ filteredCommits[item.index].author }}</span>
-                        <span>{{ formatTime(filteredCommits[item.index].time) }}</span>
+                        <span>{{ formatTime(filteredCommits[item.index].time, new Date()) }}</span>
                       </div>
                       <p class="font-mono text-[10px] text-muted-foreground">{{ filteredCommits[item.index].id }}</p>
                     </div>

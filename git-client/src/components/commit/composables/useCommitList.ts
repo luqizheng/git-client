@@ -128,6 +128,7 @@ export function useCommitList() {
   })
 
   return {
+    scrollContainer,
     filterText,
     filteredCommits,
     totalHeight,

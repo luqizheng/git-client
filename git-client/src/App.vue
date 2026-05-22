@@ -1,9 +1,12 @@
 <template>
-  <AppContent />
+  <TooltipProvider :delay-duration="0">
+    <AppContent />
+  </TooltipProvider>
 </template>
 
 <script setup lang="ts">
 import AppContent from './components/layout/AppContent.vue'
+import { TooltipProvider } from './components/ui/tooltip'
 import { useRightPanelStore } from './stores/rightPanel'
 import { useRepoStore } from './stores/repo'
 import { useBranchesStore } from './stores/branches'
