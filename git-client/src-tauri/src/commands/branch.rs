@@ -74,7 +74,7 @@ pub async fn rebase_branch(
 ) -> Result<(), AppError> {
     let repos = state.repos.clone();
     tokio::task::spawn_blocking(move || {
-        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;
         branch_service::rebase_with_ops(&mut repo, &upstream, branch.as_deref())
     })
@@ -132,7 +132,7 @@ pub async fn rebase_continue(
 ) -> Result<(), AppError> {
     let repos = state.repos.clone();
     tokio::task::spawn_blocking(move || {
-        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;
         branch_service::rebase_continue(&mut repo)
     })
@@ -146,7 +146,7 @@ pub async fn rebase_abort(
 ) -> Result<(), AppError> {
     let repos = state.repos.clone();
     tokio::task::spawn_blocking(move || {
-        let mut manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
+        let manager = repos.lock().map_err(|e| AppError::Credential(e.to_string()))?;
         let mut repo = manager.get_repo(&repo_path)?;
         branch_service::rebase_abort(&mut repo)
     })

@@ -33,7 +33,7 @@ pub fn create_worktree(repo: &Repository, branch: &str, path: &str) -> Result<Wo
     })
 }
 
-pub fn delete_worktree(repo: &Repository, path: &str) -> Result<(), AppError> {
+pub fn delete_worktree(_repo: &Repository, path: &str) -> Result<(), AppError> {
     std::fs::remove_dir_all(path)?;
     Ok(())
 }

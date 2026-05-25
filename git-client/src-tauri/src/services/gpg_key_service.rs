@@ -81,7 +81,7 @@ impl GpgKeyService {
                         }
                     }
                 }
-                "sub" | "ssb" => {
+                "sub" => {
                     if parts.len() >= 10 {
                         current_subkeys.push(GpgSubkey {
                             id: parts[4].to_string(),

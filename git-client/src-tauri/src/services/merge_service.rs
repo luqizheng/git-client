@@ -98,25 +98,25 @@ fn collect_conflicts_with_content(repo: &git2::Repository, index: &git2::Index) 
 
             if stage_val == 0x2000 {
                 let content = entry_to_content(repo, &entry)?;
-                let (base, ours, theirs) = read_conflict_markers(&content, workdir, &path)?;
+                let (base, ours, _theirs) = read_conflict_markers(&content, workdir, &path)?;
 
-                if let Some(c) = conflicts.iter_mut().find(|c| c.path == path) {
-                    c.ours_content = Some(ours);
-                    c.ours_modified = true;
-                    c.base_content = Some(base);
-                } else {
-                    conflicts.push(ConflictFile {
-                        path: path.clone(),
-                        ours_modified: true,
-                        theirs_modified: false,
-                        ours_content: Some(ours),
-                        theirs_content: None,
-                        base_content: Some(base),
-                    });
-                }
-            } else if stage_val == 0x3000 {
-                let content = entry_to_content(repo, &entry)?;
-                let (base, ours, theirs) = read_conflict_markers(&content, workdir, &path)?;
+            if let Some(c) = conflicts.iter_mut().find(|c| c.path == path) {
+                c.ours_content = Some(ours);
+                c.ours_modified = true;
+                c.base_content = Some(base);
+            } else {
+                conflicts.push(ConflictFile {
+                    path: path.clone(),
+                    ours_modified: true,
+                    theirs_modified: false,
+                    ours_content: Some(ours),
+                    theirs_content: None,
+                    base_content: Some(base),
+                });
+            }
+        } else if stage_val == 0x3000 {
+            let content = entry_to_content(repo, &entry)?;
+            let (base, _ours, theirs) = read_conflict_markers(&content, workdir, &path)?;
 
                 if let Some(c) = conflicts.iter_mut().find(|c| c.path == path) {
                     c.theirs_content = Some(theirs);
