@@ -1,0 +1,106 @@
+<h2>算法设计 — Temporal Topological Sort</h2>
+<p class="subtitle">第一步：确定行的顺序</p>
+
+<div class="section">
+  <h3>为什么要拓扑排序？</h3>
+  <p>纯时间排序在 rebase/cherry-pick 后父子关系与时间戳冲突，导致边向下画。</p>
+
+  <div class="mockup">
+    <div class="mockup-header">输入输出</div>
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>输入: commits[].committer_time   输出: rowIndex (0=新/顶, N-1=旧/底)
+
+步骤:
+1. 从 parent_ids 构建 children 索引  Map&lt;commitId, Commit[]&gt;
+2. 按 committer_time 降序排列（最新优先）
+3. DFS 遍历，后序赋 rowIndex：
+   - dfs(c) → 先 dfs 所有 children → 再 c.rowIndex = i++
+4. 结果：始终满足 parent.rowIndex &gt; child.rowIndex</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>示例：rebase 异常场景</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">纯时间排序 ❌</div>
+      <div class="mockup-body" style="padding:12px;font-size:13px">
+      <pre>A ← B (rebase 后, 时间较旧)
+      ↑ 边向下！╳</pre>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">拓扑排序 ✓</div>
+      <div class="mockup-body" style="padding:12px;font-size:13px">
+      <pre>B (newer)   rowIndex=0
+A (older)   rowIndex=1
+↑ 边始终向上 ✓</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 style="margin-top:24px">算法设计 — Straight Branches 列分配</h2>
+<p class="subtitle">第二步：确定每列的编号</p>
+
+<div class="section">
+  <h3>核心概念：branch child vs merge child</h3>
+  <div class="mockup">
+    <div class="mockup-header">基于 parents[0] 区分</div>
+    <div class="mockup-body" style="text-align:left;padding:12px;font-size:13px">
+      <p><strong>branch child</strong>: child.parents[0] == c — 延续分支的子提交</p>
+      <p><strong>merge child</strong>: child.parents[0] != c — 合并进来的子提交</p>
+      <hr style="margin:8px 0;border-color:#333">
+      <p>直分支规则：</p>
+      <ul>
+        <li>branch child 与父提交<b>同列</b>（replace）</li>
+        <li>merge child 使父提交从 active branches <b>移除</b></li>
+        <li>非 branch child 的分叉创建<b>新列</b>（append到最右）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>列分配过程</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>activeBranches = []  // {commitId, column}
+
+for each c in commits FROM NEWEST TO OLDEST:
+  // c 可能已由它的 branch child 占据了一列
+  // 也可能是一个合并目标
+  branchChildren = children where child.parents[0]==c.id
+  mergeChildren = children where child.parents[0]!=c.id
+
+  if c has branchChildren:
+    selected = pick leftmost branch child
+    // 取该 child 的列，c 继续使用
+    c.column = selected.column
+    activeBranches[selected.column] = c  // replace
+  else:
+    // 分支终点或新分支
+    if c has mergeChildren:
+      // c 被合并进来了，使用 merge child 的列
+      c.column = mergeChildren[0].column
+    else:
+      // 新分支终点，追加新列
+      c.column = len(activeBranches)
+      activeBranches.append(c)
+  
+  // 从 activeBranches 移除 mergeChildren
+  for child in mergeChildren:
+    activeBranches[child.column] = nil</pre>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:16px">
+  <div class="option" onclick="void(0)" style="cursor:default">
+    <div class="letter">✓</div>
+    <div class="content">
+      关键改进：列分配方向改为 <strong>从新到旧</strong>（而非当前的从旧到新），与 pvigier 一致
+    </div>
+  </div>
+</div>

@@ -22,6 +22,7 @@ pub struct Commit {
     pub author: String,
     pub author_email: String,
     pub time: i64,
+    pub committer_time: i64,
     pub parent_ids: Vec<String>,
     pub refs: Vec<CommitRef>,
 }
@@ -55,6 +56,7 @@ mod tests {
             author: "user".to_string(),
             author_email: "user@example.com".to_string(),
             time: 1700000000,
+            committer_time: 1700000000,
             parent_ids: vec!["parent1".to_string()],
             refs: vec![
             CommitRef { name: "main".to_string(), ref_type: RefType::Local, is_head: true },
@@ -74,6 +76,7 @@ mod tests {
             author: "user".to_string(),
             author_email: "user@example.com".to_string(),
             time: 1700000100,
+            committer_time: 1700000100,
             parent_ids: vec![],
             refs: vec![],
         };

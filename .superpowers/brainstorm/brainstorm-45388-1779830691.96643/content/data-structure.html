@@ -1,0 +1,66 @@
+<h2>数据结构变更确认</h2>
+<p class="subtitle">仅新增 committer_time，不动现有 time</p>
+
+<div class="section">
+  <h3>Rust 模型</h3>
+  <div class="mockup">
+    <div class="mockup-header">models/commit.rs</div>
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>pub struct Commit {
+    pub id: String,
+    pub message: String,
+    pub author: String,
+    pub author_email: String,
+    pub time: i64,              <span style="color:#27ae60">// ← 不动 (author date)</span>
+    <span style="color:#3498db;font-weight:bold">pub committer_time: i64,</span>   <span style="color:#27ae60">// ← 新增 (committer date)</span>
+    pub parent_ids: Vec&lt;String&gt;,
+    pub refs: Vec&lt;CommitRef&gt;,
+}</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Rust 赋值</h3>
+  <div class="mockup">
+    <div class="mockup-header">commit_service.rs</div>
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>Commit {
+    <span style="color:#888">// ... 不变 ...</span>
+    time: c.time().seconds(),                    <span style="color:#27ae60">// author date（显示用）</span>
+    <span style="color:#3498db;font-weight:bold">committer_time: c.committer().when().seconds(),</span> <span style="color:#27ae60">// committer date（拓扑排序用）</span>
+}</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>TypeScript 类型</h3>
+  <div class="mockup">
+    <div class="mockup-header">types/git.d.ts</div>
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>export interface Commit {
+    id: string
+    message: string
+    author: string
+    author_email: string
+    time: number           <span style="color:#27ae60">// author date（显示用）</span>
+    <span style="color:#3498db;font-weight:bold">committer_time: number</span> <span style="color:#27ae60">// committer date（拓扑排序用）</span>
+    parent_ids: string[]
+    refs: CommitRef[]
+}</pre>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:24px">改动覆盖面</h3>
+<div class="options">
+  <div class="option selected" onclick="void(0)" style="cursor:default">
+    <div class="letter">✓</div>
+    <div class="content">
+      Rust 两端改动 — 模型 + 赋值<br>
+      TS 两端改动 — 类型 + mock<br>
+      <span style="color:#27ae60">8 个测试文件需要增加 committer_time 字段</span>
+    </div>
+  </div>
+</div>

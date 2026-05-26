@@ -127,6 +127,7 @@ fn commit_from_git(c: &git2::Commit, refs: Vec<CommitRef>) -> Commit {
         author: c.author().name().unwrap_or("").to_string(),
         author_email: c.author().email().unwrap_or("").to_string(),
         time: c.time().seconds(),
+        committer_time: c.committer().when().seconds(),
         parent_ids: c.parent_ids().map(|p| p.to_string()).collect(),
         refs,
     }

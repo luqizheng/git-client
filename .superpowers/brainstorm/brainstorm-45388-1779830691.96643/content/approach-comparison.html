@@ -1,0 +1,108 @@
+<h2>当前实现 vs pvigier 算法 — 差距分析</h2>
+<p class="subtitle">三个核心差距决定改造方案的选择</p>
+
+<div class="section">
+  <h3>差距 1：排序算法</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">当前：纯时间排序</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        <code>commits.sort((a,b) => a.time - b.time)</code>
+        <p style="margin-top:8px;color:#888">rebase/cherry-pick/时钟不同步时 → 边可能向下画，破坏布局</p>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">pvigier：Temporal Topological Sort</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        <code>DFS + 按 committer date 排序遍历</code>
+        <p style="margin-top:8px;color:#888">保证拓扑正确 + 确定性 + 日期优先</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>差距 2：列分配逻辑</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">当前：两阶段启发式</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        1. 朴素继承父列<br>
+        2. lastCommitInColumn 冲突检查 → 向右偏移<br><br>
+        <span style="color:#e67e22;">⚠ 不区分 parents[0] vs parents[1]</span>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">pvigier：Straight Branches</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        branch child (parents[0]) → 替换父列<br>
+        merge child (parents[1]) → 不入列<br>
+        active branch 列表管理<br><br>
+        <span style="color:#27ae60;">✓ 分支笔直不偏移</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>差距 3：颜色管理</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">当前：HSL 随机生成</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        <code>hsl((col*137)%360, 70%, 55%)</code><br>
+        无限色，但不同仓库色不同
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">pvigier：固定调色板</div>
+      <div class="mockup-body" style="text-align:left;font-size:13px;padding:8px">
+        CSS 变量 8 色调色板<br>
+        列回收后颜色可复用<br>
+        <span style="color:#27ae60;">✓ 视觉一致性好</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 style="margin-top:24px">改造方案选择</h2>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>轻量改造：修复排序 + 列分配</h3>
+      <p><strong>改动：</strong></p>
+      <ul>
+        <li>替换排序为 Temporal Topological Sort</li>
+        <li>列分配改为 active branch 列表 + branch/merge child 区分</li>
+      </ul>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>算法完全对齐论文</li><li>适应所有 Git 场景</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>排序复杂度提升</li><li>需构建 children 索引</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>全量改造：直分支 + 固定调色板</h3>
+      <p><strong>改动：</strong>方案 A + 固定 8 色调色板 + 颜色回收</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>GitKraken 级视觉质量</li><li>颜色可复用/回收</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>更多改动</li><li>需处理边界颜色冲突</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>极简修复：仅修排序</h3>
+      <p><strong>改动：</strong>仅将排序改为 Temporal Topological Sort</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>改动最小</li><li>修复拓扑问题</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>列分配问题仍存在</li><li>复杂 merge 场景仍有异常</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

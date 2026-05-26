@@ -10,6 +10,7 @@ interface RawCommit {
   parents: string[]
   author: string
   time: string
+  committer_time?: string
   msg: string
   refs?: { name: string; type: 'local' | 'remote' | 'tag'; isHead?: boolean }[]
 }
@@ -177,6 +178,7 @@ export function generateMockCommits(): Commit[] {
     author: c.author,
     author_email: `${c.author.toLowerCase()}@example.com`,
     time: Math.floor(new Date(c.time).getTime() / 1000),
+    committer_time: Math.floor(new Date(c.committer_time ?? c.time).getTime() / 1000),
     parent_ids: c.parents.map(p => idMap.get(p) ?? p),
     refs: (c.refs ?? []).map(r => ({
       name: r.name,

@@ -15,9 +15,9 @@ describe('commits store', () => {
     const testPath = '/test/repo'
     repoStore.openRepos.set(testPath, {
       state: { path: testPath, head_branch: 'main', head_commit_id: 'abc', is_bare: false, is_empty: false },
-      commits: [{ id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, parent_ids: [], refs: [] }],
+      commits: [{ id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, committer_time: 0, parent_ids: [], refs: [] }],
       branches: [],
-      selectedCommit: { id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, parent_ids: [], refs: [] },
+      selectedCommit: { id: 'abc', message: 't', author: 'a', author_email: 'e', time: 0, committer_time: 0, parent_ids: [], refs: [] },
       hasMore: false,
       loading: false,
     } as OpenRepo)

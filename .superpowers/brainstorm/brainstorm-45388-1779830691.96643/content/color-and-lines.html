@@ -1,0 +1,87 @@
+<h2>颜色方案 — 固定 8 色调色板</h2>
+<p class="subtitle">方案 B 第三部分：pvigier 风格固定调色板 + 列回收</p>
+
+<div class="section">
+  <h3>8 色调色板 (GitKraken 风格)</h3>
+  <p>在 CSS 变量中定义 8 色，列分配时循环使用。</p>
+
+  <div class="sample-colors">
+    <div style="background:#e74c3c;color:white;padding:12px;border-radius:8px;text-align:center">#e74c3c (列0)</div>
+    <div style="background:#3498db;color:white;padding:12px;border-radius:8px;text-align:center">#3498db (列1)</div>
+    <div style="background:#27ae60;color:white;padding:12px;border-radius:8px;text-align:center">#27ae60 (列2)</div>
+    <div style="background:#f39c12;color:white;padding:12px;border-radius:8px;text-align:center">#f39c12 (列3)</div>
+    <div style="background:#9b59b6;color:white;padding:12px;border-radius:8px;text-align:center">#9b59b6 (列4)</div>
+    <div style="background:#1abc9c;color:white;padding:12px;border-radius:8px;text-align:center">#1abc9c (列5)</div>
+    <div style="background:#e67e22;color:white;padding:12px;border-radius:8px;text-align:center">#e67e22 (列6)</div>
+    <div style="background:#2c3e50;color:white;padding:12px;border-radius:8px;text-align:center">#2c3e50 (列7)</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>颜色分配规则</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="text-align:left;padding:12px;font-size:13px">
+      <ol>
+        <li><strong>新列</strong>创建时取 <code>palette[column % 8]</code></li>
+        <li><strong>Replace</strong>（branch child 继续使用父列）→ 继承父列颜色</li>
+        <li><strong>回收</strong>：active branch 结束 → 列释放，列号收缩，后续新列复用</li>
+        <li>所有 SVG 线/节点/标签使用同一色值 → 保持视觉一致性</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>暗色/亮色双主题适配</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">亮色</div>
+      <div class="mockup-body" style="text-align:left;padding:12px;font-size:13px">
+        用 60% 饱和度变体，线条加透明
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">暗色</div>
+      <div class="mockup-body" style="text-align:left;padding:12px;font-size:13px">
+        用 100% 饱和度变体，线条加透明
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:8px;color:#888">实现方式：用 <code>rgba(color, alpha)</code> 作为线段颜色，节点用纯色。</p>
+</div>
+
+<h2 style="margin-top:24px">线段生成 — 连线规则</h2>
+<p class="subtitle">基于列分配结果绘制 SVG 线段</p>
+
+<div class="section">
+  <h3>三种连线类型</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="text-align:left;padding:12px;font-size:13px">
+      <table style="width:100%;border-collapse:collapse">
+        <tr><th style="text-align:left;border-bottom:1px solid #333;padding:4px">场景</th><th style="text-align:left;border-bottom:1px solid #333;padding:4px">当前</th><th style="text-align:left;border-bottom:1px solid #333;padding:4px">改进</th></tr>
+        <tr><td style="padding:4px">同列→同列</td><td style="padding:4px">垂直连线</td><td style="padding:4px">不变</td></tr>
+        <tr><td style="padding:4px">同列→不同列</td><td style="padding:4px">水平+垂直</td><td style="padding:4px">水平+垂直（直角，不变）</td></tr>
+        <tr><td style="padding:4px">不同列→同列</td><td style="padding:4px">水平+垂直</td><td style="padding:4px">水平+垂直（存在多个父列时的合并节点）</td></tr>
+      </table>
+      <p style="margin-top:8px"><strong>新增规则</strong>：合并提交如果有两个父提交在不同列，画两条入线</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>线段生成算法</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="text-align:left;padding:12px;font-family:monospace;font-size:12px">
+<pre>for each commit c (oldest to newest):
+  for each parent p of c:
+    if c.column == p.column:
+      // 垂直连线 (单单线)
+      emit vertical(c.y, p.y, c.column, c.color)
+    else:
+      // 直角连线 (L形)
+      // 从 p 所在列右端 draw 到 c 所在列左端
+      emit horizontal(p.x + RADIUS, p.y, c.x - RADIUS, p.y)
+      emit vertical(p.y, c.y, c.column, c.color)</pre>
+    </div>
+  </div>
+</div>

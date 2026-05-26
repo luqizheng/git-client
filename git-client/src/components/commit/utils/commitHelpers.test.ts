@@ -53,6 +53,7 @@ describe('matchesFilter', () => {
     author: 'John Doe',
     author_email: 'john@example.com',
     time: 1000000,
+    committer_time: 1000000,
     parent_ids: [],
     refs: [],
   }
@@ -100,6 +101,7 @@ describe('formatCommitInfo', () => {
       author: 'John',
       author_email: 'j@e.com',
       time: 1000000,
+      committer_time: 1000000,
       parent_ids: [],
       refs: [],
     }

@@ -10,6 +10,7 @@ export interface Commit {
   author: string
   author_email: string
   time: number
+  committer_time: number
   parent_ids: string[]
   refs: CommitRef[]
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,12 +41,19 @@ const ACTION_TYPES = {
 } as const;
 
 const graphWidth = ref(56)
+const graphCellRef = ref<InstanceType<typeof GraphyCell>>()
 const showBranchDialog = ref(false)
 const showTagDialog = ref(false)
 const dialogTargetCommit = ref<string | null>(null)
 const isResizing = ref(false)
 const startX = ref(0)
 const startWidth = ref(0)
+
+watch(() => graphCellRef.value?.layout?.totalWidth, (w) => {
+  if (w && w > graphWidth.value) {
+    graphWidth.value = Math.ceil(w)
+  }
+})
 
 function onResizeStart(e: MouseEvent) {
   isResizing.value = true
@@ -265,7 +272,7 @@ onUnmounted(() => {
           <div class="sticky top-0 z-20 h-8 flex items-center px-2 bg-background border-b border-border/50">
             <span class="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Graph</span>
           </div>
-          <GraphyCell :commits="filteredCommits" />
+          <GraphyCell ref="graphCellRef" :commits="filteredCommits" />
         </div>
 
         <div class="flex-1 min-w-0">

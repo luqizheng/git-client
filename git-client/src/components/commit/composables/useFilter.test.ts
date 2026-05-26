@@ -9,6 +9,7 @@ const makeCommit = (overrides: Partial<Commit> = {}): Commit => ({
   author: 'Test Author',
   author_email: 'test@test.com',
   time: 1000000,
+  committer_time: 1000000,
   parent_ids: [],
   refs: [],
   ...overrides,
